@@ -155,8 +155,8 @@ def assign_map_materials():
         if not len(find_nodes_by_type(bpy.data.materials[k], 'TEX_IMAGE')) > 0: #
             tex_num = 0 #To keep track of the current position in the list
             for n, info in mat.items():
-                current_image = "PS_" + str(n) + "_" + info["Hash"] + "TEX_EXT"
-            
+                #current_image = "PS_" + str(n) + "_" + info["Hash"] + "TEX_EXT"
+                current_image = info["Hash"] + "TEX_EXT"
                 if info["SRGB"]:
                     colorspace = "sRGB"
                 else: 
