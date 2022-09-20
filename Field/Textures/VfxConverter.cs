@@ -3,40 +3,9 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Field.General;
 using Field.Models;
+using Field.Textures;
 
 namespace Field;
-
-// public struct Texture
-// {
-//     public string Dimension;
-//     public string Type;
-//     public string Variable;
-//     public int Index;
-// }
-
-// public struct Cbuffer
-// {
-//     public string Variable;
-//     public string Type;
-//     public int Count;
-//     public int Index;
-// }
-
-// public struct Input
-// {
-//     public string Variable;
-//     public string Type;
-//     public int Index;
-//     public string Semantic;
-// }
-
-// public struct Output
-// {
-//     public string Variable;
-//     public string Type;
-//     public int Index;
-//     public string Semantic; 
-// }
 
 public class VfxConverter
 {
@@ -54,7 +23,6 @@ public class VfxConverter
 
     public string vfxStructure = @"HEADER
 {
-    //CompileTargets = ( IS_SM_50 && ( PC || VULKAN ) );
 	Description = ""Charm Auto-Generated Source 2 Shader""; 
 }
 
@@ -126,11 +94,11 @@ PS
             replace.AppendLine(@"   Feature( F_PREPASS_ALPHA_TEST, 0..1, ""Rendering"" );").ToString();
         
             vfxStructure = vfxStructure.Replace("//alphatest", replace.ToString());
-            vfxStructure = vfxStructure.Replace("//translucent", "#define S_TRANSLUCENT 1");
-            
+            //vfxStructure = vfxStructure.Replace("//translucent", "#define S_TRANSLUCENT 1");
+            //Turns out I dont need S_TRANSLUCENT to use alpha test
         }
         vfx.AppendLine(vfxStructure);
-        // WriteTextureComments(material, bIsVertexShader);
+
         WriteCbuffers(material, bIsVertexShader);
         WriteFunctionDefinition(material, bIsVertexShader);
         hlsl = new StringReader(hlslText);
@@ -360,22 +328,7 @@ PS
                 vfx.AppendLine($"{output.Type} {output.Variable};");
             }
 
-            vfx.AppendLine().AppendLine("PixelInput MainVs( INSTANCED_SHADER_PARAMS( VS_INPUT i ) )");
-            // foreach (var texture in textures)
-            // {
-            //     vfx.AppendLine($"   {texture.Type} {texture.Variable},");
-            // }
-            // for (var i = 0; i < inputs.Count; i++)
-            // {
-            //     if (i == inputs.Count - 1)
-            //     {
-            //         vfx.AppendLine($"   {inputs[i].Type} {inputs[i].Variable}) // {inputs[i].Semantic}");
-            //     }
-            //     else
-            //     {
-            //         vfx.AppendLine($"   {inputs[i].Type} {inputs[i].Variable}, // {inputs[i].Semantic}");
-            //     }
-            // }
+            //vfx.AppendLine().AppendLine("PixelInput MainVs( INSTANCED_SHADER_PARAMS( VS_INPUT i ) )");
         }
         else
         {
@@ -413,7 +366,7 @@ PS
             vfx.AppendLine("        float alpha = 1;");
             vfx.AppendLine("        float4 tx = float4(i.vTextureCoords, 1, 1);");
 
-            vfx.AppendLine("        float4 v0 = {0.5,0.5,1,1};"); //Seems to only be used for normals.
+            vfx.AppendLine("        float4 v0 = {1,1,1,1};"); //Seems to only be used for normals.
             vfx.AppendLine("        float4 v1 = {i.vNormalWs, 1};"); //Pretty sure this is mesh normals
             vfx.AppendLine("        float4 v2 = {i.vTangentUWs, 1};"); //Tangent? Seems to only be used for normals.
             vfx.AppendLine("        float4 v3 = {i.vTextureCoords, 1,1};"); //seems only used as texture coords
@@ -530,7 +483,7 @@ PS
         
         Material mat = ToMaterial(i, float4(o0.xyz, 1), saturate(normal), float4(1 - smoothness, saturate(o2.x), saturate(o2.y * 2), 1));
         mat.Opacity = alpha;
-        mat.Emission = clamp((o2.y - 0.5) * 2 * 6 * mat.Albedo, 0, 100);
+        mat.Emission = clamp((o2.y - 0.5) * 2 * 8 * mat.Albedo, 0, 100);
         
         ShadingModelValveStandard sm;
 		
