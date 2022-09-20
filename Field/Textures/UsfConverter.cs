@@ -4,7 +4,7 @@ using System.Text;
 using Field.General;
 using Field.Models;
 
-namespace Field;
+namespace Field.Textures;
 
 public struct Texture
 {
@@ -154,10 +154,7 @@ public class UsfConverter
         // Try to find matches, pixel shader has Unk2D0 Unk2E0 Unk2F0 Unk300 available
         foreach (var cbuffer in cbuffers)
         {
-            if(bIsVertexShader)
-                usf.AppendLine($"static {cbuffer.Type} {cbuffer.Variable}[{cbuffer.Count}] = ").AppendLine("{");
-            else
-                usf.AppendLine($"static {cbuffer.Type} {cbuffer.Variable}[{cbuffer.Count}] = ").AppendLine("{");
+            usf.AppendLine($"static {cbuffer.Type} {cbuffer.Variable}[{cbuffer.Count}] = ").AppendLine("{");
             
             dynamic data = null;
             if (bIsVertexShader)
@@ -177,27 +174,6 @@ public class UsfConverter
                 else if (cbuffer.Count == material.Header.UnkC0.Count)
                 {
                     data = material.Header.UnkC0;
-                }
-                else
-                {
-                    
-                    // if (material.Header.VSVector4Container.Hash != 0xffff_ffff)
-                    // {
-                    //     // Try the Vector4 storage file
-                    //     DestinyFile container = new DestinyFile(PackageHandler.GetEntryReference(material.Header.VSVector4Container));
-                    //     byte[] containerData = container.GetData();
-                    //     int num = containerData.Length / 16;
-                    //     if (cbuffer.Count == num)
-                    //     {
-                    //         List<Vector4> float4s = new List<Vector4>();
-                    //         for (int i = 0; i < containerData.Length / 16; i++)
-                    //         {
-                    //             float4s.Add(StructConverter.ToStructure<Vector4>(containerData.Skip(i*16).Take(16).ToArray()));
-                    //         }
-
-                    //         data = float4s;
-                    //     }                        
-                    // }
                 }
             }
             else
@@ -247,19 +223,7 @@ public class UsfConverter
                 switch (cbuffer.Type)
                 {
                     case "float4":
-                        if(bIsVertexShader)
-                        {
-                            if (data == null)
-                            {
-                                 usf.AppendLine("    float4(1.0, 1.0, 1.0, 1.0),");
-                            }
-                            break;        
-                        }
-                        
-                        if (data == null)
-                        { 
-                            usf.AppendLine("    float4(0.0, 0.0, 0.0, 0.0),");
-                        }
+                        if (data == null) usf.AppendLine("    float4(0.0, 0.0, 0.0, 0.0),");
                         else
                         {
                             try
@@ -276,36 +240,15 @@ public class UsfConverter
                             }
                             catch (Exception e)  // figure out whats up here, taniks breaks it
                             {
-                                if(bIsVertexShader)
-                                {
-                                    usf.AppendLine("    float4(1.0, 1.0, 1.0, 1.0),");        
-                                }
-                                else
-                                    usf.AppendLine("    float4(0.0, 0.0, 0.0, 0.0),");
+                                usf.AppendLine("    float4(0.0, 0.0, 0.0, 0.0),");
                             }
                         }
                         break;
                     case "float3":
-                        if(bIsVertexShader)
-                        {
-                            if (data == null)
-                            {
-                                 usf.AppendLine("    float3(1.0, 1.0, 1.0),");
-                            }
-                            break;        
-                        }
                         if (data == null) usf.AppendLine("    float3(0.0, 0.0, 0.0),");
                         else usf.AppendLine($"    float3({data[i].Unk00.X}, {data[i].Unk00.Y}, {data[i].Unk00.Z}),");
                         break;
                     case "float":
-                        if(bIsVertexShader)
-                        {
-                            if (data == null)
-                            {
-                                 usf.AppendLine("    float(1.0),");
-                            }
-                            break;        
-                        }
                         if (data == null) usf.AppendLine("    float(0.0),");
                         else usf.AppendLine($"    float4({data[i].Unk00}),");
                         break;
@@ -466,7 +409,7 @@ public class UsfConverter
         float normal_length = length(biased_normal);
         float3 normal_in_world_space = biased_normal / normal_length;
         normal_in_world_space.z = sqrt(1.0 - saturate(dot(normal_in_world_space.xy, normal_in_world_space.xy)));
-        output.Normal = normalize((normal_in_world_space * 2 - 1.35)*0.5 + 0.5);
+        output.Normal = normalize((normal_in_world_space * 2 - 1.5)*0.5 + 0.5);
 
         // Roughness
         float smoothness = saturate(8 * (normal_length - 0.375));

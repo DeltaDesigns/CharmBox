@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using Field.General;
-using Field;
+using Field.Textures;
 using Field.Models;
 using Field.Statics;
 
@@ -20,7 +20,7 @@ public partial class StaticView : UserControl
     {
         InitializeComponent();
     }
-    
+
     public async void LoadStatic(TagHash hash, ELOD detailLevel)
     {
         var container = new StaticContainer(new TagHash(hash.Hash));
@@ -54,7 +54,14 @@ public partial class StaticView : UserControl
         Directory.CreateDirectory(savePath);
         if (exportType == EExportTypeFlag.Full)
         {
-            container.SaveMaterialsFromParts(savePath, parts, ConfigHandler.GetUnrealInteropEnabled() || ConfigHandler.GetS2ShaderExportEnabled());
+            var settings = new ExportSettings
+            {
+                Unreal = ConfigHandler.GetUnrealInteropEnabled(),
+                Blender = ConfigHandler.GetBlenderInteropEnabled(),
+                Source2 = true,
+                Raw = true
+            };
+            container.SaveMaterialsFromParts(savePath, parts, settings);
             fbxHandler.InfoHandler.SetMeshName(meshName);
             if (ConfigHandler.GetUnrealInteropEnabled())
             {
@@ -63,7 +70,7 @@ public partial class StaticView : UserControl
                 AutomatedImporter.SaveInteropBlenderPythonFile(savePath, meshName, AutomatedImporter.EImportType.Static, ConfigHandler.GetOutputTextureFormat());
             }
 
-            if(source2Models)
+            if (source2Models)
             {
                 File.Copy("template.vmdl", $"{savePath}/{meshName}.vmdl", true);
                 string text = File.ReadAllText($"{savePath}/{meshName}.vmdl");
@@ -86,12 +93,12 @@ public partial class StaticView : UserControl
 
                 File.WriteAllText($"{savePath}/{meshName}.vmdl", text);
             }
-            
+
         }
 
         fbxHandler.ExportScene($"{savePath}/{name}.fbx");
 
-        if(lodexport)
+        if (lodexport)
         {
             List<Part> lodparts = container.Load(ELOD.LeastDetail);
             Directory.CreateDirectory(savePath + "/LOD");

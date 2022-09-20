@@ -9,7 +9,7 @@ using Field.Entities;
 using Field.Investment;
 using Field.Models;
 using Field.Strings;
-using Field;
+using Field.Textures;
 using Newtonsoft.Json;
 
 namespace Field.General;
@@ -53,7 +53,7 @@ public class InvestmentHandler
     {
         return InventoryItemStringThings[GetItemIndex(hash)].Header.ItemName;
     }
-    
+
     public static Tag<D2Class_B83E8080>? GetItemIconContainer(InventoryItem item)
     {
         return GetItemIconContainer(item.Header.InventoryItemHash);
@@ -67,7 +67,7 @@ public class InvestmentHandler
         return _inventoryItemIconTag.Header.InventoryItemIconsMap.ElementAt(iconIndex).IconContainer;
     }
 
-    
+
     public static int GetItemIndex(DestinyHash hash)
     {
         return InventoryItemIndexmap[hash];
@@ -128,7 +128,7 @@ public class InvestmentHandler
         GetContainerIndexDict(); // must be before GetInventoryItemStringThings
 
 
-        Task.WaitAll(new []
+        Task.WaitAll(new[]
         {
             Task.Run(GetInventoryItemDict),
             Task.Run(GetInventoryItemStringThings),
@@ -158,20 +158,20 @@ public class InvestmentHandler
         });
         br.Close();
     }
-    
+
     private static void GetContainerIndexDict()
     {
         int size = (int)_stringContainerIndexTag.Header.StringContainerMap.Count;
         _stringContainerIndexmap = new Dictionary<int, TagHash>(size);
         var br = _stringContainerIndexTag.Header.StringContainerMap.ParentTag.GetHandle();
-        
+
         br.BaseStream.Seek(_stringContainerIndexTag.Header.StringContainerMap.Offset, SeekOrigin.Begin);
         for (int i = 0; i < size; i++)
         {
             br.BaseStream.Seek(0x10, SeekOrigin.Current);
             _stringContainerIndexmap.Add(i, new TagHash(br.ReadUInt64()));
         }
-        
+
         // This cache helps the StringThing stuff to be faster
         PackageHandler.CacheHashDataList(_stringContainerIndexmap.Values.Where(x => x.IsValid()).Select(x => x.Hash).ToArray());
 
@@ -180,7 +180,7 @@ public class InvestmentHandler
 
     public static TagHash GetStringContainerFromIndex(uint index)
     {
-        return _stringContainerIndexmap[(int) index];
+        return _stringContainerIndexmap[(int)index];
     }
 
     private static void GetEntityAssignmentDict()
@@ -188,7 +188,7 @@ public class InvestmentHandler
         int size = (int)_entityAssignmentsMap.Header.EntityArrangementMap.Count;
         _sortedArrangementHashmap = new Dictionary<DestinyHash, TagHash>(size);
         var br = _entityAssignmentsMap.Header.EntityArrangementMap.ParentTag.GetHandle();
-        
+
         br.BaseStream.Seek(_entityAssignmentsMap.Header.EntityArrangementMap.Offset, SeekOrigin.Begin);
         for (int i = 0; i < size; i++)
         {
@@ -196,7 +196,7 @@ public class InvestmentHandler
         }
         br.Close();
     }
-    
+
     // private static void GetSandboxPatternAssignmentsDict()
     // {
     //     int size = (int)_sandboxPatternAssignmentsTag.Header.AssignmentBSL.Count;
@@ -219,7 +219,7 @@ public class InvestmentHandler
         var item = GetInventoryItem(hash);
         if (item.GetWeaponPatternIndex() == -1)
             return null;
-        
+
         var patternGlobalId = GetPatternGlobalTagId(item);
         var patternData = _sandboxPatternAssignmentsTag.Header.AssignmentBSL.BinarySearch(patternGlobalId);
         if (patternData.HasValue)
@@ -231,12 +231,12 @@ public class InvestmentHandler
         }
         return null;
     }
-    
+
     public static DestinyHash GetPatternGlobalTagId(InventoryItem item)
     {
         return _sandboxPatternGlobalTagIdTag.Header.SandboxPatternGlobalTagId[item.GetWeaponPatternIndex()].PatternGlobalTagIdHash;
     }
-    
+
     public static DestinyHash GetWeaponContentGroupHash(InventoryItem item)
     {
         return _sandboxPatternGlobalTagIdTag.Header.SandboxPatternGlobalTagId[item.GetWeaponPatternIndex()].WeaponContentGroupHash;
@@ -246,33 +246,33 @@ public class InvestmentHandler
     {
         return _dyeChannelTag.Header.ChannelHashes[index].ChannelHash;
     }
-    
+
     public static Dye GetDyeFromIndex(short index)
     {
-         var artEntry = _artDyeReferenceTag.Header.ArtDyeReferences.ElementAt(index);
+        var artEntry = _artDyeReferenceTag.Header.ArtDyeReferences.ElementAt(index);
 
-         var dyeEntry = _sandboxPatternAssignmentsTag.Header.AssignmentBSL.BinarySearch(artEntry.DyeManifestHash);
-         if (dyeEntry.HasValue)
-         {
-             if (PackageHandler.GetEntryReference(dyeEntry.Value.EntityRelationHash) == 0x80806fa3)
-             {
-                 return PackageHandler.GetTag<D2Class_E36C8080>(PackageHandler.GetTag<D2Class_A36F8080>(dyeEntry.Value.EntityRelationHash).Header.EntityData).Header.Dye;
-             }
-         }
-         return null;
+        var dyeEntry = _sandboxPatternAssignmentsTag.Header.AssignmentBSL.BinarySearch(artEntry.DyeManifestHash);
+        if (dyeEntry.HasValue)
+        {
+            if (PackageHandler.GetEntryReference(dyeEntry.Value.EntityRelationHash) == 0x80806fa3)
+            {
+                return PackageHandler.GetTag<D2Class_E36C8080>(PackageHandler.GetTag<D2Class_A36F8080>(dyeEntry.Value.EntityRelationHash).Header.EntityData).Header.Dye;
+            }
+        }
+        return null;
     }
 
     public static InventoryItem GetInventoryItem(DestinyHash hash)
     {
         return GetInventoryItem(InventoryItemIndexmap[hash]);
     }
-    
+
     public static InventoryItem GetInventoryItem(int index)
     {
         InventoryItem item = new InventoryItem(_inventoryItemMap.Header.InventoryItemDefinitionEntries.ElementAt(index).InventoryItem);
         return item;
     }
-    
+
     public static void GetInventoryItemDict()
     {
         InventoryItemIndexmap = new Dictionary<DestinyHash, int>();
@@ -292,7 +292,7 @@ public class InvestmentHandler
         }
         br.Close();
         // Now we can use parallel code as not reading from a single file
-        
+
         // try the many many instead
         PackageHandler.CacheHashDataList(temp.Values.Select(x => x.Hash).ToArray());
 
@@ -367,11 +367,11 @@ public class InvestmentHandler
         // return new Entity(_entityAssignmentsMap.Header.EntityArrangementMap[index].EntityParent.Header.Entity);
         // return null;
     }
-    
+
     [DllImport("Symmetry.dll", EntryPoint = "DllGetAllInvestmentTags", CallingConvention = CallingConvention.StdCall)]
     public extern static DestinyFile.UnmanagedDictionary DllGetAllInvestmentTags(IntPtr executionDirectoryPtr);
 
-    #if DEBUG
+#if DEBUG
     public static void DebugAllInvestmentEntities()
     {
         Dictionary<string, Dictionary<dynamic, DestinyHash>> data = new Dictionary<string, Dictionary<dynamic, DestinyHash>>();
@@ -534,11 +534,11 @@ public class InvestmentHandler
         public int[] textures { get; set; }
         public int[] geometry { get; set; }
     }
-    #endif
+#endif
     public static void ExportShader(InventoryItem item, string savePath, string name, ETextureFormat outputTextureFormat)
     {
         Dictionary<string, Dye> dyes = new Dictionary<string, Dye>();
-        
+
         // export all the customDyes
         if (item.Header.Unk90 is D2Class_77738080 translationBlock)
         {
@@ -549,23 +549,23 @@ public class InvestmentHandler
                 dyes.Add(Dye.GetChannelName(GetChannelHashFromIndex(dyeEntry.ChannelIndex)), dye);
             }
         }
-        
 
-        
+
+
         // armour
-        AutomatedImporter.SaveBlenderApiFile(savePath, name, outputTextureFormat, new List<Dye>{dyes["ArmorPlate"],dyes["ArmorSuit"],dyes["ArmorCloth"]}, "_armour");
+        AutomatedImporter.SaveBlenderApiFile(savePath, name, outputTextureFormat, new List<Dye> { dyes["ArmorPlate"], dyes["ArmorSuit"], dyes["ArmorCloth"] }, "_armour");
 
         // ghost
-        AutomatedImporter.SaveBlenderApiFile(savePath, name, outputTextureFormat, new List<Dye>{dyes["GhostMain"],dyes["GhostHighlights"],dyes["GhostDecals"]}, "_ghost");
+        AutomatedImporter.SaveBlenderApiFile(savePath, name, outputTextureFormat, new List<Dye> { dyes["GhostMain"], dyes["GhostHighlights"], dyes["GhostDecals"] }, "_ghost");
 
         // ship
-        AutomatedImporter.SaveBlenderApiFile(savePath, name, outputTextureFormat, new List<Dye>{dyes["ShipUpper"],dyes["ShipDecals"],dyes["ShipLower"]}, "_ship");
+        AutomatedImporter.SaveBlenderApiFile(savePath, name, outputTextureFormat, new List<Dye> { dyes["ShipUpper"], dyes["ShipDecals"], dyes["ShipLower"] }, "_ship");
 
         // sparrow
-        AutomatedImporter.SaveBlenderApiFile(savePath, name, outputTextureFormat, new List<Dye>{dyes["SparrowUpper"],dyes["SparrowEngine"],dyes["SparrowLower"]}, "_sparrow");
+        AutomatedImporter.SaveBlenderApiFile(savePath, name, outputTextureFormat, new List<Dye> { dyes["SparrowUpper"], dyes["SparrowEngine"], dyes["SparrowLower"] }, "_sparrow");
 
         // weapon
-        AutomatedImporter.SaveBlenderApiFile(savePath, name, outputTextureFormat, new List<Dye>{dyes["Weapon1"],dyes["Weapon2"],dyes["Weapon3"]}, "_weapon");
+        AutomatedImporter.SaveBlenderApiFile(savePath, name, outputTextureFormat, new List<Dye> { dyes["Weapon1"], dyes["Weapon2"], dyes["Weapon3"] }, "_weapon");
     }
 }
 
@@ -573,11 +573,11 @@ public class InvestmentHandler
 public class InventoryItem : Tag
 {
     public D2Class_9D798080 Header;
-    
+
     public InventoryItem(TagHash hash) : base(hash)
     {
     }
-    
+
     protected override void ParseStructs()
     {
         Header = ReadHeader<D2Class_9D798080>();
@@ -592,7 +592,7 @@ public class InventoryItem : Tag
         }
         return -1;
     }
-    
+
     public int GetWeaponPatternIndex()
     {
         if (Header.Unk90 is D2Class_77738080 entry)
@@ -627,7 +627,7 @@ public class InventoryItem : Tag
         var backgroundIcon = GetTexture(iconContainer.Header.IconBackgroundContainer);
         return backgroundIcon.GetTexture();
     }
-    
+
     public UnmanagedMemoryStream? GetIconPrimaryStream()
     {
         Tag<D2Class_B83E8080>? iconContainer = InvestmentHandler.GetItemIconContainer(this);
@@ -636,7 +636,7 @@ public class InventoryItem : Tag
         var primaryIcon = GetTexture(iconContainer.Header.IconPrimaryContainer);
         return primaryIcon.GetTexture();
     }
-    
+
     public UnmanagedMemoryStream? GetIconOverlayStream()
     {
         Tag<D2Class_B83E8080>? iconContainer = InvestmentHandler.GetItemIconContainer(this);

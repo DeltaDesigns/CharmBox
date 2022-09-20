@@ -3,7 +3,7 @@ using Field.Entities;
 using Field.General;
 using Field.Investment;
 using Field.Strings;
-using Field;
+using Field.Textures;
 
 namespace Field;
 
@@ -14,7 +14,7 @@ namespace Field;
 public struct D2Class_97798080
 {
     public long FileSize;
-    [DestinyField(FieldType.TablePointer)] 
+    [DestinyField(FieldType.TablePointer)]
     public IndexAccessList<D2Class_9B798080> InventoryItemDefinitionEntries;
 }
 
@@ -60,11 +60,11 @@ public struct D2Class_E4768080
     [DestinyOffset(0x48)]
     public DestinyHash Unk48;
     public DestinyHash Unk4C;
-    [DestinyOffset(0x54)] 
+    [DestinyOffset(0x54)]
     public int Unk54;
-    [DestinyOffset(0x70)] 
+    [DestinyOffset(0x70)]
     public int Unk70;
-    [DestinyOffset(0x88)] 
+    [DestinyOffset(0x88)]
     public float Unk88;
 }
 
@@ -227,9 +227,9 @@ public struct D2Class_9F548080
     public DestinyHash UnkC8;  // "bucketTypeHash" / "equipmentSlotTypeHash"
     public DestinyHash UnkCC;  // DestinySandboxPatternDefinition hash
     public DestinyHash UnkD0;  // DestinySandboxPatternDefinition hash
-    
+
     // ive missed lots of stuff here
-    
+
     [DestinyOffset(0x120), DestinyField(FieldType.TablePointer)]
     public List<D2Class_59238080> Unk120;
 }
@@ -331,7 +331,7 @@ public struct D2Class_B4548080
 public struct D2Class_F2708080
 {
     public long FileSize;
-    [DestinyField(FieldType.TablePointer)] 
+    [DestinyField(FieldType.TablePointer)]
     public IndexAccessList<D2Class_ED6F8080> ArtArrangementHashes;
 }
 
@@ -363,7 +363,7 @@ public struct D2Class_CE558080
 public struct D2Class_D4558080
 {
     public DestinyHash ArtArrangementHash;
-    [DestinyOffset(0x8)] 
+    [DestinyOffset(0x8)]
     public DestinyHash MasculineSingleEntityAssignment; // things like armour only have 1 entity, so can skip the jumps
     public DestinyHash FeminineSingleEntityAssignment;
     [DestinyField(FieldType.TablePointer)]
@@ -411,7 +411,7 @@ public struct D2Class_454F8080 : IComparer<D2Class_454F8080>
     public DestinyHash AssignmentHash;
     [DestinyField(FieldType.TagHash)]
     public Tag<D2Class_A36F8080> EntityParent;
-    
+
     public int Compare(D2Class_454F8080 x, D2Class_454F8080 y)
     {
         if (x.AssignmentHash.Equals(y.AssignmentHash)) return 0;
@@ -448,7 +448,7 @@ public struct D2Class_0F878080 : IComparer<D2Class_0F878080>
     public DestinyHash ApiHash;
     [DestinyOffset(0x8), DestinyField(FieldType.TagHash64)]
     public TagHash EntityRelationHash;  // can be entity or smth else, if SandboxPattern is entity if ArtDyeReference idk
-    
+
     public int Compare(D2Class_0F878080 x, D2Class_0F878080 y)
     {
         if (x.ApiHash.Equals(y.ApiHash)) return 0;
@@ -470,7 +470,7 @@ public struct D2Class_AE528080
     public DestinyHash PatternHash;  // "patternHash" from API
     public DestinyHash PatternGlobalTagIdHash;  // "patternGlobalTagIdHash" from API
 
-    [DestinyOffset(0x10)] 
+    [DestinyOffset(0x10)]
     public DestinyHash WeaponContentGroupHash; // "weaponContentGroupHash" from API
     public DestinyHash WeaponTypeHash; // "weaponTypeHash" from API
     // filters are also in here but idc
@@ -532,11 +532,11 @@ public struct D2Class_B83E8080
     public long FileSize;
     [DestinyOffset(0x10)]
     public DestinyHash Unk10;
-    [DestinyField(FieldType.TagHash)] 
+    [DestinyField(FieldType.TagHash)]
     public Tag<D2Class_CF3E8080> IconPrimaryContainer;
-    [DestinyOffset(0x20), DestinyField(FieldType.TagHash)] 
+    [DestinyOffset(0x20), DestinyField(FieldType.TagHash)]
     public Tag<D2Class_CF3E8080> IconBackgroundContainer;
-    [DestinyField(FieldType.TagHash)] 
+    [DestinyField(FieldType.TagHash)]
     public Tag<D2Class_CF3E8080> IconOverlayContainer;
 }
 
@@ -624,7 +624,7 @@ public struct D2Class_E36C8080
 public struct D2Class_F2518080
 {
     public long FileSize;
-    [DestinyField(FieldType.TablePointer)] 
+    [DestinyField(FieldType.TablePointer)]
     public List<D2Class_2C4F8080> ChannelHashes;
 }
 

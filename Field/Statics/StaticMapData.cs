@@ -4,6 +4,7 @@ using Field.Entities;
 using Field.General;
 using Field.Models;
 using Field.Statics;
+using Field.Textures;
 
 namespace Field;
 
@@ -30,7 +31,7 @@ public class StaticMapData : Tag
         });
     }
 
-    public void LoadIntoFbxScene(FbxHandler fbxHandler, string savePath, bool bSaveShaders)
+    public void LoadIntoFbxScene(FbxHandler fbxHandler, string savePath, ExportSettings settings)
     {
         List<D2Class_BD938080> extractedStatics = Header.Statics.DistinctBy(x => x.Static.Hash).ToList();
 
@@ -38,7 +39,7 @@ public class StaticMapData : Tag
         {
             var parts = s.Static.Load(ELOD.MostDetail);
             fbxHandler.AddStaticToScene(parts, s.Static.Hash);
-            s.Static.SaveMaterialsFromParts(savePath, parts, bSaveShaders);
+            s.Static.SaveMaterialsFromParts(savePath, parts, settings);
         });
 
         Parallel.ForEach(Header.InstanceCounts, c =>
@@ -127,7 +128,7 @@ public struct D2Class_1E898080
     public int Unk1C;
     [DestinyOffset(0x40), DestinyField(FieldType.TablePointer)]
     public List<D2Class_C9968080> Unk40;
-    [DestinyField(FieldType.TagHash64)] 
+    [DestinyField(FieldType.TagHash64)]
     public Tag Unk50;  // some kind of parent thing, very strange weird idk
 }
 
@@ -137,7 +138,7 @@ public struct D2Class_1E898080
 [StructLayout(LayoutKind.Sequential, Size = 0x10)]
 public struct D2Class_C9968080
 {
-    [DestinyField(FieldType.TagHash64)] 
+    [DestinyField(FieldType.TagHash64)]
     public Tag Unk00;
 }
 
@@ -149,14 +150,14 @@ public struct D2Class_C9968080
 public struct D2Class_01878080
 {
     public long FileSize;
-    [DestinyField(FieldType.TablePointer)] 
+    [DestinyField(FieldType.TablePointer)]
     public List<D2Class_03878080> MapResources;
 }
 
 [StructLayout(LayoutKind.Sequential, Size = 0x10)]
 public struct D2Class_03878080
 {
-    [DestinyField(FieldType.TagHash64)] 
+    [DestinyField(FieldType.TagHash64)]
     public Tag<D2Class_07878080> MapResource;
 }
 
@@ -169,14 +170,14 @@ public struct D2Class_07878080
 {
     public long FileSize;
     public long Unk08;
-    [DestinyOffset(0x28), DestinyField(FieldType.TablePointer)] 
+    [DestinyOffset(0x28), DestinyField(FieldType.TablePointer)]
     public List<D2Class_09878080> DataTables;
 }
 
 [StructLayout(LayoutKind.Sequential, Size = 4)]
 public struct D2Class_09878080
 {
-    [DestinyField(FieldType.TagHash)] 
+    [DestinyField(FieldType.TagHash)]
     public Tag<D2Class_83988080> DataTable;
 }
 
@@ -187,7 +188,7 @@ public struct D2Class_09878080
 public struct D2Class_83988080
 {
     public long FileSize;
-    [DestinyField(FieldType.TablePointer)] 
+    [DestinyField(FieldType.TablePointer)]
     public List<D2Class_85988080> DataEntries;
 }
 
@@ -212,7 +213,7 @@ public struct D2Class_85988080
 [StructLayout(LayoutKind.Sequential, Size = 0x18)]
 public struct D2Class_C96C8080
 {
-    [DestinyOffset(0x8)] 
+    [DestinyOffset(0x8)]
     public DestinyHash Unk08;
     [DestinyOffset(0x10), DestinyField(FieldType.TagHash)]
     public Tag<D2Class_0D6A8080> StaticMapParent;
@@ -222,7 +223,7 @@ public struct D2Class_C96C8080
 public struct D2Class_0D6A8080
 {
     // no filesize
-    [DestinyOffset(0x8), DestinyField(FieldType.TagHash)] 
+    [DestinyOffset(0x8), DestinyField(FieldType.TagHash)]
     public StaticMapData StaticMap;  // could make it StaticMapData but dont want it to load it, could have a NoLoad option
     [DestinyOffset(0x2C)]
     public DestinyHash Unk2C;

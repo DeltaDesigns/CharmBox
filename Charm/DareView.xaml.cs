@@ -28,7 +28,7 @@ public partial class DareView : UserControl
     {
         InitializeComponent();
     }
-    
+
     private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
     {
         RefreshItemList();
@@ -46,7 +46,7 @@ public partial class DareView : UserControl
                 items.Add(pair.Value);
             }
         });
-            
+
         DareListView.ItemsSource = items;
     }
 
@@ -57,10 +57,10 @@ public partial class DareView : UserControl
         await Task.Run(LoadApiList);
         RefreshItemList();
     }
-    
+
     private void LoadApiList()
     {
-        List<string> mapStages = InvestmentHandler.InventoryItems.Select((_, i) => $"loading {i+1}/{InvestmentHandler.InventoryItems.Count}").ToList();
+        List<string> mapStages = InvestmentHandler.InventoryItems.Select((_, i) => $"loading {i + 1}/{InvestmentHandler.InventoryItems.Count}").ToList();
         MainWindow.Progress.SetProgressStages(mapStages, false, true);
         Parallel.ForEach(InvestmentHandler.InventoryItems, kvp =>
         {
@@ -73,7 +73,7 @@ public partial class DareView : UserControl
             string type = InvestmentHandler.InventoryItemStringThings[InvestmentHandler.GetItemIndex(kvp.Key)].Header.ItemType;
             if (kvp.Value.GetArtArrangementIndex() != -1 || type.Contains("Shader"))
             {
-                
+
                 if (!type.Contains("Finisher") && !type.Contains("Emote")) // they point to Animation instead of Entity
                 {
                     // icon bg
@@ -84,7 +84,7 @@ public partial class DareView : UserControl
                     {
                         var bg = MakeBitmapImage(bgStream, 96, 96);
                         var primary = MakeBitmapImage(primaryStream, 96, 96);
-            
+
                         BitmapImage? overlay = null;
                         if (overlayStream != null)
                         {
@@ -101,10 +101,10 @@ public partial class DareView : UserControl
 
                         var dw = new DrawingImage(group);
                         dw.Freeze();
-                        
+
                         ImageBrush brush = new ImageBrush(bg);
                         brush.Freeze();
-                        
+
                         var newItem = new ApiItem
                         {
                             ItemName = name,
@@ -139,7 +139,7 @@ public partial class DareView : UserControl
     private void DareItemControl_OnClick(object sender, RoutedEventArgs e)
     {
         ApiItem apiItem = (sender as Button).DataContext as ApiItem;
-        
+
         // Remove from _allItems, add to _selectedItems if not already there otherwise remove from _selectedItems and add back to _allItems
         if (_allItems.TryRemove(apiItem.Item.Header.InventoryItemHash, out _))
         {
@@ -167,7 +167,7 @@ public partial class DareView : UserControl
 
     private void ExecuteQueue_OnClick(object sender, RoutedEventArgs e)
     {
-        List<string> apiStages = _selectedItems.Select((_, i) => $"exporting {i+1}/{_selectedItems.Count}").ToList();
+        List<string> apiStages = _selectedItems.Select((_, i) => $"exporting {i + 1}/{_selectedItems.Count}").ToList();
         MainWindow.Progress.SetProgressStages(apiStages);
         Task.Run(() =>
         {
@@ -208,8 +208,8 @@ public class ApiItem
     public double ImageWidth { get; set; }
     public double ImageHeight { get; set; }
     public System.Windows.Media.ImageSource ImageSource { get; set; }
-    
+
     public System.Windows.Media.ImageBrush GridBackground { get; set; }
-    
+
     public InventoryItem Item { get; set; }
 }

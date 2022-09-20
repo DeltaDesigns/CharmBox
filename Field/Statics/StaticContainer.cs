@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices;
 using Field.General;
 using Field.Models;
+using Field.Textures;
 
 namespace Field.Statics;
 
@@ -12,24 +13,13 @@ public class StaticContainer
     {
         Hash = hash;
     }
-    
-    public void SaveMaterialsFromParts(string saveDirectory, List<Part> parts, bool bSaveShaders)
+
+    public void SaveMaterialsFromParts(string saveDirectory, List<Part> parts, ExportSettings settings)
     {
-        Directory.CreateDirectory($"{saveDirectory}/Textures");
-        Directory.CreateDirectory($"{saveDirectory}/Shaders");
-        foreach (var part in parts)
-        {
-            if (part.Material == null || !part.Material.Hash.IsValid()) continue;
-            part.Material.SaveAllTextures($"{saveDirectory}/Textures");
-            if (bSaveShaders)
-            {
-                part.Material.SavePixelShader($"{saveDirectory}/Shaders");
-                part.Material.SaveVertexShader($"{saveDirectory}/Shaders");
-                part.Material.SaveComputeShader($"{saveDirectory}/Shaders");
-            }
-        }
+        foreach (var part in parts.Where(part => part.Material != null && part.Material.Hash.IsValid()))
+            part.Material.Export(saveDirectory, settings);
     }
-    
+
     [DllImport("Symmetry.dll", EntryPoint = "DllLoadStaticContainer", CallingConvention = CallingConvention.StdCall)]
     public extern static DestinyFile.UnmanagedData DllLoadStaticContainer(uint staticContainerHash, ELOD detailLevel, IntPtr executionDirectoryPtr);
 
@@ -40,7 +30,7 @@ public class StaticContainer
         outPart.EnsureCapacity(unmanagedData.dataSize);
         for (int i = 0; i < unmanagedData.dataSize; i++)
         {
-            PartUnmanaged partUnmanaged = Marshal.PtrToStructure<PartUnmanaged>(unmanagedData.dataPtr + i*Marshal.SizeOf<PartUnmanaged>());
+            PartUnmanaged partUnmanaged = Marshal.PtrToStructure<PartUnmanaged>(unmanagedData.dataPtr + i * Marshal.SizeOf<PartUnmanaged>());
             outPart.Add(partUnmanaged.Decode());
         }
 

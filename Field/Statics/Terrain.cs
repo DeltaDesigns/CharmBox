@@ -9,19 +9,19 @@ namespace Field;
 public class Terrain : Tag
 {
     public D2Class_816C8080 Header;
-    
+
     public Terrain(TagHash hash) : base(hash)
     {
-        
+
     }
 
     protected override void ParseStructs()
     {
         Header = ReadHeader<D2Class_816C8080>();
     }
-    
+
     // To test use edz.strike_hmyn and alleys_a adf6ae80
-    public void LoadIntoFbxScene(FbxHandler fbxHandler, string saveDirectory, bool bSaveShaders, D2Class_7D6C8080 parentResource)
+    public void LoadIntoFbxScene(FbxHandler fbxHandler, string saveDirectory, ExportSettings settings, D2Class_7D6C8080 parentResource)
     {
         // Directory.CreateDirectory(saveDirectory + "/Textures/Terrain/");
         // Directory.CreateDirectory(saveDirectory + "/Shaders/Terrain/");
@@ -46,18 +46,7 @@ public class Terrain : Tag
                 z.AddRange(part.VertexPositions.Select(a => a.Z));
                 // Material
                 if (partEntry.Material == null) continue;
-                if(!Directory.Exists($"{saveDirectory}/Textures/"))
-                    Directory.CreateDirectory($"{saveDirectory}/Textures/");
-
-                partEntry.Material.SaveAllTextures($"{saveDirectory}/Textures/");
-                part.Material = partEntry.Material;
-                // dynamicPart.Material.SaveVertexShader(saveDirectory);
-                if (bSaveShaders)
-                {
-                    partEntry.Material.SavePixelShader($"{saveDirectory}/Shaders/");
-                    partEntry.Material.SaveVertexShader($"{saveDirectory}/Shaders/Vertex/");
-                    partEntry.Material.SaveComputeShader($"{saveDirectory}/Shaders/");
-                }
+                partEntry.Material.Export(saveDirectory, settings);
             }
         }
         var globalOffset = new Vector3(
@@ -77,18 +66,18 @@ public class Terrain : Tag
                 partEntry.Dyemap.SavetoFile($"{saveDirectory}/Textures/PS_{terrainTextureIndex}_{partEntry.Dyemap.Hash}");
             }
         }
-        localOffset = new Vector3((x.Max() + x.Min())/2, (y.Max() + y.Min())/2, (z.Max() + z.Min())/2);
+        localOffset = new Vector3((x.Max() + x.Min()) / 2, (y.Max() + y.Min()) / 2, (z.Max() + z.Min()) / 2);
         foreach (var part in parts)
         {
             // scale by 1.99 ish, -1 for all sides, multiply by 512?
             TransformPositions(part, localOffset);
             TransformTexcoords(part);
         }
-        
+
         fbxHandler.AddStaticToScene(parts, Hash);
         // For now we pre-transform it
         fbxHandler.InfoHandler.AddInstance(Hash, 1, Vector4.Zero, globalOffset);
-        
+
         // We need to add these textures after the static is initialised
         foreach (var part in parts)
         {
@@ -119,7 +108,7 @@ public class Terrain : Tag
 
         return part;
     }
-    
+
     private void TransformPositions(Part part, Vector3 localOffset)
     {
         for (int i = 0; i < part.VertexPositions.Count; i++)

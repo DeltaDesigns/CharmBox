@@ -4,12 +4,12 @@ using DirectXTex;
 using DirectXTexNet;
 using Field.General;
 
-namespace Field;
+namespace Field.Textures;
 
 public class TextureHeader : Tag
 {
     public D2Class_TextureHeader Header;
-    
+
     public TextureHeader(TagHash hash) : base(hash)
     {
     }
@@ -18,12 +18,12 @@ public class TextureHeader : Tag
     {
         return Header.ArraySize == 6;
     }
-    
+
     public bool IsVolume()
     {
         return Header.Depth != 1;
     }
-    
+
     protected override void ParseStructs()
     {
         Header = ReadHeader<D2Class_TextureHeader>();
@@ -133,7 +133,7 @@ public class TextureHeader : Tag
         scratchImage.Dispose();
         return ms;
     }
-    
+
     public static void SavetoFile(string savePath, ScratchImage simg)
     {
         try
@@ -144,26 +144,26 @@ public class TextureHeader : Tag
         {
         }
     }
-    
+
     public void SavetoFile(string savePath)
     {
         ScratchImage simg = GetScratchImage();
         SavetoFile(savePath, simg);
     }
 
-    
+
     // public void SaveToDDSFile(string savePath)
     // {
     //     ScratchImage scratchImage = GetScratchImage();
     //     SaveToDDSFile(savePath, scratchImage);
     // }
-    
+
     // public static void SaveToDDSFile(string savePath, ScratchImage scratchImage)
     // {
     //     scratchImage.SaveToDDSFile(DDS_FLAGS.FORCE_DX10_EXT, savePath);
     //     scratchImage.Dispose();
     // }
-    
+
     public UnmanagedMemoryStream GetTextureToDisplay()
     {
         ScratchImage scratchImage = GetScratchImage();
@@ -189,11 +189,11 @@ public struct D2Class_TextureHeader
 {
     public uint DataSize;
     public uint Format;  // DXGI_FORMAT
-    [DestinyOffset(0x10)] 
+    [DestinyOffset(0x10)]
     public float Unk10;
-    [DestinyOffset(0x14)] 
+    [DestinyOffset(0x14)]
     public float Unk14;
-    [DestinyOffset(0x20)] 
+    [DestinyOffset(0x20)]
     public ushort CAFE;
 
     public ushort Width;

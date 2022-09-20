@@ -5,9 +5,8 @@ using System.IO;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Forms;
-using MessageBox = System.Windows.Forms.MessageBox;
-using Field;
 using Field.Textures;
+using MessageBox = System.Windows.Forms.MessageBox;
 
 namespace Charm;
 
@@ -41,7 +40,7 @@ public class ConfigHandler
             }
         }
     }
-        
+
     public static string GetPackagesPath()
     {
         if (_config.AppSettings.Settings["packagesPath"] == null)
@@ -64,7 +63,7 @@ public class ConfigHandler
         {
             return false;
         }
-        
+
         if (_config.AppSettings.Settings["packagesPath"] == null)
         {
             _config.AppSettings.Settings.Add("packagesPath", path);
@@ -78,10 +77,10 @@ public class ConfigHandler
     }
 
     #endregion
-    
+
     #region source2Path
 
-        
+
     public static void OpenSource2PathDialog()
     {
         using (var dialog = new System.Windows.Forms.FolderBrowserDialog())
@@ -104,7 +103,7 @@ public class ConfigHandler
             }
         }
     }
-        
+
     public static string GetSource2Path()
     {
         if (_config.AppSettings.Settings["source2Path"] == null)
@@ -125,7 +124,7 @@ public class ConfigHandler
         {
             return false;
         }
-        
+
         if (_config.AppSettings.Settings["source2Path"] == null)
         {
             _config.AppSettings.Settings.Add("source2Path", path);
@@ -211,7 +210,7 @@ public class ConfigHandler
         }
         return _config.AppSettings.Settings["s2VMDLExportEnabled"].Value == "True";
     }
-    
+
     #endregion
 
 
@@ -247,7 +246,7 @@ public class ConfigHandler
             }
         }
     }
-        
+
     public static string GetExportSavePath()
     {
         if (_config.AppSettings.Settings["exportSavePath"] == null)
@@ -277,7 +276,7 @@ public class ConfigHandler
     #endregion
 
     #region unrealInteropPath
-    
+
     public static void OpenUnrealInteropPathDialog()
     {
         using (var dialog = new System.Windows.Forms.FolderBrowserDialog())
@@ -294,7 +293,7 @@ public class ConfigHandler
             }
         }
     }
-    
+
     public static bool TrySetUnrealInteropPath(string interopPath)
     {
         if (!interopPath.Contains("Content"))
@@ -322,7 +321,7 @@ public class ConfigHandler
         }
         return _config.AppSettings.Settings["unrealInteropPath"].Value;
     }
-    
+
     #endregion
 
     #region unrealInteropEnabled
@@ -349,11 +348,11 @@ public class ConfigHandler
         }
         return _config.AppSettings.Settings["unrealInteropEnabled"].Value == "True";
     }
-    
+
     #endregion
 
     #region blenderInteropEnabled
-    
+
     public static void SetBlenderInteropEnabled(bool bBlenderInteropEnabled)
     {
         if (_config.AppSettings.Settings["blenderInteropEnabled"] == null)
@@ -367,7 +366,7 @@ public class ConfigHandler
 
         Save();
     }
-    
+
     public static bool GetBlenderInteropEnabled()
     {
         if (_config.AppSettings.Settings["blenderInteropEnabled"] == null)
@@ -394,7 +393,7 @@ public class ConfigHandler
 
         Save();
     }
-    
+
     public static bool GetSingleFolderMapsEnabled()
     {
         if (_config.AppSettings.Settings["singleFolderMapsEnabled"] == null)
@@ -427,7 +426,7 @@ public class ConfigHandler
         }
         return _config.AppSettings.Settings["indvidualStaticsEnabled"].Value == "True";
     }
-    
+
     #region outputTextureFormat
 
     public static void SetOutputTextureFormat(ETextureFormat outputTextureFormat)
@@ -443,7 +442,7 @@ public class ConfigHandler
 
         Save();
     }
-    
+
     public static ETextureFormat GetOutputTextureFormat()
     {
         if (_config.AppSettings.Settings["outputTextureFormat"] == null)
@@ -452,10 +451,10 @@ public class ConfigHandler
         }
         return FindEnumValue(_config.AppSettings.Settings["outputTextureFormat"].Value);
     }
-    
+
     private static ETextureFormat FindEnumValue(string description)
     {
-        for (int i = 0; i < typeof(ETextureFormat).GetFields().Length-1; i++)
+        for (int i = 0; i < typeof(ETextureFormat).GetFields().Length - 1; i++)
         {
             if (((ETextureFormat)i).ToString() == description)
             {
@@ -466,7 +465,7 @@ public class ConfigHandler
     }
 
     #endregion
-    
+
     private static void Save()
     {
         _config.Save(ConfigurationSaveMode.Modified);

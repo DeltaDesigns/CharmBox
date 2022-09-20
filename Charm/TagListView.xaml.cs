@@ -18,7 +18,7 @@ using Field.Entities;
 using Field.General;
 using Field.Models;
 using Field.Strings;
-using Field;
+using Field.Textures;
 using Microsoft.Toolkit.Mvvm.Input;
 using Serilog;
 
@@ -115,7 +115,7 @@ public partial class TagListView : UserControl
         public string SearchTerm;
         public ConcurrentBag<TagItem> AllTagItems;
     }
-    
+
     private ConcurrentBag<TagItem> _allTagItems;
     private static MainWindow _mainWindow = null;
     private ETagListType _tagListType;
@@ -134,12 +134,12 @@ public partial class TagListView : UserControl
         _mainWindow = Window.GetWindow(this) as MainWindow;
         _globalFbxHandler = new FbxHandler(false);
     }
-    
+
     public TagListView()
     {
         InitializeComponent();
     }
-    
+
     private TagView GetViewer()
     {
         if (Parent is Grid)
@@ -167,7 +167,9 @@ public partial class TagListView : UserControl
             {
                 _parentStack.Push(new ParentInfo
                 {
-                    AllTagItems = _allTagItems, Hash = _currentHash, TagListType = _tagListType,
+                    AllTagItems = _allTagItems,
+                    Hash = _currentHash,
+                    TagListType = _tagListType,
                     SearchTerm = SearchBox.Text
                 });
             }
@@ -297,7 +299,7 @@ public partial class TagListView : UserControl
             {
                 SearchBox.Text = "";
             }
-        
+
             RefreshItemList();
         }
 
@@ -316,7 +318,7 @@ public partial class TagListView : UserControl
         SetBulkGroup(pkgId.ToString("x4"));
         _allTagItems = new ConcurrentBag<TagItem>(_allTagItems.Where(x => x.Hash.GetPkgId() == pkgId && x.TagType != ETagListType.Package));
     }
-    
+
     private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
     {
         // if ((e.Key == Key.Down || e.Key == Key.Right))
@@ -360,12 +362,12 @@ public partial class TagListView : UserControl
                 bNoName = true;
             if (item.Name != String.Empty)
                 bName = true;
-            
+
             if (_bShowNamedOnly && item.Name == String.Empty)
             {
                 return;
             }
-            
+
             if (!TagItem.GetEnumDescription(_tagListType).Contains("List"))
             {
                 if (displayItems.Count > 50) return;
@@ -387,8 +389,8 @@ public partial class TagListView : UserControl
                 bWasTrimmed = true;
             }
             // bool bWasTrimmed = name != item.Name;
-            if (name.ToLower().Contains(searchStr) 
-                || item.Hash.GetHashString().ToLower().Contains(searchStr) 
+            if (name.ToLower().Contains(searchStr)
+                || item.Hash.GetHashString().ToLower().Contains(searchStr)
                 || item.Hash.Hash.ToString().Contains(searchStr)
                 || item.Subname.ToLower().Contains(searchStr))
             {
@@ -403,7 +405,7 @@ public partial class TagListView : UserControl
                 });
             }
         });
-        
+
         // Check if trim names and filter named should be visible (if there any named items)
         TrimCheckbox.Visibility = bShowTrimCheckbox ? Visibility.Visible : Visibility.Hidden;
         ShowNamedCheckbox.Visibility = bName && bNoName ? Visibility.Visible : Visibility.Hidden;
@@ -418,7 +420,7 @@ public partial class TagListView : UserControl
             SetItemListByString(searchStr, true);
             return;
         }
-        
+
         List<TagItem> tagItems = displayItems.ToList();
         tagItems.Sort((p, q) => String.Compare(p.Name, q.Name, StringComparison.OrdinalIgnoreCase));
         tagItems = tagItems.DistinctBy(t => t.Hash).ToList();
@@ -435,7 +437,7 @@ public partial class TagListView : UserControl
 
         TagList.ItemsSource = tagItems;
     }
-    
+
     /// <summary>
     /// From all the existing items in _allTagItems, we generate the packages for it
     /// and add but only if packages don't exist already.
@@ -453,10 +455,10 @@ public partial class TagListView : UserControl
             }
             packageIds.Add(item.Hash.GetPkgId());
         });
-        
+
         if (bBroken)
             return;
-        
+
         Parallel.ForEach(packageIds, pkgId =>
         {
             _allTagItems.Add(new TagItem
@@ -494,8 +496,8 @@ public partial class TagListView : UserControl
         _previouslySelected = btn;
         LoadContent(tagItem.TagType, tagHash);
     }
-    
-    public static T GetChildOfType<T>(DependencyObject depObj) 
+
+    public static T GetChildOfType<T>(DependencyObject depObj)
         where T : DependencyObject
     {
         if (depObj == null) return null;
@@ -509,8 +511,8 @@ public partial class TagListView : UserControl
         }
         return null;
     }
-    
-    public static List<T> GetChildrenOfType<T>(DependencyObject depObj) 
+
+    public static List<T> GetChildrenOfType<T>(DependencyObject depObj)
         where T : DependencyObject
     {
         var children = new List<T>();
@@ -541,13 +543,13 @@ public partial class TagListView : UserControl
         SearchBox.Text = parentInfo.SearchTerm;
         LoadContent(parentInfo.TagListType, parentInfo.Hash, true, parentInfo.AllTagItems);
     }
-    
+
     private void TrimCheckbox_OnChecked(object sender, RoutedEventArgs e)
     {
         _bTrimName = true;
         RefreshItemList();
     }
-    
+
     private void TrimCheckbox_OnUnchecked(object sender, RoutedEventArgs e)
     {
         _bTrimName = false;
@@ -558,19 +560,19 @@ public partial class TagListView : UserControl
     {
         return name.Split("\\").Last().Split(".")[0];
     }
-    
+
     private void ShowNamedCheckbox_OnChecked(object sender, RoutedEventArgs e)
     {
         _bShowNamedOnly = true;
         RefreshItemList();
     }
-    
+
     private void ShowNamedCheckbox_OnUnchecked(object sender, RoutedEventArgs e)
     {
         _bShowNamedOnly = false;
         RefreshItemList();
     }
-    
+
     /// <summary>
     /// We only allow one viewer visible at a time, so setting the viewer hides the rest.
     /// </summary>
@@ -580,7 +582,7 @@ public partial class TagListView : UserControl
         var viewer = GetViewer();
         viewer.SetViewer(eViewerType);
     }
-    
+
     private void TagList_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (_selectedIndex == -1)
@@ -591,27 +593,27 @@ public partial class TagListView : UserControl
             if (currentButton == null)
                 return;
             currentButton.IsChecked = false;
-            var nextButton = GetChildOfType<ToggleButton>(TagList.ItemContainerGenerator.ContainerFromIndex(_selectedIndex+1));
+            var nextButton = GetChildOfType<ToggleButton>(TagList.ItemContainerGenerator.ContainerFromIndex(_selectedIndex + 1));
             if (nextButton == null)
                 return;
             nextButton.IsChecked = true;
             _selectedIndex++;
             TagItem_OnClick(nextButton, null);
         }
-        
+
         else if (TagList.SelectedIndex < _selectedIndex)
         {
             var currentButton = GetChildOfType<ToggleButton>(TagList.ItemContainerGenerator.ContainerFromIndex(_selectedIndex));
             if (currentButton == null)
                 return;
             currentButton.IsChecked = false;
-            var nextButton = GetChildOfType<ToggleButton>(TagList.ItemContainerGenerator.ContainerFromIndex(_selectedIndex-1));
+            var nextButton = GetChildOfType<ToggleButton>(TagList.ItemContainerGenerator.ContainerFromIndex(_selectedIndex - 1));
             if (nextButton == null)
                 return;
             nextButton.IsChecked = true;
             _selectedIndex--;
-            TagItem_OnClick(nextButton, null);   
-            
+            TagItem_OnClick(nextButton, null);
+
         }
     }
 
@@ -619,7 +621,7 @@ public partial class TagListView : UserControl
     {
         BulkExportButton.Visibility = Visibility.Visible;
     }
-    
+
     public void SetBulkGroup(string group)
     {
         var tab = ((Parent as Grid).Parent as TagListViewerView).Parent as TabItem;
@@ -639,7 +641,7 @@ public partial class TagListView : UserControl
         bool bEntityShowing = viewer.EntityControl.Visibility == Visibility.Visible;
         viewer.StaticControl.Visibility = bStaticShowing ? Visibility.Hidden : viewer.StaticControl.Visibility;
         viewer.EntityControl.Visibility = bEntityShowing ? Visibility.Hidden : viewer.EntityControl.Visibility;
-        
+
         // Iterate over all buttons and export it
         var items = TagList.ItemsSource.Cast<TagItem>();
         var exportItems = items.Where(x => x.TagType != ETagListType.Back && x.TagType != ETagListType.Package).ToList();
@@ -648,7 +650,7 @@ public partial class TagListView : UserControl
             MessageBox.Show("No tags to export.");
             return;
         }
-        MainWindow.Progress.SetProgressStages(exportItems.Select((x, i) => $"Exporting {i+1}/{exportItems.Count}: {x.Hash}").ToList());
+        MainWindow.Progress.SetProgressStages(exportItems.Select((x, i) => $"Exporting {i + 1}/{exportItems.Count}: {x.Hash}").ToList());
         await Task.Run(() =>
         {
             foreach (var tagItem in exportItems)
@@ -682,19 +684,19 @@ public partial class TagListView : UserControl
             Tag<D2Class_75988080> dgtbParent = PackageHandler.GetTag<D2Class_75988080>(val);
             if (!dgtbParent.Header.DestinationGlobalTagBag.IsValid())
                 return;
-            _allTagItems.Add(new TagItem 
-            { 
+            _allTagItems.Add(new TagItem
+            {
                 Hash = dgtbParent.Header.DestinationGlobalTagBag,
                 // Name = dgtbParent.Header.DestinationGlobalTagBagName,
                 TagType = ETagListType.DestinationGlobalTagBag
             });
         });
     }
-    
+
     private void LoadDestinationGlobalTagBag(TagHash hash)
     {
         Tag<D2Class_30898080> destinationGlobalTagBag = PackageHandler.GetTag<D2Class_30898080>(hash);
-        
+
         _allTagItems = new ConcurrentBag<TagItem>();
         Parallel.ForEach(destinationGlobalTagBag.Header.Unk18, val =>
         {
@@ -716,8 +718,8 @@ public partial class TagListView : UserControl
                     overrideType = reference.GetHashString();
                     break;
             }
-            _allTagItems.Add(new TagItem 
-            { 
+            _allTagItems.Add(new TagItem
+            {
                 Hash = val.Tag.Hash,
                 Name = val.TagPath,
                 Subname = val.TagNote,
@@ -728,9 +730,9 @@ public partial class TagListView : UserControl
     }
 
     #endregion
-    
+
     #region Budget Set
-    
+
     private void LoadBudgetSet(TagHash hash)
     {
         Tag<D2Class_7E988080> budgetSetHeader = PackageHandler.GetTag<D2Class_7E988080>(hash);
@@ -738,15 +740,15 @@ public partial class TagListView : UserControl
         _allTagItems = new ConcurrentBag<TagItem>();
         Parallel.ForEach(budgetSet.Header.Unk28, val =>
         {
-            _allTagItems.Add(new TagItem 
-            { 
+            _allTagItems.Add(new TagItem
+            {
                 Hash = val.Tag.Hash,
                 Name = val.TagPath,
                 TagType = ETagListType.Entity,
             });
         });
     }
-    
+
     #endregion
 
     #region Entity
@@ -765,14 +767,14 @@ public partial class TagListView : UserControl
         viewer.ExportControl.SetExportInfo(tagHash);
         viewer.EntityControl.ModelView.SetModelFunction(() => viewer.EntityControl.LoadEntity(tagHash, _globalFbxHandler));
     }
-    
+
     private void ExportEntity(ExportInfo info)
     {
         var viewer = GetViewer();
         Entity entity = PackageHandler.GetTag(typeof(Entity), new TagHash(info.Hash));
-        EntityView.Export(new List<Entity> {entity}, info.Name, info.ExportType);
+        EntityView.Export(new List<Entity> { entity }, info.Name, info.ExportType);
     }
-    
+
     /// <summary>
     /// We load all of them including no names, but add an option to only show names.
     /// Named: destination global tag bags 0x80808930, budget sets 0x80809eed
@@ -790,7 +792,7 @@ public partial class TagListView : UserControl
         // If there are packages, we don't want to reload the view as very poor for performance.
         if (_allTagItems != null)
             return;
-        
+
         MainWindow.Progress.SetProgressStages(new List<string>
         {
             "loading global tag bags",
@@ -807,7 +809,7 @@ public partial class TagListView : UserControl
             // only in the sr_globals, not best but it works
             var bsVals = PackageHandler.GetAllEntriesOfReference(0x010f, 0x80809eed);
             bsVals.AddRange(PackageHandler.GetAllEntriesOfReference(0x011a, 0x80809eed));
-            bsVals.AddRange( PackageHandler.GetAllEntriesOfReference(0x0312, 0x80809eed));
+            bsVals.AddRange(PackageHandler.GetAllEntriesOfReference(0x0312, 0x80809eed));
             // everywhere
             var eVals = PackageHandler.GetAllTagsWithReference(0x80809ad8);
             ConcurrentHashSet<uint> existingEntities = new ConcurrentHashSet<uint>();
@@ -858,12 +860,12 @@ public partial class TagListView : UserControl
             PackageHandler.CacheHashDataList(erVals.Select(x => x.Hash).ToArray());
             MainWindow.Progress.CompleteStage();
 
-            
+
             Parallel.ForEach(eVals, val =>
             {
                 if (existingEntities.Contains(val)) // O(1) check
-                    return; 
-            
+                    return;
+
                 // Check the entity has geometry
                 bool bHasGeometry = false;
                 using (var handle = new Tag(val).GetHandle())
@@ -893,7 +895,7 @@ public partial class TagListView : UserControl
                 }
                 if (!bHasGeometry)
                     return;
-            
+
                 _allTagItems.Add(new TagItem
                 {
                     Hash = val,
@@ -910,7 +912,7 @@ public partial class TagListView : UserControl
     #endregion
 
     #region API
-    
+
     private void LoadApiList()
     {
         _allTagItems = new ConcurrentBag<TagItem>();
@@ -921,7 +923,7 @@ public partial class TagListView : UserControl
             string type = InvestmentHandler.InventoryItemStringThings[InvestmentHandler.GetItemIndex(kvp.Key)].Header.ItemType;
             if (type == "Finisher" || type.Contains("Emote"))
                 return;  // they point to Animation instead of Entity
-            _allTagItems.Add(new TagItem 
+            _allTagItems.Add(new TagItem
             {
                 Hash = kvp.Key,
                 Name = name,
@@ -930,7 +932,7 @@ public partial class TagListView : UserControl
             });  // for some reason some of the types have spaces after
         });
     }
-    
+
     private void LoadApiEntity(DestinyHash apiHash)
     {
         var viewer = GetViewer();
@@ -950,7 +952,7 @@ public partial class TagListView : UserControl
         viewer.ExportControl.SetExportFunction(function, exportTypeFlags);
         ShowBulkExportButton();
     }
-    
+
     private void ExportApiEntityFull(ExportInfo info)
     {
         var viewer = GetViewer();
@@ -979,13 +981,13 @@ public partial class TagListView : UserControl
                 names.TryAdd(entry.ActivityName, tag.Header.LocationName);
             }
         });
-        
+
         var vals = PackageHandler.GetAllTagsWithReference(0x80808e8e);
         Parallel.ForEach(vals, val =>
         {
             var activityName = PackageHandler.GetActivityName(val);
-            _allTagItems.Add(new TagItem 
-            { 
+            _allTagItems.Add(new TagItem
+            {
                 Hash = val,
                 Name = activityName,
                 Subname = names.ContainsKey(activityName) && !names[activityName].StartsWith("%%NOGLOBALSTRING") ? names[activityName] : "",
@@ -1010,17 +1012,17 @@ public partial class TagListView : UserControl
         ExportInfo info = (ExportInfo)btn.Tag;
         // ActivityControl.ExportFull();
     }
-    
+
     #endregion
 
     #region Static
-    
+
     private async Task LoadStaticList()
     {
         // If there are packages, we don't want to reload the view as very poor for performance.
         if (_allTagItems != null)
             return;
-        
+
         MainWindow.Progress.SetProgressStages(new List<string>
         {
             $"loading static list",
@@ -1045,7 +1047,7 @@ public partial class TagListView : UserControl
         MainWindow.Progress.CompleteStage();
         RefreshItemList();  // bc of async stuff
     }
-    
+
     private void LoadStatic(TagHash tagHash)
     {
         var viewer = GetViewer();
@@ -1055,7 +1057,7 @@ public partial class TagListView : UserControl
         viewer.ExportControl.SetExportInfo(tagHash);
         viewer.StaticControl.ModelView.SetModelFunction(() => viewer.StaticControl.LoadStatic(tagHash, viewer.StaticControl.ModelView.GetSelectedLod()));
     }
-    
+
     private void ExportStatic(ExportInfo info)
     {
         var viewer = GetViewer();
@@ -1063,15 +1065,15 @@ public partial class TagListView : UserControl
     }
 
     #endregion
-    
+
     #region Texture
-    
+
     private async Task LoadTextureList()
     {
         // If there are packages, we don't want to reload the view as very poor for performance.
         if (_allTagItems != null)
             return;
-        
+
         MainWindow.Progress.SetProgressStages(new List<string>
         {
             "caching textures 1d",
@@ -1081,7 +1083,7 @@ public partial class TagListView : UserControl
             "adding textures to ui 2d",
             "adding textures to ui 3d",
         });
-        
+
         await Task.Run(() =>
         {
             _allTagItems = new ConcurrentBag<TagItem>();
@@ -1171,12 +1173,12 @@ public partial class TagListView : UserControl
         SetExportFunction(ExportTexture, (int)EExportTypeFlag.Full);
         viewer.ExportControl.SetExportInfo(tagHash);
     }
-    
+
     private void ExportTexture(ExportInfo info)
     {
         TextureView.ExportTexture(new TagHash(info.Hash));
     }
-    
+
     #endregion
 
     #region Dialogue
@@ -1188,12 +1190,12 @@ public partial class TagListView : UserControl
     {
         Field.Activity activity = PackageHandler.GetTag(typeof(Field.Activity), tagHash);
         _allTagItems = new ConcurrentBag<TagItem>();
-  
+
         // Dialogue tables can be in the 0x80808948 entries
         ConcurrentBag<TagHash> dialogueTables = new ConcurrentBag<TagHash>();
         if (activity.Header.Unk18 is D2Class_6A988080)
         {
-            var entry = (D2Class_6A988080) activity.Header.Unk18;
+            var entry = (D2Class_6A988080)activity.Header.Unk18;
             if (entry.DialogueTable != null)
                 dialogueTables.Add(entry.DialogueTable.Hash);
         }
@@ -1213,8 +1215,8 @@ public partial class TagListView : UserControl
 
         Parallel.ForEach(dialogueTables, hash =>
         {
-            _allTagItems.Add(new TagItem 
-            { 
+            _allTagItems.Add(new TagItem
+            {
                 Hash = hash,
                 Name = hash,
                 TagType = ETagListType.Dialogue
@@ -1232,24 +1234,24 @@ public partial class TagListView : UserControl
     }
 
     #endregion
-    
+
     #region Directive
-    
+
     private void LoadDirectiveList(TagHash tagHash)
     {
         Field.Activity activity = PackageHandler.GetTag(typeof(Field.Activity), tagHash);
         _allTagItems = new ConcurrentBag<TagItem>();
-  
+
         // Dialogue tables can be in the 0x80808948 entries
         if (activity.Header.Unk18 is D2Class_6A988080)
         {
             var directiveTables =
-                ((D2Class_6A988080) activity.Header.Unk18).DirectiveTables.Select(x => x.DialogueTable.Hash);
-            
+                ((D2Class_6A988080)activity.Header.Unk18).DirectiveTables.Select(x => x.DialogueTable.Hash);
+
             Parallel.ForEach(directiveTables, hash =>
             {
-                _allTagItems.Add(new TagItem 
-                { 
+                _allTagItems.Add(new TagItem
+                {
                     Hash = hash,
                     Name = hash,
                     TagType = ETagListType.Directive
@@ -1259,12 +1261,12 @@ public partial class TagListView : UserControl
         else if (activity.Header.Unk18 is D2Class_20978080)
         {
             var directiveTables =
-                ((D2Class_20978080) activity.Header.Unk18).PEDirectiveTables.Select(x => x.DialogueTable.Hash);
-            
+                ((D2Class_20978080)activity.Header.Unk18).PEDirectiveTables.Select(x => x.DialogueTable.Hash);
+
             Parallel.ForEach(directiveTables, hash =>
             {
-                _allTagItems.Add(new TagItem 
-                { 
+                _allTagItems.Add(new TagItem
+                {
                     Hash = hash,
                     Name = hash,
                     TagType = ETagListType.Directive
@@ -1290,13 +1292,13 @@ public partial class TagListView : UserControl
         // If there are packages, we don't want to reload the view as very poor for performance.
         if (_allTagItems != null)
             return;
-        
+
         MainWindow.Progress.SetProgressStages(new List<string>
         {
             "caching string tags",
             "load string list",
         });
-        
+
         await Task.Run(() =>
         {
             _allTagItems = new ConcurrentBag<TagItem>();
@@ -1320,14 +1322,14 @@ public partial class TagListView : UserControl
 
         RefreshItemList();  // bc of async stuff
     }
-    
+
     private void LoadStringContainer(TagHash tagHash)
-    { 
+    {
         SetViewer(TagView.EViewerType.TagList);
         var viewer = GetViewer();
         viewer.TagListControl.LoadContent(ETagListType.Strings, tagHash, true);
     }
-    
+
     // Would be nice to do something with colour formatting.
     private void LoadStrings(TagHash tagHash)
     {
@@ -1426,19 +1428,19 @@ public partial class TagListView : UserControl
     #endregion
 
     #region Sound
-    
+
     private async Task LoadSoundsPackagesList()
     {
         // If there are packages, we don't want to reload the view as very poor for performance.
         if (_allTagItems != null)
             return;
-        
+
         MainWindow.Progress.SetProgressStages(new List<string>
         {
             "caching sound tags",
             "load sound packages list",
         });
-        
+
         await Task.Run(() =>
         {
             _allTagItems = new ConcurrentBag<TagItem>();
@@ -1450,7 +1452,7 @@ public partial class TagListView : UserControl
             {
                 packageIds.Add(hash.GetPkgId());
             });
-            
+
             Parallel.ForEach(packageIds, pkgId =>
             {
                 _allTagItems.Add(new TagItem
@@ -1465,22 +1467,22 @@ public partial class TagListView : UserControl
         MainWindow.Progress.CompleteStage();
         RefreshItemList();  // bc of async stuff
     }
-    
+
     private void LoadSoundsPackage(TagHash tagHash)
-    { 
+    {
         SetViewer(TagView.EViewerType.TagList);
         var viewer = GetViewer();
         viewer.MusicPlayer.Visibility = Visibility.Visible;
         viewer.TagListControl.LoadContent(ETagListType.SoundsList, tagHash, true);
     }
-    
+
     private async void LoadSoundsList(TagHash tagHash)
     {
         MainWindow.Progress.SetProgressStages(new List<string>
         {
             "loading sounds",
         });
-        
+
         await Task.Run(() =>
         {
             var vals = PackageHandler.GetTagsWithTypes(tagHash.GetPkgId(), 26, 7);
@@ -1500,11 +1502,11 @@ public partial class TagListView : UserControl
                 });
             });
         });
-        
+
         MainWindow.Progress.CompleteStage();
         RefreshItemList();
     }
-    
+
     private void LoadSound(TagHash tagHash)
     {
         var viewer = GetViewer();
@@ -1515,7 +1517,7 @@ public partial class TagListView : UserControl
             viewer.ExportControl.SetExportInfo(tagHash);
         }
     }
-    
+
     private void ExportSound(ExportInfo info)
     {
         WwiseSound sound = PackageHandler.GetTag(typeof(WwiseSound), new TagHash(info.Hash));
@@ -1523,7 +1525,7 @@ public partial class TagListView : UserControl
         Directory.CreateDirectory(saveDirectory);
         sound.ExportSound(saveDirectory);
     }
-    
+
     private void ExportWem(ExportInfo info)
     {
         Wem wem = PackageHandler.GetTag(typeof(Wem), new TagHash(info.Hash));
@@ -1543,7 +1545,7 @@ public partial class TagListView : UserControl
     {
         Field.Activity activity = PackageHandler.GetTag(typeof(Field.Activity), tagHash);
         _allTagItems = new ConcurrentBag<TagItem>();
-  
+
         ConcurrentBag<TagHash> musics = new ConcurrentBag<TagHash>();
         Parallel.ForEach(activity.Header.Unk50, val =>
         {
@@ -1563,14 +1565,14 @@ public partial class TagListView : UserControl
 
         if (activity.Header.Unk18 is D2Class_6A988080)
         {
-            if (((D2Class_6A988080) activity.Header.Unk18).Music != null)
-                musics.Add(((D2Class_6A988080) activity.Header.Unk18).Music.Hash);
+            if (((D2Class_6A988080)activity.Header.Unk18).Music != null)
+                musics.Add(((D2Class_6A988080)activity.Header.Unk18).Music.Hash);
         }
 
         Parallel.ForEach(musics, hash =>
         {
-            _allTagItems.Add(new TagItem 
-            { 
+            _allTagItems.Add(new TagItem
+            {
                 Hash = hash,
                 Name = hash,
                 TagType = ETagListType.Music
@@ -1586,21 +1588,21 @@ public partial class TagListView : UserControl
     }
 
     #endregion
-    
+
     #region Weapon Audio
-    
+
     private void LoadWeaponAudioGroupList()
     {
         _allTagItems = new ConcurrentBag<TagItem>();
         Parallel.ForEach(InvestmentHandler.InventoryItems, kvp =>
         {
-            if (kvp.Value.GetWeaponPatternIndex() == -1) 
+            if (kvp.Value.GetWeaponPatternIndex() == -1)
                 return;
             string name = InvestmentHandler.GetItemName(kvp.Value);
             string type = InvestmentHandler.InventoryItemStringThings[InvestmentHandler.GetItemIndex(kvp.Key)].Header.ItemType;
             if (type == "Vehicle" || type == "Ship")
                 return;
-            _allTagItems.Add(new TagItem 
+            _allTagItems.Add(new TagItem
             {
                 Hash = kvp.Key,
                 Name = name,
@@ -1609,7 +1611,7 @@ public partial class TagListView : UserControl
             });
         });
     }
-    
+
     private void LoadWeaponAudioGroup(TagHash tagHash)
     {
         var viewer = GetViewer();
@@ -1617,7 +1619,7 @@ public partial class TagListView : UserControl
         viewer.TagListControl.LoadContent(ETagListType.WeaponAudioList, tagHash, true);
         viewer.MusicPlayer.Visibility = Visibility.Visible;
     }
-    
+
     private void LoadWeaponAudioList(DestinyHash apiHash)
     {
         _allTagItems = new ConcurrentBag<TagItem>();
@@ -1644,7 +1646,7 @@ public partial class TagListView : UserControl
                     {
                         if (s.Sound == null)
                             continue;
-                    
+
                         _allTagItems.Add(new TagItem
                         {
                             Hash = s.Sound.Hash,
@@ -1662,7 +1664,7 @@ public partial class TagListView : UserControl
         {
             if (s == null)
                 continue;
-                    
+
             _allTagItems.Add(new TagItem
             {
                 Hash = s.Hash,
@@ -1670,7 +1672,7 @@ public partial class TagListView : UserControl
                 TagType = ETagListType.WeaponAudio
             });
         }
-        
+
         RefreshItemList();
     }
 
@@ -1681,8 +1683,8 @@ public partial class TagListView : UserControl
         {
             if (!entry.WeaponContentGroupHash.Equals(weaponContentGroupHash))
                 return;
-            
-            List<Tag> entitiesParents = new List<Tag> {entry.Unk60, entry.Unk78, entry.Unk90, entry.UnkA8, entry.UnkC0, entry.UnkD8, entry.AudioEntityParent, entry.Unk130, entry.Unk148, entry.Unk1C0, entry.Unk1D8, entry.Unk248};
+
+            List<Tag> entitiesParents = new List<Tag> { entry.Unk60, entry.Unk78, entry.Unk90, entry.UnkA8, entry.UnkC0, entry.UnkD8, entry.AudioEntityParent, entry.Unk130, entry.Unk148, entry.Unk1C0, entry.Unk1D8, entry.Unk248 };
             List<Entity> entities = new List<Entity>();
             foreach (var tag in entitiesParents)
             {
@@ -1749,7 +1751,7 @@ public partial class TagListView : UserControl
         });
         return sounds;
     }
-    
+
     private async void LoadWeaponAudio(TagHash tagHash)
     {
         var viewer = GetViewer();
@@ -1779,7 +1781,7 @@ public class TagItem
     }
 
     public string Subname { get; set; } = String.Empty;
-    
+
     public DestinyHash Hash { get; set; }
 
     public string HashString
@@ -1815,7 +1817,7 @@ public class TagItem
     }
 
     public ETagListType TagType { get; set; }
-    
+
     public static string GetEnumDescription(Enum value)
     {
         FieldInfo fi = value.GetType().GetField(value.ToString());
