@@ -28,22 +28,22 @@ public class Material : Tag {
         var matPath = $"{savePath}/Materials";
         Directory.CreateDirectory(matPath);
         SaveAllTextures(texturePath, Header.PSTextures, Header.VSTextures, Header.CSTextures);
-        if (!File.Exists($"{matPath}/{Hash}_meta.json")) {
-            try { File.WriteAllText($"{matPath}/{Hash}_meta.json", CreateTextureManifest().ToJsonString(new JsonSerializerOptions { WriteIndented = true })); }
-            catch(IOException ignored) { }
-        }
+       // if (!File.Exists($"{matPath}/{Hash}_meta.json")) {
+       //     try { File.WriteAllText($"{matPath}/{Hash}_meta.json", CreateTextureManifest().ToJsonString(new JsonSerializerOptions { WriteIndented = true })); }
+       //     catch(IOException ignored) { }
+       // }
         if(settings.Raw) {
             var rawPath = $"{matPath}/Raw";
             Directory.CreateDirectory(rawPath);
             ExportMaterialRaw(rawPath);
             Console.WriteLine($"Successfully exported raw Material {Hash}.");
         }
-        if(settings.Blender) {
-            var blenderPath = $"{matPath}/Blender";
-            Directory.CreateDirectory(blenderPath);
-            ExportMaterialBlender(blenderPath);
-            Console.WriteLine($"Successfully exported Blender Material {Hash}.");
-        }
+        // if(settings.Blender) {
+        //     var blenderPath = $"{matPath}/Blender";
+        //     Directory.CreateDirectory(blenderPath);
+        //     ExportMaterialBlender(blenderPath);
+        //     Console.WriteLine($"Successfully exported Blender Material {Hash}.");
+        // }
         if(settings.Unreal) {
             var unrealPath = $"{matPath}/Unreal";
             Directory.CreateDirectory(unrealPath);
@@ -163,8 +163,15 @@ public class Material : Tag {
     
     private static JsonObject CreateShaderIndices(List<D2Class_CF6D8080> textures) {
         var textureMeta = new JsonObject();
-        foreach(var e in textures)
-            textureMeta[e.TextureIndex.ToString()] = e.Texture.Hash.ToString();
+        if (textures.Count > 0)
+        {
+            try
+            {
+                foreach (var e in textures)
+                    textureMeta[e.TextureIndex.ToString()] = e.Texture.Hash.ToString();
+            }
+            catch { }
+        }
         return textureMeta;
     }
     
