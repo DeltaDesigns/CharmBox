@@ -80,12 +80,14 @@ public partial class StaticView : UserControl
                 //     from = ""
                 //     to = "materials/"
                 // },
-                foreach (Part part in parts)
+                int i = 0;
+                foreach (Part staticpart in parts)
                 {
                     mats.AppendLine("{");
-                    mats.AppendLine($"    from = \"{part.Material.Hash}.vmat\"");
-                    mats.AppendLine($"    to = \"materials/{part.Material.Hash}.vmat\"");
+                    mats.AppendLine($"    from = \"{parts}_Group{staticpart.GroupIndex}_index{staticpart.Index}_{i}_{staticpart.LodCategory}_{i}.vmat\"");
+                    mats.AppendLine($"    to = \"materials/{staticpart.Material.Hash}.vmat\"");
                     mats.AppendLine("},\n");
+                    i++;
                 }
                 text = text.Replace("%MATERIALS%", mats.ToString());
                 text = text.Replace("%FILENAME%", $"models/{meshName}.fbx");

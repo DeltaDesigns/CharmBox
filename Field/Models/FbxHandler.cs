@@ -430,26 +430,27 @@ public class FbxHandler
             meshName += "_Model";
             //Console.WriteLine($"{meshName} has geometry");
             //dynamicHandler.AddEntityToScene(entity, entity.Model.Load(ELOD.MostDetail, points.Entity.ModelParentResource), ELOD.MostDetail);
-        }
         
-        FbxNode node;   
-        lock (_fbxLock)
-        {
-            node = FbxNode.Create(_manager, $"{meshName}");
-        }
-        Quaternion quatRot = new Quaternion(points.Rotation.X, points.Rotation.Y, points.Rotation.Z, points.Rotation.W);
-        System.Numerics.Vector3 eulerRot = QuaternionToEulerAngles(quatRot);
         
-        node.LclTranslation.Set(new FbxDouble3(points.Translation.X*100, points.Translation.Y*100, points.Translation.Z*100));
-        node.LclRotation.Set(new FbxDouble3(eulerRot.X, eulerRot.Y, eulerRot.Z));
-        node.LclScaling.Set(new FbxDouble3(100,100,100));
-        
-        // Scale and rotate
-        ScaleAndRotateForBlender(node);
+            FbxNode node;   
+            lock (_fbxLock)
+            {
+                node = FbxNode.Create(_manager, $"{meshName}");
+            }
+            Quaternion quatRot = new Quaternion(points.Rotation.X, points.Rotation.Y, points.Rotation.Z, points.Rotation.W);
+            System.Numerics.Vector3 eulerRot = QuaternionToEulerAngles(quatRot);
+            
+            node.LclTranslation.Set(new FbxDouble3(points.Translation.X*100, points.Translation.Y*100, points.Translation.Z*100));
+            node.LclRotation.Set(new FbxDouble3(eulerRot.X, eulerRot.Y, eulerRot.Z));
+            node.LclScaling.Set(new FbxDouble3(100,100,100));
+            
+            // Scale and rotate
+            //ScaleAndRotateForBlender(node);
 
-        lock (_fbxLock)
-        {
-            _scene.GetRootNode().AddChild(node);
+            lock (_fbxLock)
+            {
+                _scene.GetRootNode().AddChild(node);
+            }
         }        
     }
     

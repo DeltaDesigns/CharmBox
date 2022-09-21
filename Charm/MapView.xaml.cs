@@ -225,6 +225,12 @@ public partial class MapView : UserControl
                 else if (entry is D2Class_85988080 dynamicResource)
                 {
                     dynamicHandler.AddDynamicPointsToScene(dynamicResource, dynamicResource.Entity.Hash, dynamicHandler);
+                    
+                    Entity entity = PackageHandler.GetTag(typeof(Entity), dynamicResource.Entity.Hash);
+                    if(entity.Model != null)
+                    {
+                        fbxHandler.AddEntityToScene(entity, entity.Load(ELOD.MostDetail), ELOD.MostDetail);
+                    }
                 }
                 else if (entry.DataResource is D2Class_7D6C8080 terrainArrangement && exportTypeFlag == EExportTypeFlag.Full)  // Terrain should only export with a Full export or terrain only
                 {
@@ -252,8 +258,8 @@ public partial class MapView : UserControl
                         foreach (var part in parts)
                         {
                             string staticMeshName = part.Static.Hash.GetHashString();
-                            FbxHandler staticHandler = new FbxHandler();
-                            staticHandler.InfoHandler.SetMeshName(staticMeshName);
+                            FbxHandler staticHandler = new FbxHandler(false);
+                            //staticHandler.InfoHandler.SetMeshName(staticMeshName);
 
                             var staticmesh = part.Static.Load(ELOD.MostDetail);
                             staticHandler.AddStaticToScene(staticmesh, part.Static.Hash);
@@ -270,7 +276,7 @@ public partial class MapView : UserControl
                                 foreach (Part staticpart in staticmesh)
                                 {
                                     mats.AppendLine("{");
-                                    mats.AppendLine($"    from = \"{staticMeshName}_Group{staticpart.GroupIndex}_{i}_{i}.vmat\"");
+                                    mats.AppendLine($"    from = \"{staticMeshName}_Group{staticpart.GroupIndex}_index{staticpart.Index}_{i}_{staticpart.LodCategory}_{i}.vmat\"");
                                     mats.AppendLine($"    to = \"materials/{staticpart.Material.Hash}.vmat\"");
                                     mats.AppendLine("},\n");
                                     i++;

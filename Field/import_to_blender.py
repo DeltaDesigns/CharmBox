@@ -71,16 +71,16 @@ def assemble_map():
             newobjects = [] #Clears the list just in case
             newobjects = bpy.data.collections[str(Name)].objects #Readds the objects in the collection to the list
 
-    for x in newobjects:
-
-        if len(config["Instances"].items()) <= 1 and len(config["Parts"].items()) <= 1: #Fix for error that occurs when theres only 1 object in the fbx
-            for newname, value in config["Instances"].items():
-                x.name = newname
-
-        obj_name = x.name[:8]
-        if obj_name not in static_names.keys():
-            static_names[obj_name] = []
-        static_names[obj_name].append(x.name)
+    if Type == "Map":
+        for x in newobjects:
+            if len(config["Instances"].items()) <= 1 and len(config["Parts"].items()) <= 1: #Fix for error that occurs when theres only 1 object in the fbx
+                for newname, value in config["Instances"].items():
+                    x.name = newname
+                    
+            obj_name = x.name[:8]
+            if obj_name not in static_names.keys():
+                static_names[obj_name] = []
+            static_names[obj_name].append(x.name)
 
     assign_map_materials()
 
