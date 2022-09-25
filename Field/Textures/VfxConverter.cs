@@ -18,7 +18,12 @@ public class VfxConverter
     private List<Input> inputs = new List<Input>();
     private List<Output> outputs = new List<Output>();
 
-    //private List<Texture> sortedTextures = new List<Texture>();
+    private readonly string[] sampleStates = {
+        "SamplerState g_sWrap < Filter( ANISOTROPIC ); AddressU( WRAP ); AddressV( WRAP ); >;",
+        "SamplerState g_sClamp < Filter( ANISOTROPIC ); AddressU( CLAMP ); AddressV( CLAMP ); >;",
+        "SamplerState g_sMirror < Filter( ANISOTROPIC ); AddressU( MIRROR ); AddressV( MIRROR ); >;",
+        "SamplerState g_sBorder < Filter( ANISOTROPIC ); AddressU( BORDER ); AddressV( BORDER ); >;}",
+    };
     
 
     public string vfxStructure = @"HEADER
@@ -75,6 +80,12 @@ PS
 {
     #include ""common/pixel.hlsl""
     #define cmp -
+    //#define CUSTOM_TEXTURE_FILTERING // uncomment to use custom texture filtering
+    //SamplerState g_sWrap < Filter( ANISOTROPIC ); AddressU( WRAP ); AddressV( WRAP ); >;
+    //SamplerState g_sClamp < Filter( ANISOTROPIC ); AddressU( CLAMP ); AddressV( CLAMP ); >;
+    //SamplerState g_sMirror < Filter( ANISOTROPIC ); AddressU( MIRROR ); AddressV( MIRROR ); >;
+    //SamplerState g_sBorder < Filter( ANISOTROPIC ); AddressU( BORDER ); AddressV( BORDER ); >;
+
     RenderState(CullMode, F_RENDER_BACKFACES? NONE : DEFAULT );";
 
 
@@ -302,24 +313,24 @@ PS
     
     private void WriteFunctionDefinition(Material material, bool bIsVertexShader)
     {
-        // if (!bIsVertexShader)
-        // {
-        //     foreach (var i in inputs)
-        //     {
-        //         if (i.Type == "float4")
-        //         {
-        //             vfx.AppendLine($"   static {i.Type} {i.Variable} = " + "{1, 1, 1, 1};\n");
-        //         }
-        //         else if (i.Type == "float3")
-        //         {
-        //             vfx.AppendLine($"   static {i.Type} {i.Variable} = " + "{1, 1, 1};\n");
-        //         }
-        //         else if (i.Type == "uint")
-        //         {
-        //             vfx.AppendLine($"   static {i.Type} {i.Variable} = " + "1;\n");
-        //         }
-        //     }
-        // }
+        if (!bIsVertexShader)
+        {
+            foreach (var i in inputs)
+            {
+                if (i.Type == "float4")
+                {
+                    vfx.AppendLine($"   static {i.Type} {i.Variable} = " + "{1, 1, 1, 1};\n");
+                }
+                else if (i.Type == "float3")
+                {
+                    vfx.AppendLine($"   static {i.Type} {i.Variable} = " + "{1, 1, 1};\n");
+                }
+                else if (i.Type == "uint")
+                {
+                    vfx.AppendLine($"   static {i.Type} {i.Variable} = " + "1;\n");
+                }
+            }
+        }
 
         if (bIsVertexShader)
         {
@@ -374,22 +385,13 @@ PS
             vfx.AppendLine("        float4 v5 = i.vBlendValues;"); //seems like this is always the same as v4/only used if shader uses VC alpha
             //vfx.AppendLine("        uint v6 = 1;"); //no idea
 
-
-            // foreach (var i in inputs)
-            // {
-            //     if (i.Type == "float4")
-            //     {
-            //         vfx.AppendLine($"       {i.Variable}.xyzw = {i.Variable}.xyzw * tx.xyzw;");
-            //     }
-            //     else if (i.Type == "float3")
-            //     {
-            //         vfx.AppendLine($"       {i.Variable}.xyz = {i.Variable}.xyz * tx.xyz;");
-            //     }
-            //     else if (i.Type == "uint")
-            //     {
-            //         vfx.AppendLine($"       {i.Variable}.x = {i.Variable}.x * tx.x;");
-            //     }
-            // }
+            foreach (var i in inputs)
+            {
+                if (i.Type == "uint")
+                {
+                    vfx.AppendLine($"       {i.Variable}.x = {i.Variable}.x * tx.x;");
+                }
+            }
             // vfx.Replace("v0.xyzw = v0.xyzw * tx.xyzw;", "v0.xyzw = v0.xyzw;");
             // vfx.Replace("v1.xyzw = v1.xyzw * tx.xyzw;", "v1.xyzw = v1.xyzw;");
             // vfx.Replace("v2.xyzw = v2.xyzw * tx.xyzw;", "v2.xyzw = v2.xyzw;");

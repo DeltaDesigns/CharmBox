@@ -226,11 +226,11 @@ public partial class MapView : UserControl
                 {
                     dynamicHandler.AddDynamicPointsToScene(dynamicResource, dynamicResource.Entity.Hash, dynamicHandler);
                     
-                    Entity entity = PackageHandler.GetTag(typeof(Entity), dynamicResource.Entity.Hash);
-                    if(entity.Model != null)
-                    {
-                        fbxHandler.AddEntityToScene(entity, entity.Load(ELOD.MostDetail), ELOD.MostDetail);
-                    }
+                    //Entity entity = PackageHandler.GetTag(typeof(Entity), dynamicResource.Entity.Hash);
+                    //if(entity.Model != null)
+                    //{
+                    //    fbxHandler.AddEntityToScene(entity, entity.Load(ELOD.MostDetail), ELOD.MostDetail);
+                    //}
                 }
                 else if (entry.DataResource is D2Class_7D6C8080 terrainArrangement && exportTypeFlag == EExportTypeFlag.Full)  // Terrain should only export with a Full export or terrain only
                 {
