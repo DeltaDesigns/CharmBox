@@ -2,6 +2,7 @@
 using Field.General;
 using Field.Statics;
 using Internal.Fbx;
+using System.Numerics;
 
 namespace Field.Models;
 
@@ -11,8 +12,8 @@ public class FbxHandler
     private FbxManager _manager;
     private FbxScene _scene;
     public InfoConfigHandler InfoHandler;
+    List<TagHash> addedEntities = new List<TagHash>();
     private static object _fbxLock = new object();
-
     public FbxHandler(bool bMakeInfoHandler=true)
     {
         lock (_fbxLock) // bc fbx is not thread-safe
@@ -34,7 +35,7 @@ public class FbxHandler
             node = FbxNode.Create(_manager, mesh.GetName());
         }
         node.SetNodeAttribute(mesh);
-
+        
         if (part.VertexNormals.Count > 0)
         {
             AddNormalsToMesh(mesh, part);
@@ -54,6 +55,12 @@ public class FbxHandler
         {
             AddColoursToMesh(mesh, part);
         }
+        
+        if (part.VertexColourSlots.Count > 0 || part.GearDyeChangeColorIndex != 0xFF)  // api item, so do slots and uv1
+        {
+            AddSlotColoursToMesh(mesh, part);
+            AddTexcoords1ToMesh(mesh, part);
+        }
 
         // for importing to other engines
         if (InfoHandler != null && part.Material != null) // todo consider why some materials are null
@@ -63,13 +70,15 @@ public class FbxHandler
         }
 
 
-        AddMaterial(mesh, node, index);
+        AddMaterial(mesh, node, index, part.Material);
         AddSmoothing(mesh);
-
+        
         lock (_fbxLock)
         {
+            //node.LclRotation.Set(new FbxDouble3(-90, 0, 0)); //This is fucking up the source 2 map import for whatever reason and I cant be bothered to suffer through that again
             _scene.GetRootNode().AddChild(node);
         }
+        
         return mesh;
     }
 
@@ -79,7 +88,7 @@ public class FbxHandler
         FbxMesh mesh;
         lock (_fbxLock)
         {
-            mesh = FbxMesh.Create(_manager, $"{meshName}_Group{part.GroupIndex}_{index}");
+            mesh = FbxMesh.Create(_manager, $"{meshName}_Group{part.GroupIndex}_Index{part.Index}_{index}_{part.LodCategory}");
         }
 
         // Conversion lookup table
@@ -147,7 +156,7 @@ public class FbxHandler
         FbxLayerElementUV uvLayer;
         lock (_fbxLock)
         {
-            uvLayer = FbxLayerElementUV.Create(mesh, "uvLayerName");
+            uvLayer = FbxLayerElementUV.Create(mesh, "uv0");
         }
         uvLayer.SetMappingMode(FbxLayerElement.EMappingMode.eByControlPoint);
         uvLayer.SetReferenceMode(FbxLayerElement.EReferenceMode.eDirect);
@@ -158,6 +167,24 @@ public class FbxHandler
         mesh.GetLayer(0).SetUVs(uvLayer);
     }
     
+    private void AddTexcoords1ToMesh(FbxMesh mesh, Part part)
+    {
+        FbxLayerElementUV uvLayer;
+        lock (_fbxLock)
+        {
+            uvLayer = FbxLayerElementUV.Create(mesh, "uv1");
+        }
+        uvLayer.SetMappingMode(FbxLayerElement.EMappingMode.eByControlPoint);
+        uvLayer.SetReferenceMode(FbxLayerElement.EReferenceMode.eDirect);
+        foreach (var tx in part.VertexTexcoords1)
+        {
+            uvLayer.GetDirectArray().Add(new FbxVector2(tx.X, tx.Y));
+        }
+        if (mesh.GetLayer(1) == null)
+            mesh.CreateLayer();
+        mesh.GetLayer(1).SetUVs(uvLayer);
+    }
+
     
     private void AddColoursToMesh(FbxMesh mesh, Part part)
     {
@@ -175,6 +202,35 @@ public class FbxHandler
         mesh.GetLayer(0).SetVertexColors(colLayer);
     }
 
+    private void AddSlotColoursToMesh(FbxMesh mesh, Part part)
+    {
+        FbxLayerElementVertexColor colLayer;
+        lock (_fbxLock)
+        {
+            colLayer = FbxLayerElementVertexColor.Create(mesh, "slots");
+        }
+        colLayer.SetMappingMode(FbxLayerElement.EMappingMode.eByControlPoint);
+        colLayer.SetReferenceMode(FbxLayerElement.EReferenceMode.eDirect);
+        if (part.PrimitiveType == EPrimitiveType.Triangles)
+        {
+            VertexBuffer.AddSlotInfo(part, part.GearDyeChangeColorIndex);
+            for (var i = 0; i < part.VertexPositions.Count; i++)
+            {
+                colLayer.GetDirectArray().Add(new FbxColor(part.VertexColourSlots[0].X, part.VertexColourSlots[0].Y, part.VertexColourSlots[0].Z, part.VertexColourSlots[0].W));
+            }  
+        }
+        else
+        {
+            foreach (var colour in part.VertexColourSlots)
+            {
+                colLayer.GetDirectArray().Add(new FbxColor(colour.X, colour.Y, colour.Z, colour.W));
+            }  
+        }
+
+        if (mesh.GetLayer(1) == null)
+            mesh.CreateLayer();
+        mesh.GetLayer(1).SetVertexColors(colLayer);
+    }
 
     private void AddWeightsToMesh(FbxMesh mesh, DynamicPart part, List<FbxNode> skeletonNodes)
     {
@@ -231,13 +287,16 @@ public class FbxHandler
         mesh.AddDeformer(skin);
     }
 
-    private void AddMaterial(FbxMesh mesh, FbxNode node, int index)
+    private void AddMaterial(FbxMesh mesh, FbxNode node, int index, Material material)
     {
+        if (material == null)
+            return;
+        
         FbxSurfacePhong fbxMaterial;
         FbxLayerElementMaterial materialLayer;
         lock (_fbxLock)
         {
-            fbxMaterial = FbxSurfacePhong.Create(_scene, $"{node.GetName()}_{index}");
+            fbxMaterial = FbxSurfacePhong.Create(_scene, material.Hash);
             materialLayer = FbxLayerElementMaterial.Create(mesh, $"matlayer_{node.GetName()}_{index}");
         }
         fbxMaterial.DiffuseFactor.Set(1);
@@ -306,7 +365,6 @@ public class FbxHandler
         }
 
         _scene.GetRootNode().AddChild(rootNode);
-        // rootNode.LclRotation.Set(new FbxDouble3(-90, 0, 0));
         return skeletonNodes;
     }
 
@@ -341,9 +399,15 @@ public class FbxHandler
 
     }
 
-    public void AddEntityToScene(Entity entity, List<DynamicPart> dynamicParts, ELOD detailLevel, Animation animation=null)
+    public void AddEntityToScene(Entity entity, List<DynamicPart> dynamicParts, ELOD detailLevel, Animation animation=null, List<FbxNode> skeletonNodes = null, bool skipBlanks = false)
     {
-        List<FbxNode> skeletonNodes = new List<FbxNode>();
+        if (skeletonNodes == null)
+        {
+            skeletonNodes = new List<FbxNode>();
+        }
+        // _scene.GetRootNode().LclRotation.Set(new FbxDouble3(90, 0, 0));
+        // List<FbxNode> skeletonNodes = new List<FbxNode>();
+        
         if (entity.Skeleton != null)
         {
             skeletonNodes = AddSkeleton(entity.Skeleton.GetBoneNodes());
@@ -351,6 +415,18 @@ public class FbxHandler
         for( int i = 0; i < dynamicParts.Count; i++)
         {
             var dynamicPart = dynamicParts[i];
+
+            if (dynamicPart.Material == null)
+                continue;
+
+            if (skipBlanks)
+            {
+                if (dynamicPart.Material.Header.PSTextures.Count == 0) //Dont know if this will 100% "fix" the duplicate meshs that come with entities
+                {
+                    continue;
+                }
+            }
+
             FbxMesh mesh = AddMeshPartToScene(dynamicPart, i, entity.Hash);
             
             if (dynamicPart.VertexWeights.Count > 0)
@@ -364,6 +440,7 @@ public class FbxHandler
         if (animation != null)
             AddAnimationToEntity(animation, skeletonNodes);
     }
+
 
     public void AddStaticToScene(List<Part> parts, string meshName)
     {
@@ -441,6 +518,152 @@ public class FbxHandler
             _scene.Destroy();
             _manager.Destroy();
         }
-        InfoHandler.Dispose();
+        if(InfoHandler != null)
+            InfoHandler.Dispose();
+    }
+
+    public void AddStaticInstancesToScene(List<Part> parts, List<D2Class_406D8080> instances, string meshName)
+    {
+        for (int i = 0; i < parts.Count; i++)
+        {
+            FbxMesh mesh = CreateMeshPart(parts[i], i, meshName);
+            for (int j = 0; j < instances.Count; j++)
+            {
+                FbxNode node;
+                lock (_fbxLock)
+                {
+                    node = FbxNode.Create(_manager, $"{meshName}_{i}_{j}");
+                }
+                node.SetNodeAttribute(mesh);
+                Quaternion quatRot = new Quaternion(instances[j].Rotation.X, instances[j].Rotation.Y, instances[j].Rotation.Z, instances[j].Rotation.W);
+                System.Numerics.Vector3 eulerRot = QuaternionToEulerAngles(quatRot);
+                
+                node.LclTranslation.Set(new FbxDouble3(instances[j].Position.X, instances[j].Position.Y, instances[j].Position.Z));
+                node.LclRotation.Set(new FbxDouble3(eulerRot.X, eulerRot.Y, eulerRot.Z));
+                node.LclScaling.Set(new FbxDouble3(instances[j].Scale.X, instances[j].Scale.X, instances[j].Scale.X));
+                
+                lock (_fbxLock)
+                {
+                    _scene.GetRootNode().AddChild(node);
+                }
+            }
+        }
+    }
+
+    public void AddDynamicToScene(D2Class_85988080 points, string meshName, string savePath, bool bSaveShaders = false, bool bSaveCBuffers = false)
+    {
+        Entity entity = PackageHandler.GetTag(typeof(Entity), points.Entity.Hash);
+
+        if (!entity.HasGeometry())
+        {
+            return;
+        }
+     
+        if (InfoHandler != null)
+            InfoHandler.AddInstance(entity.Hash, points.Translation.W, points.Rotation, points.Translation.ToVec3());
+
+        if (!addedEntities.Contains(entity.Hash))
+        {
+            addedEntities.Add(entity.Hash);
+            //Console.WriteLine($"Added {entity.Hash}");
+            List<FbxNode> skeletonNodes = new List<FbxNode>();
+            List<DynamicPart> dynamicParts = entity.Load(ELOD.MostDetail, true);
+            entity.SaveMaterialsFromParts(savePath, dynamicParts, bSaveShaders, bSaveCBuffers);
+            //Console.WriteLine($"{points.Entity.Hash} {points.Translation.X} {points.Translation.Y} {points.Translation.Z} {points.Translation.W}");
+            if (entity.Skeleton != null)
+            {
+                skeletonNodes = AddSkeleton(entity.Skeleton.GetBoneNodes());
+            }
+            for (int i = 0; i < dynamicParts.Count; i++)
+            {
+                var dynamicPart = dynamicParts[i];
+
+                if (dynamicPart.Material == null)
+                    continue;
+
+                if (dynamicPart.Material.Header.PSTextures.Count == 0) //Dont know if this will 100% "fix" the duplicate meshs that come with entities
+                {
+                    continue;
+                }
+
+                FbxMesh mesh = AddMeshPartToScene(dynamicPart, i, entity.Hash);
+
+                if (dynamicPart.VertexWeights.Count > 0)
+                {
+                    if (skeletonNodes.Count > 0)
+                    {
+                        AddWeightsToMesh(mesh, dynamicPart, skeletonNodes);
+                    }
+                }
+            }
+        }
+        //Console.WriteLine($"{entity.Hash} at {points.Translation.X * 100}, {points.Translation.Z * 100}, {-points.Translation.Y * 100}");
+    }
+
+    public void AddDynamicPointsToScene(D2Class_85988080 points, string meshName, FbxHandler dynamicHandler)
+    {
+        Entity entity = PackageHandler.GetTag(typeof(Entity), points.Entity.Hash);
+
+        if (entity.HasGeometry())
+        {
+            meshName += "_Model";
+        }
+ 
+        FbxNode node;
+        lock (_fbxLock)
+        {
+            node = FbxNode.Create(_manager, $"{meshName}");
+        }
+        Quaternion quatRot = new Quaternion(points.Rotation.X, points.Rotation.Y, points.Rotation.Z, points.Rotation.W);
+        System.Numerics.Vector3 eulerRot = QuaternionToEulerAngles(quatRot);
+
+        node.LclTranslation.Set(new FbxDouble3(points.Translation.X * 100, points.Translation.Z * 100, -points.Translation.Y * 100));
+        node.LclRotation.Set(new FbxDouble3(eulerRot.X, eulerRot.Y, eulerRot.Z));
+        node.LclScaling.Set(new FbxDouble3(100, 100, 100));
+
+        lock (_fbxLock)
+        {
+            _scene.GetRootNode().AddChild(node);
+        }
+    }
+
+    // From https://github.com/OwlGamingCommunity/V/blob/492d0cb3e89a97112ac39bf88de39da57a3a1fbf/Source/owl_core/Server/MapLoader.cs
+    private static System.Numerics.Vector3 QuaternionToEulerAngles(Quaternion q)
+    {
+        System.Numerics.Vector3 retVal = new System.Numerics.Vector3();
+
+        // roll (x-axis rotation)
+        double sinr_cosp = +2.0 * (q.W * q.X + q.Y * q.Z);
+        double cosr_cosp = +1.0 - 2.0 * (q.X * q.X + q.Y * q.Y);
+        retVal.X = (float)Math.Atan2(sinr_cosp, cosr_cosp);
+
+        // pitch (y-axis rotation)
+        double sinp = +2.0 * (q.W * q.Y - q.Z * q.X);
+        double absSinP = Math.Abs(sinp);
+        bool bSinPOutOfRage = absSinP >= 1.0;
+        if (bSinPOutOfRage)
+        {
+            retVal.Y = 90.0f; // use 90 degrees if out of range
+        }
+        else
+        {
+            retVal.Y = (float)Math.Asin(sinp);
+        }
+
+        // yaw (z-axis rotation)
+        double siny_cosp = +2.0 * (q.W * q.Z + q.X * q.Y);
+        double cosy_cosp = +1.0 - 2.0 * (q.Y * q.Y + q.Z * q.Z);
+        retVal.Z = (float)Math.Atan2(siny_cosp, cosy_cosp);
+
+        // Rad to Deg
+        retVal.X *= (float)(180.0f / Math.PI);
+
+        if (!bSinPOutOfRage) // only mult if within range
+        {
+            retVal.Y *= (float)(180.0f / Math.PI);
+        }
+        retVal.Z *= (float)(180.0f / Math.PI);
+
+        return retVal;
     }
 }

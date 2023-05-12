@@ -123,7 +123,7 @@ public class Tag : DestinyFile
     protected virtual T ReadHeader<T>(StringContainer? sc = null) where T : struct
     {
         HeaderType = typeof(T);
-        if (!IsStructureValid(typeof(T).FullName)) throw new Exception("Structure failed to validate, likely some changes to the game.");
+        if (!IsStructureValid(typeof(T).FullName, PackageHandler.GetExecutionDirectoryPtr())) throw new Exception("Structure failed to validate, likely some changes to the game.");
         dynamic ret;
         using (var handle = GetHandle())
         {
@@ -184,6 +184,7 @@ public class Tag : DestinyFile
                     {
                         throw new NotImplementedException();
                     }
+                    //field.SetValue(result, Enum.ToObject(field.FieldType, handle.ReadByte()));
                 }
                 else
                 {
@@ -443,10 +444,10 @@ public class Tag : DestinyFile
         
                 
     [DllImport("Symmetry.dll", EntryPoint = "DllVerifyFieldLocation", CallingConvention = CallingConvention.StdCall)]
-    public extern static int VerifyFieldLocation([MarshalAs(UnmanagedType.LPStr)] string structureType, long fieldOffset);
+    public extern static int VerifyFieldLocation([MarshalAs(UnmanagedType.LPStr)] string structureType, long fieldOffset, IntPtr executionDirectoryPtr);
         
     [DllImport("Symmetry.dll", EntryPoint = "DllIsStructureValid", CallingConvention = CallingConvention.StdCall)]
-    public extern static bool IsStructureValid([MarshalAs(UnmanagedType.LPStr)] string structureType);
+    public extern static bool IsStructureValid([MarshalAs(UnmanagedType.LPStr)] string structureType, IntPtr executionDirectoryPtr);
         
 // protected object ReadResource()
 // {
@@ -537,6 +538,42 @@ public class IndexAccessList<T> : IEnumerable<T> where T : struct
     IEnumerator IEnumerable.GetEnumerator()
     {
         return GetEnumerator();
+    }
+
+    /// <summary>
+    /// We assume the list is sorted via a position 0 DestinyHash uint32.
+    /// </summary>
+    /// <param name="hash">Hash to find if it exists.</param>
+    /// <returns>The entry of the list if found, otherwise null.</returns>
+    public T? BinarySearch(DestinyHash hash)
+    {
+        using (var handle = ParentTag.GetHandle())
+        {
+            uint compareValue = hash.Hash;
+            int min = 0;
+            int max = (int)Count - 1;
+            int structureSize = typeof(T).StructLayoutAttribute.Size;
+            while (min <= max)
+            {
+                int mid = (min + max) / 2;
+                handle.BaseStream.Seek(Offset + mid * structureSize, SeekOrigin.Begin);
+                uint midValue = handle.ReadUInt32();
+                if (midValue == compareValue)
+                {
+                    return ElementAt(mid, handle);
+                }
+                if (midValue < compareValue)
+                {
+                    min = mid + 1;
+                }
+                else
+                {
+                    max = mid - 1;
+                }
+            }
+        }
+
+        return null;
     }
 }
 

@@ -4,8 +4,9 @@ using System.Configuration;
 using System.IO;
 using System.Reflection;
 using System.Windows;
-using Field.Textures;
+using System.Windows.Forms;
 using MessageBox = System.Windows.Forms.MessageBox;
+using Field;
 
 namespace Charm;
 
@@ -27,18 +28,15 @@ public class ConfigHandler
         {
             dialog.Description = "Select the folder where your D2-WQ packages (*.pkg) are located";
             bool success = false;
-            while (!success)
+            System.Windows.Forms.DialogResult result = dialog.ShowDialog();
+            if (result == System.Windows.Forms.DialogResult.OK)
             {
-                System.Windows.Forms.DialogResult result = dialog.ShowDialog();
-                if (result == System.Windows.Forms.DialogResult.OK)
-                {
-                    success = TrySetPackagePath(dialog.SelectedPath);
-                }
+                success = TrySetPackagePath(dialog.SelectedPath);
+            }
 
-                if (!success)
-                {
-                    MessageBox.Show("Directory selected is invalid, please select the correct packages directory.");
-                }
+            if (!success)
+            {
+                MessageBox.Show("Directory selected is invalid, please select the correct packages directory.");
             }
         }
     }
@@ -80,6 +78,142 @@ public class ConfigHandler
 
     #endregion
     
+    #region source2Path
+
+        
+    public static void OpenSource2PathDialog()
+    {
+        using (var dialog = new System.Windows.Forms.FolderBrowserDialog())
+        {
+            // Steam\steamapps\common\sbox\bin\win64
+            dialog.Description = "Select the folder where your S&Box installation is located";
+            bool success = false;
+            while (!success)
+            {
+                System.Windows.Forms.DialogResult result = dialog.ShowDialog();
+                if (result == System.Windows.Forms.DialogResult.OK)
+                {
+                    success = TrySetSource2Path(dialog.SelectedPath);
+                }
+
+                if (!success)
+                {
+                    MessageBox.Show("Directory selected is invalid, please select the correct directory. (Steam/steamapps/common/sbox/bin/win64)");
+                }
+            }
+        }
+    }
+        
+    public static string GetSource2Path()
+    {
+        if (_config.AppSettings.Settings["source2Path"] == null)
+        {
+            return "";
+        }
+        return _config.AppSettings.Settings["source2Path"].Value;
+    }
+
+    private static bool TrySetSource2Path(string path)
+    {
+        if (path == "")
+        {
+            return false;
+        }
+
+        if (!path.EndsWith("win64"))
+        {
+            return false;
+        }
+        
+        if (_config.AppSettings.Settings["source2Path"] == null)
+        {
+            _config.AppSettings.Settings.Add("source2Path", path);
+        }
+        else
+        {
+            _config.AppSettings.Settings["source2Path"].Value = path;
+        }
+        Save();
+        return true;
+    }
+
+    #endregion
+
+    #region source2ExportsEnabled
+
+    public static void SetS2ShaderExportEnabled(bool bS2ShaderExportEnabled)
+    {
+        if (_config.AppSettings.Settings["s2ShaderExportEnabled"] == null)
+        {
+            _config.AppSettings.Settings.Add("s2ShaderExportEnabled", bS2ShaderExportEnabled.ToString());
+        }
+        else
+        {
+            _config.AppSettings.Settings["s2ShaderExportEnabled"].Value = bS2ShaderExportEnabled.ToString();
+        }
+
+        Save();
+    }
+
+    public static bool GetS2ShaderExportEnabled()
+    {
+        if (_config.AppSettings.Settings["s2ShaderExportEnabled"] == null)
+        {
+            return false;
+        }
+        return _config.AppSettings.Settings["s2ShaderExportEnabled"].Value == "True";
+    }
+
+    //
+    public static void SetS2VMATExportEnabled(bool bS2VMATExportEnabled)
+    {
+        if (_config.AppSettings.Settings["s2VMATExportEnabled"] == null)
+        {
+            _config.AppSettings.Settings.Add("s2VMATExportEnabled", bS2VMATExportEnabled.ToString());
+        }
+        else
+        {
+            _config.AppSettings.Settings["s2VMATExportEnabled"].Value = bS2VMATExportEnabled.ToString();
+        }
+
+        Save();
+    }
+
+    public static bool GetS2VMATExportEnabled()
+    {
+        if (_config.AppSettings.Settings["s2VMATExportEnabled"] == null)
+        {
+            return false;
+        }
+        return _config.AppSettings.Settings["s2VMATExportEnabled"].Value == "True";
+    }
+
+    public static void SetS2VMDLExportEnabled(bool bS2VMDLExportEnabled)
+    {
+        if (_config.AppSettings.Settings["s2VMDLExportEnabled"] == null)
+        {
+            _config.AppSettings.Settings.Add("s2VMDLExportEnabled", bS2VMDLExportEnabled.ToString());
+        }
+        else
+        {
+            _config.AppSettings.Settings["s2VMDLExportEnabled"].Value = bS2VMDLExportEnabled.ToString();
+        }
+
+        Save();
+    }
+
+    public static bool GetS2VMDLExportEnabled()
+    {
+        if (_config.AppSettings.Settings["s2VMDLExportEnabled"] == null)
+        {
+            return false;
+        }
+        return _config.AppSettings.Settings["s2VMDLExportEnabled"].Value == "True";
+    }
+    
+    #endregion
+
+
     #region exportSavePath
 
     public static void OpenExportSavePathDialog()
@@ -90,17 +224,21 @@ public class ConfigHandler
             bool success = false;
             while (!success)
             {
-                System.Windows.Forms.DialogResult result = dialog.ShowDialog();
-                if (result == System.Windows.Forms.DialogResult.OK)
+                DialogResult result = dialog.ShowDialog();
+                if (result is DialogResult.OK)
                 {
-                    if (dialog.SelectedPath.Contains(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)))
+                    string exeDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                    if (dialog.SelectedPath.Contains(exeDirectory + "\\") || dialog.SelectedPath == exeDirectory)
                     {
                         MessageBox.Show("You cannot export to the same directory as the executable.");
                         continue;
                     }
                     success = TrySetExportSavePath(dialog.SelectedPath);
                 }
-
+                else if (result is DialogResult.Cancel or DialogResult.Abort)
+                {
+                    return;
+                }
                 if (!success)
                 {
                     MessageBox.Show("Directory selected is invalid, please select the correct directory.");
@@ -266,7 +404,85 @@ public class ConfigHandler
     }
 
     #endregion
-    
+
+    #region IndvidualStaticsEnabled
+
+    public static void SetIndvidualStaticsEnabled(bool bIndvidualStaticsEnabled)
+    {
+        if (_config.AppSettings.Settings["indvidualStaticsEnabled"] == null)
+        {
+            _config.AppSettings.Settings.Add("indvidualStaticsEnabled", bIndvidualStaticsEnabled.ToString());
+        }
+        else
+        {
+            _config.AppSettings.Settings["indvidualStaticsEnabled"].Value = bIndvidualStaticsEnabled.ToString();
+        }
+        Save();
+    }
+
+    public static bool GetIndvidualStaticsEnabled()
+    {
+        if (_config.AppSettings.Settings["indvidualStaticsEnabled"] == null)
+        {
+            return true;
+        }
+        return _config.AppSettings.Settings["indvidualStaticsEnabled"].Value == "True";
+    }
+
+    #endregion
+
+    #region IndvidualEntitiesEnabled
+
+    public static void SetIndvidualEntitiesEnabled(bool bIndvidualEntitiesEnabled)
+    {
+        if (_config.AppSettings.Settings["indvidualEntitiesEnabled"] == null)
+        {
+            _config.AppSettings.Settings.Add("indvidualEntitiesEnabled", bIndvidualEntitiesEnabled.ToString());
+        }
+        else
+        {
+            _config.AppSettings.Settings["indvidualEntitiesEnabled"].Value = bIndvidualEntitiesEnabled.ToString();
+        }
+        Save();
+    }
+
+    public static bool GetIndvidualEntitiesEnabled()
+    {
+        if (_config.AppSettings.Settings["indvidualEntitiesEnabled"] == null)
+        {
+            return true;
+        }
+        return _config.AppSettings.Settings["indvidualEntitiesEnabled"].Value == "True";
+    }
+
+    #endregion
+
+    #region SaveCBuffersEnabled
+
+    public static void SetSaveCBuffersEnabled(bool bSaveCBuffersEnabled)
+    {
+        if (_config.AppSettings.Settings["saveCBuffersEnabled"] == null)
+        {
+            _config.AppSettings.Settings.Add("saveCBuffersEnabled", bSaveCBuffersEnabled.ToString());
+        }
+        else
+        {
+            _config.AppSettings.Settings["saveCBuffersEnabled"].Value = bSaveCBuffersEnabled.ToString();
+        }
+        Save();
+    }
+
+    public static bool GetSaveCBuffersEnabled()
+    {
+        if (_config.AppSettings.Settings["saveCBuffersEnabled"] == null)
+        {
+            return false;
+        }
+        return _config.AppSettings.Settings["saveCBuffersEnabled"].Value == "True";
+    }
+
+    #endregion
+
     #region outputTextureFormat
 
     public static void SetOutputTextureFormat(ETextureFormat outputTextureFormat)
@@ -310,5 +526,6 @@ public class ConfigHandler
     {
         _config.Save(ConfigurationSaveMode.Modified);
         ConfigurationManager.RefreshSection("appSettings");
-    }
+		FieldConfigHandler.Refresh();
+	}
 }

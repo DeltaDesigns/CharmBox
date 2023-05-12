@@ -19,9 +19,10 @@ using Field.Entities;
 using Field.General;
 using Field.Models;
 using Field.Strings;
-using Field.Textures;
+using Field;
 using Microsoft.Toolkit.Mvvm.Input;
 using Serilog;
+using System.Text;
 
 namespace Charm;
 
@@ -126,7 +127,9 @@ public partial class TagListView : UserControl
     private TagListView _tagListControl = null;
     private ToggleButton _previouslySelected = null;
     private int _selectedIndex = -1;
-    private FbxHandler _globalFbxHandler = new FbxHandler(false);
+    private FbxHandler _globalFbxHandler = null;
+    private string _weaponItemName = null;
+    private string _currentPKG = null;
 
     private void OnControlLoaded(object sender, RoutedEventArgs routedEventArgs)
     {
@@ -278,8 +281,10 @@ public partial class TagListView : UserControl
                     LoadAnimation(contentValue);
                     break;
                 default:
-                    throw new NotImplementedException();
-            }
+					MessageBox.Show("Not Implemented");
+                    break;
+					//throw new NotImplementedException();
+			}
         }
 
         if (!TagItem.GetEnumDescription(tagListType).Contains("[Final]"))
@@ -290,10 +295,10 @@ public partial class TagListView : UserControl
             {
                 SearchBox.Text = "";
             }
-        
+            
             RefreshItemList();
         }
-
+        
         _tagListLogger.Debug(
             $"Loaded content type {tagListType} contentValue {contentValue} from back {bFromBack}");
     }
@@ -358,9 +363,9 @@ public partial class TagListView : UserControl
             {
                 return;
             }
-            
-            if (!TagItem.GetEnumDescription(_tagListType).Contains("List"))
-            {
+
+			if (!TagItem.GetEnumDescription(_tagListType).Contains("Package") && !TagItem.GetEnumDescription(_tagListType).Contains("List"))
+			{
                 if (displayItems.Count > 50) return;
 
             }
@@ -418,9 +423,11 @@ public partial class TagListView : UserControl
         // If we have a parent, add a TagItem that is actually a back button as first
         if (_parentStack.Count > 0)
         {
+            _currentPKG = String.Join('_', PackageHandler.GetPackageName(_currentHash.GetPkgId()).Split('_').Skip(1).SkipLast(1)).ToUpper();
             tagItems.Insert(0, new TagItem
             {
-                Name = "BACK",
+                Name = $"BACK",
+                Subname = $"{_currentPKG}",
                 TagType = ETagListType.Back,
                 FontSize = 24
             });
@@ -651,7 +658,7 @@ public partial class TagListView : UserControl
                 {
                     Hash = tagItem.Hash,
                     Name = $"/Bulk_{groupName}/{name}",
-                    ExportType = EExportType.Minimal
+                    ExportType = EExportTypeFlag.Minimal
                 };
                 viewer.ExportControl.RoutedFunction(exportInfo);
                 MainWindow.Progress.CompleteStage();
@@ -664,23 +671,29 @@ public partial class TagListView : UserControl
     #region Destination Global Tag Bag
 
     /// <summary>
-    /// Type 0x80809830/0x80809875 and only in sr_globals_010a.
+    /// Type 0x8080471D and only in sr_destination_metadata_010a?
     /// </summary>
     private void LoadDestinationGlobalTagBagList()
     {
         _allTagItems = new ConcurrentBag<TagItem>();
-        var vals = PackageHandler.GetAllEntriesOfReference(0x010a, 0x80809875);
+        var vals = PackageHandler.GetAllEntriesOfReference(0x010a, 0x8080471D);
         Parallel.ForEach(vals, val =>
         {
-            Tag<D2Class_75988080> dgtbParent = PackageHandler.GetTag<D2Class_75988080>(val);
-            if (!dgtbParent.Header.DestinationGlobalTagBag.IsValid())
+            Tag<D2Class_1D478080> dgtbParent = PackageHandler.GetTag<D2Class_1D478080>(val);
+            if (dgtbParent.Header.DestinationGlobalTagBags.Count < 1)
                 return;
-            _allTagItems.Add(new TagItem 
-            { 
-                Hash = dgtbParent.Header.DestinationGlobalTagBag,
-                Name = dgtbParent.Header.DestinationGlobalTagBagName,
-                TagType = ETagListType.DestinationGlobalTagBag
-            });
+            foreach (D2Class_D3598080 destinationGlobalTagBag in dgtbParent.Header.DestinationGlobalTagBags)
+            {
+                if (!destinationGlobalTagBag.DestinationGlobalTagBag.IsValid())
+                    continue;
+                
+                _allTagItems.Add(new TagItem
+                {
+                    Hash = destinationGlobalTagBag.DestinationGlobalTagBag,
+                    Name = destinationGlobalTagBag.DestinationGlobalTagBagName,
+                    TagType = ETagListType.DestinationGlobalTagBag
+                });
+            }
         });
     }
     
@@ -731,8 +744,13 @@ public partial class TagListView : UserControl
         _allTagItems = new ConcurrentBag<TagItem>();
         Parallel.ForEach(budgetSet.Header.Unk28, val =>
         {
-            _allTagItems.Add(new TagItem 
-            { 
+            if (!val.Tag.Hash.IsValid())
+            {
+                Log.Error($"BudgetSet {budgetSetHeader.Header.Unk00.Hash.GetHashString()} has an invalid tag hash.");
+                return;
+            }
+            _allTagItems.Add(new TagItem
+            {
                 Hash = val.Tag.Hash,
                 Name = val.TagPath,
                 TagType = ETagListType.Entity,
@@ -749,12 +767,13 @@ public partial class TagListView : UserControl
         var viewer = GetViewer();
         SetViewer(TagView.EViewerType.Entity);
         bool bLoadedSuccessfully = viewer.EntityControl.LoadEntity(tagHash, _globalFbxHandler);
+        viewer.ExportControl.SkipBlankMatsCheckbox.Visibility = Visibility.Visible;
         if (!bLoadedSuccessfully)
         {
             _tagListLogger.Error($"UI failed to load entity for hash {tagHash}. You can still try to export the full model instead.");
             _mainWindow.SetLoggerSelected();
         }
-        SetExportFunction(ExportEntity);
+        SetExportFunction(ExportEntity, (int)EExportTypeFlag.Full);
         viewer.ExportControl.SetExportInfo(tagHash);
         viewer.EntityControl.ModelView.SetModelFunction(() => viewer.EntityControl.LoadEntity(tagHash, _globalFbxHandler));
     }
@@ -762,8 +781,9 @@ public partial class TagListView : UserControl
     private void ExportEntity(ExportInfo info)
     {
         var viewer = GetViewer();
-        Entity entity = PackageHandler.GetTag(typeof(Entity), new TagHash(info.Hash));
-        viewer.EntityControl.Export(new List<Entity> {entity}, info.Name, info.ExportType);
+        bool skipCheck = Dispatcher.Invoke(() => (bool)viewer.ExportControl.SkipBlankMatsCheckbox.IsChecked);
+        Entity entity = PackageHandler.GetTag(typeof(Entity), new TagHash(info.Hash));  
+        EntityView.Export(new List<Entity> { entity }, info.Name, info.ExportType, null, skipCheck);
     }
     
     /// <summary>
@@ -931,23 +951,23 @@ public partial class TagListView : UserControl
         viewer.EntityControl.LoadEntityFromApi(apiHash, _globalFbxHandler);
         Dispatcher.Invoke(() =>
         {
-            SetExportFunction(ExportApiEntityFull);
+            SetExportFunction(ExportApiEntityFull, (int)EExportTypeFlag.Full | (int)EExportTypeFlag.Minimal);
             viewer.ExportControl.SetExportInfo(apiHash);
             viewer.EntityControl.ModelView.SetModelFunction(() => viewer.EntityControl.LoadEntityFromApi(apiHash, _globalFbxHandler));
         });
     }
 
-    private void SetExportFunction(Action<ExportInfo> function)
+    private void SetExportFunction(Action<ExportInfo> function, int exportTypeFlags)
     {
         var viewer = GetViewer();
-        viewer.ExportControl.SetExportFunction(function);
+        viewer.ExportControl.SetExportFunction(function, exportTypeFlags);
         ShowBulkExportButton();
     }
     
     private void ExportApiEntityFull(ExportInfo info)
     {
         var viewer = GetViewer();
-        viewer.EntityControl.Export(InvestmentHandler.GetEntitiesFromHash(info.Hash), info.Name, info.ExportType);
+        EntityView.Export(InvestmentHandler.GetEntitiesFromHash(info.Hash), info.Name, info.ExportType);
     }
 
     #endregion
@@ -1044,7 +1064,7 @@ public partial class TagListView : UserControl
         var viewer = GetViewer();
         SetViewer(TagView.EViewerType.Static);
         viewer.StaticControl.LoadStatic(tagHash, viewer.StaticControl.ModelView.GetSelectedLod());
-        SetExportFunction(ExportStatic);
+        SetExportFunction(ExportStatic, (int)EExportTypeFlag.Full | (int)EExportTypeFlag.Minimal);
         viewer.ExportControl.SetExportInfo(tagHash);
         viewer.StaticControl.ModelView.SetModelFunction(() => viewer.StaticControl.LoadStatic(tagHash, viewer.StaticControl.ModelView.GetSelectedLod()));
     }
@@ -1052,7 +1072,7 @@ public partial class TagListView : UserControl
     private void ExportStatic(ExportInfo info)
     {
         var viewer = GetViewer();
-        viewer.StaticControl.ExportStatic(new TagHash(info.Hash), info.Name, info.ExportType);
+        StaticView.ExportStatic(new TagHash(info.Hash), info.Name, info.ExportType);
     }
 
     #endregion
@@ -1161,7 +1181,7 @@ public partial class TagListView : UserControl
             SetViewer(TagView.EViewerType.Texture1D);
             viewer.TextureControl.LoadTexture(textureHeader);
         }
-        SetExportFunction(ExportTexture);
+        SetExportFunction(ExportTexture, (int)EExportTypeFlag.Full);
         viewer.ExportControl.SetExportInfo(tagHash);
     }
     
@@ -1187,9 +1207,9 @@ public partial class TagListView : UserControl
         if (activity.Header.Unk18 is D2Class_6A988080)
         {
             var entry = (D2Class_6A988080) activity.Header.Unk18;
-            if (entry.DialogueTable != null)
-                dialogueTables.Add(entry.DialogueTable.Hash);
-        }
+			if (entry.DialogueTable != null)
+				dialogueTables.Add(entry.DialogueTable.Hash);
+		}
         Parallel.ForEach(activity.Header.Unk50, val =>
         {
             foreach (var d2Class48898080 in val.Unk18)
@@ -1237,7 +1257,7 @@ public partial class TagListView : UserControl
         if (activity.Header.Unk18 is D2Class_6A988080)
         {
             var directiveTables =
-                ((D2Class_6A988080) activity.Header.Unk18).DirectiveTables.Select(x => x.DialogueTable.Hash);
+                ((D2Class_6A988080) activity.Header.Unk18).DirectiveTables.Select(x => x.DirectiveTable.Hash);
             
             Parallel.ForEach(directiveTables, hash =>
             {
@@ -1252,7 +1272,7 @@ public partial class TagListView : UserControl
         else if (activity.Header.Unk18 is D2Class_20978080)
         {
             var directiveTables =
-                ((D2Class_20978080) activity.Header.Unk18).PEDirectiveTables.Select(x => x.DialogueTable.Hash);
+                ((D2Class_20978080) activity.Header.Unk18).PEDirectiveTables.Select(x => x.DirectiveTable.Hash);
             
             Parallel.ForEach(directiveTables, hash =>
             {
@@ -1299,11 +1319,15 @@ public partial class TagListView : UserControl
 
             Parallel.ForEach(vals, val =>
             {
+                if (val.Hash == 2158184576)
+                {
+                    var b = 0;
+                }
                 _allTagItems.Add(new TagItem
                 {
                     Hash = val,
-                    Name = $"{val}",
-                    TagType = ETagListType.StringContainer
+					Name = val.GetDevString() == "" ? "" : val.GetDevString(),
+					TagType = ETagListType.StringContainer
                 });
             });
             MainWindow.Progress.CompleteStage();
@@ -1324,6 +1348,7 @@ public partial class TagListView : UserControl
     // Would be nice to do something with colour formatting.
     private void LoadStrings(TagHash tagHash)
     {
+        var viewer = GetViewer();
         _allTagItems = new ConcurrentBag<TagItem>();
         StringContainer stringContainer = PackageHandler.GetTag(typeof(StringContainer), tagHash);
         Parallel.ForEach(stringContainer.Header.StringHashTable, hash =>
@@ -1336,12 +1361,32 @@ public partial class TagListView : UserControl
             });
         });
         RefreshItemList();
+        SetExportFunction(ExportString, (int)EExportTypeFlag.Full);
+        viewer.ExportControl.SetExportInfo(tagHash);
+    }
+
+    private void ExportString(ExportInfo info)
+    {
+
+        StringContainer stringContainer = PackageHandler.GetTag(typeof(StringContainer), new TagHash(info.Hash));
+        StringBuilder text = new StringBuilder();
+        
+        Parallel.ForEach(stringContainer.Header.StringHashTable, hash =>
+        {
+            text.Append($"{hash} : {stringContainer.GetStringFromHash(ELanguage.English, hash)} \n");
+        });
+
+        string saveDirectory = ConfigHandler.GetExportSavePath() + $"/Strings/{info.Hash}_{info.Name}/";
+        Directory.CreateDirectory(saveDirectory);
+
+        File.WriteAllText(saveDirectory + "strings.txt", text.ToString());
+
     }
 
     #endregion
-    
+
     #region Sound
-    
+
     private async Task LoadSoundsPackagesList()
     {
         // If there are packages, we don't want to reload the view as very poor for performance.
@@ -1424,9 +1469,29 @@ public partial class TagListView : UserControl
     {
         var viewer = GetViewer();
         if (viewer.MusicPlayer.SetWem(PackageHandler.GetTag(typeof(Wem), tagHash)))
+        {
             viewer.MusicPlayer.Play();
+            SetExportFunction(ExportWem, (int)EExportTypeFlag.Full);
+            viewer.ExportControl.SetExportInfo(tagHash);
+        }
     }
     
+    private void ExportSound(ExportInfo info)
+    {
+        WwiseSound sound = PackageHandler.GetTag(typeof(WwiseSound), new TagHash(info.Hash));
+        string saveDirectory = ConfigHandler.GetExportSavePath() + $"/Sound/{(_weaponItemName == null ?  "" : $"{_weaponItemName}/")}{info.Hash}_{info.Name}/";
+        Directory.CreateDirectory(saveDirectory);
+        sound.ExportSound(saveDirectory);
+    }
+    
+    private void ExportWem(ExportInfo info)
+    {
+        Wem wem = PackageHandler.GetTag(typeof(Wem), new TagHash(info.Hash));
+        string saveDirectory = ConfigHandler.GetExportSavePath() + $"/Sound/{info.Hash}_{info.Name}/";
+        Directory.CreateDirectory(saveDirectory);
+        wem.SaveToFile($"{saveDirectory}/{info.Name}.wem");
+    }
+
     #endregion
 
     #region Music
@@ -1522,7 +1587,7 @@ public partial class TagListView : UserControl
             RefreshItemList();
             return;
         }
-
+        _weaponItemName = InvestmentHandler.GetItemName(InvestmentHandler.GetInventoryItem(apiHash));
         var resourceUnnamed = (D2Class_F42C8080)val.PatternAudioUnnamed.Header.Unk18;
         var resource = (D2Class_6E358080)val.PatternAudio.Header.Unk18;
         var item = InvestmentHandler.GetInventoryItem(apiHash);
@@ -1652,6 +1717,10 @@ public partial class TagListView : UserControl
         if (tag.Header.Unk20.Count == 0)
             return;
         await viewer.MusicPlayer.SetSound(tag);
+        SetExportFunction(ExportSound, (int)EExportTypeFlag.Full);
+        // bit of a cheat but works
+        var tagItem = _previouslySelected.DataContext as TagItem;
+        viewer.ExportControl.SetExportInfo(tagItem.Name == "" ? tagItem.Subname : $"{tagItem.Subname}_{tagItem.Name}", tagHash);
         viewer.MusicPlayer.Play();
     }
 
@@ -1721,8 +1790,8 @@ public class TagItem
                 return $"[{Hash.Hash}]";
             if (TagType == ETagListType.Package)
                 return $"[{Hash.GetPkgId():X4}]";
-            return $"[{Hash:X8}]";
-        }
+			return $"[{Hash.GetHashString():X8}]";
+		}
     }
 
     public int FontSize { get; set; } = 16;

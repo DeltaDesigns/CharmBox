@@ -1,6 +1,5 @@
 ﻿using System.Runtime.InteropServices;
 using Field.General;
-using Field.Textures;
 
 namespace Field.Models;
 
@@ -20,6 +19,12 @@ public struct Vector2
     {
         X = x;
         Y = y;
+    }
+    
+    public Vector2(double x, double y)
+    {
+        X = (float)x;
+        Y = (float)y;
     }
 }
 
@@ -178,6 +183,14 @@ public struct Vector4
         Z = z;
         W = 0;
     }
+    
+    public Vector4(double x, double y, double z, double w)
+    {
+        X = (float)x;
+        Y = (float)y;
+        Z = (float)z;
+        W = (float)w;
+    }
         
     public Vector4(int x, int y, int z)
     {
@@ -202,6 +215,27 @@ public struct Vector4
             Y = y / 32_767.0f;
             Z = z / 32_767.0f;
             W = w / 32_767.0f;  
+        }
+    }
+    
+    /// <summary>
+    /// Terrain specific to ease computation.
+    /// </summary>
+    public Vector4(ushort x, ushort y, short z, ushort w, bool bIsVector3 = false)
+    {
+        if (bIsVector3)
+        {
+            X = x / 65_535.0f;
+            Y = y / 65_535.0f;
+            Z = z / 32_767.0f;
+            W = w;
+        }
+        else
+        {
+            X = x / 65_535.0f;
+            Y = y / 65_535.0f;
+            Z = z / 32_767.0f;
+            W = w / 65_535.0f;  
         }
     }
 
@@ -413,19 +447,24 @@ public enum ELOD : sbyte
 
 public class Part
 {
+    public int Index;
     public uint IndexOffset;
     public uint IndexCount;
     public EPrimitiveType PrimitiveType;
-    public int DetailLevel;
+    public ELodCategory LodCategory;
     public List<UIntVector3> Indices = new List<UIntVector3>();
     public List<uint> VertexIndices = new List<uint>();
     public List<Vector4> VertexPositions = new List<Vector4>();
     public List<Vector2> VertexTexcoords = new List<Vector2>();
+    public List<Vector2> VertexTexcoords1 = new List<Vector2>();
     public List<Vector4> VertexNormals = new List<Vector4>();
     public List<Vector4> VertexTangents = new List<Vector4>();
     public List<Vector4> VertexColours = new List<Vector4>();
+    public List<Vector4> VertexColourSlots = new List<Vector4>();
     public Material Material;
     public int GroupIndex = 0;
+    public bool bAlphaClip;
+    public byte GearDyeChangeColorIndex = 0xFF;
 
     public Part()
     {

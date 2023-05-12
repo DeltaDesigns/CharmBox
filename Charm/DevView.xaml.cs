@@ -1,5 +1,8 @@
-﻿using System;
+﻿using System.Text;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows;
@@ -9,7 +12,7 @@ using Field;
 using Field.Entities;
 using Field.General;
 using Field.Models;
-using Field.Textures;
+using Field.Statics;
 
 namespace Charm;
 
@@ -27,11 +30,12 @@ public partial class DevView : UserControl
     {
         _mainWindow = Window.GetWindow(this) as MainWindow;
         _fbxHandler = new FbxHandler(false);
+        HashLocation.Text = $"PKG:\nPKG ID:\nEntry Index:";
     }
     
     private void TagHashBoxKeydown(object sender, KeyEventArgs e)
     {
-        if (e.Key != Key.Return && e.Key != Key.H && e.Key != Key.R && e.Key != Key.E)
+        if (e.Key != Key.Return && e.Key != Key.H && e.Key != Key.R && e.Key != Key.E && e.Key != Key.L)
         {
             return;
         }
@@ -46,15 +50,38 @@ public partial class DevView : UserControl
             TagHashBox.Text = "INVALID HASH";
             return;
         }
-        TagHash hash = new TagHash(strHash);
+
+        TagHash hash;
+        if (strHash.Contains("-"))
+        {
+            var s = strHash.Split("-");
+            var pkgid = Int32.Parse(s[0], NumberStyles.HexNumber);
+            var entryindex = Int32.Parse(s[1], NumberStyles.HexNumber);
+            hash = new TagHash(PackageHandler.MakeHash(pkgid, entryindex));
+        }
+        else
+        {
+            hash = new TagHash(strHash);
+        }
+        
         if (!hash.IsValid())
         {
             TagHashBox.Text = "INVALID HASH";
             return;
         }
-
+        //uint to int
         switch (e.Key)
         {
+            case Key.L:
+                StringBuilder data = new StringBuilder();
+                data.AppendLine($"PKG: {PackageHandler.GetPackageName(hash.GetPkgId())}");
+                data.AppendLine($"PKG ID: {hash.GetPkgId()}");
+                data.AppendLine($"Entry Index: {hash.GetEntryIndex() }");
+                data.AppendLine($"Dev String: {hash.GetDevString() ?? hash.GetContainerString() ?? "NULL"}");
+                data.AppendLine($"Reference Hash: {hash.Hash}");
+
+                HashLocation.Text = data.ToString();
+                break;
             case Key.Return:
                 AddWindow(hash);
                 break;
@@ -85,6 +112,14 @@ public partial class DevView : UserControl
                 break;
         }
     }
+    
+    private void ExportWem(ExportInfo info)
+    {
+        Wem wem = PackageHandler.GetTag(typeof(Wem), new TagHash(info.Hash));
+        string saveDirectory = ConfigHandler.GetExportSavePath() + $"/Sound/{info.Hash}_{info.Name}/";
+        Directory.CreateDirectory(saveDirectory);
+        wem.SaveToFile($"{saveDirectory}/{info.Name}.wav");
+    }
 
     private void AddWindow(TagHash hash)
     {
@@ -99,6 +134,8 @@ public partial class DevView : UserControl
             audioView.SetViewer(TagView.EViewerType.TagList);
             audioView.MusicPlayer.SetWem(PackageHandler.GetTag(typeof(Wem), hash));
             audioView.MusicPlayer.Play();
+            audioView.ExportControl.SetExportFunction(ExportWem, (int)EExportTypeFlag.Full);
+            audioView.ExportControl.SetExportInfo(hash);
             _mainWindow.MakeNewTab(hash, audioView);
             _mainWindow.SetNewestTabSelected();
         }
@@ -198,5 +235,29 @@ public partial class DevView : UserControl
                 UseShellExecute = true
             }
         }.Start();
+    }
+
+    private void ExportDevMapButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        // Not actually a map, but a list of assets that are good for testing
+        // The assets are assembled in UE5 so just have to rip the list
+        var assets = new List<string>()
+        {
+            "6C24BB80",
+            "a237be80",
+            "b540be80",
+            "68a8b480",
+            "fba4b480",
+            "e1c5b280",
+            "0F3CBE80",
+            "A229BE80",
+            "B63BBE80",
+            "CB32BE80",
+        };
+
+        foreach (var asset in assets)
+        {
+            StaticView.ExportStatic(new TagHash(asset), asset, EExportTypeFlag.Full, "devmap");
+        }
     }
 }

@@ -20,6 +20,7 @@ public class IndexBuffer : Tag
         List<UIntVector3> indices = new List<UIntVector3>();
         using (var handle = GetHandle())
         {
+            int numStrips = 0;
             // indices.Capacity = count;
             if (indexFormat == EPrimitiveType.Triangles)
             {
@@ -46,7 +47,8 @@ public class IndexBuffer : Tag
                 if (header.Is32Bit)
                 {
                     handle.BaseStream.Seek(offset * 4, SeekOrigin.Begin);
-                    while (true)
+                    long start = handle.BaseStream.Position;
+                    while (handle.BaseStream.Position + 8 - start < count * 4)  // + 4 from reading the first two previous
                     {
                         uint i1 = handle.ReadUInt32();
                         uint i2 = handle.ReadUInt32();
@@ -66,6 +68,7 @@ public class IndexBuffer : Tag
                         }
                         handle.BaseStream.Seek(-8, SeekOrigin.Current);
                         triCount++;
+                        numStrips++;
                         if (indices.Count == count)
                         {
                             break;
@@ -79,7 +82,17 @@ public class IndexBuffer : Tag
                     while (handle.BaseStream.Position + 4 - start < count * 2)  // + 4 from reading the first two previous
                     {
                         uint i1 = handle.ReadUInt16();
+                        if (i1 == 0xFF_FF)
+                        {
+                            triCount = 0;
+                            continue;
+                        }
                         uint i2 = handle.ReadUInt16();
+                        if (i2 == 0xFF_FF)
+                        {
+                            triCount = 0;
+                            continue;
+                        }
                         uint i3 = handle.ReadUInt16();
                         if (i3 == 0xFF_FF)
                         {

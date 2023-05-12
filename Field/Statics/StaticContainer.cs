@@ -2,7 +2,6 @@
 using System.Runtime.InteropServices;
 using Field.General;
 using Field.Models;
-using Field.Textures;
 
 namespace Field.Statics;
 
@@ -14,7 +13,7 @@ public class StaticContainer
         Hash = hash;
     }
     
-    public void SaveMaterialsFromParts(string saveDirectory, List<Part> parts, bool bSaveShaders)
+    public void SaveMaterialsFromParts(string saveDirectory, List<Part> parts, bool bSaveShaders, bool bSaveCBuffers)
     {
         Directory.CreateDirectory($"{saveDirectory}/Textures");
         Directory.CreateDirectory($"{saveDirectory}/Shaders");
@@ -24,17 +23,19 @@ public class StaticContainer
             part.Material.SaveAllTextures($"{saveDirectory}/Textures");
             if (bSaveShaders)
             {
-                part.Material.SavePixelShader($"{saveDirectory}/Shaders");
+                part.Material.SavePixelShader($"{saveDirectory}/Shaders", false, bSaveCBuffers);
+                part.Material.SaveVertexShader($"{saveDirectory}/Shaders", bSaveCBuffers);
+                part.Material.SaveComputeShader($"{saveDirectory}/Shaders");
             }
         }
     }
     
     [DllImport("Symmetry.dll", EntryPoint = "DllLoadStaticContainer", CallingConvention = CallingConvention.StdCall)]
-    public extern static DestinyFile.UnmanagedData DllLoadStaticContainer(uint staticContainerHash, ELOD detailLevel);
+    public extern static DestinyFile.UnmanagedData DllLoadStaticContainer(uint staticContainerHash, ELOD detailLevel, IntPtr executionDirectoryPtr);
 
     public List<Part> Load(ELOD detailLevel)
     {
-        DestinyFile.UnmanagedData unmanagedData = DllLoadStaticContainer(Hash.Hash, detailLevel);
+        DestinyFile.UnmanagedData unmanagedData = DllLoadStaticContainer(Hash.Hash, detailLevel, PackageHandler.GetExecutionDirectoryPtr());
         List<Part> outPart = new List<Part>();
         outPart.EnsureCapacity(unmanagedData.dataSize);
         for (int i = 0; i < unmanagedData.dataSize; i++)
@@ -60,10 +61,12 @@ public struct PartUnmanaged
     public DestinyFile.UnmanagedData VertexTangents;
     public DestinyFile.UnmanagedData VertexColours;
     public uint MaterialHash;
+    public int DetailLevel;
 
     public Part Decode()
     {
         Part outPart = new Part();
+        outPart.LodCategory = (ELodCategory)DetailLevel;
         outPart.IndexOffset = IndexOffset;
         outPart.IndexCount = IndexCount;
         outPart.PrimitiveType = (EPrimitiveType)PrimitiveType;

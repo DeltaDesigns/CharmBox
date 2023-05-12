@@ -5,14 +5,17 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using Field;
 using Field.Entities;
 using Field.General;
+using Field.Investment;
 using Field.Models;
 using HelixToolkit.SharpDX.Core.Model.Scene;
+using Internal.Fbx;
 using Serilog;
 using File = System.IO.File;
 
@@ -23,6 +26,7 @@ public partial class EntityView : UserControl
     private readonly ILogger _entityLog = Log.ForContext<EntityView>();
     private static MainWindow _mainWindow = null;
     private Entity _loadedEntity = null;
+    private static bool source2Models = ConfigHandler.GetS2VMDLExportEnabled();
 
     public EntityView()
     {
@@ -94,13 +98,18 @@ public partial class EntityView : UserControl
         return loaded;
     }
 
-    public void Export(List<Entity> entities, string name, EExportType exportType)
+    public static void Export(List<Entity> entities, string name, EExportTypeFlag exportType, EntitySkeleton overrideSkeleton = null, bool skipBlanks = false)
     {
-        FbxHandler fbxHandler = new FbxHandler(exportType == EExportType.Full);
-        _entityLog.Debug($"Exporting entity model name: {name}");
+        FbxHandler fbxHandler = new FbxHandler(exportType == EExportTypeFlag.Full);
+
+        List<FbxNode> boneNodes = null;
+        if (overrideSkeleton != null)
+            boneNodes = fbxHandler.AddSkeleton(overrideSkeleton.GetBoneNodes());
+        
+        Log.Debug($"Exporting entity model name: {name}");
         string savePath = ConfigHandler.GetExportSavePath();
-        string meshName = name;
-        if (exportType == EExportType.Full)
+        string meshName = string.Join("_", name.Split(Path.GetInvalidFileNameChars()));
+        if (exportType == EExportTypeFlag.Full)
         {
             savePath += $"/{meshName}";
         }
@@ -109,28 +118,82 @@ public partial class EntityView : UserControl
         foreach (var entity in entities)
         {
             var dynamicParts = entity.Load(ELOD.MostDetail);
-            fbxHandler.AddEntityToScene(entity, dynamicParts, ELOD.MostDetail);
-            if (exportType == EExportType.Full)
+            fbxHandler.AddEntityToScene(entity, dynamicParts, ELOD.MostDetail, boneNodes, skipBlanks);
+            if (exportType == EExportTypeFlag.Full)
             {
-                entity.SaveMaterialsFromParts(savePath, dynamicParts, ConfigHandler.GetUnrealInteropEnabled());
+                entity.SaveMaterialsFromParts(savePath, dynamicParts, ConfigHandler.GetUnrealInteropEnabled() || ConfigHandler.GetS2ShaderExportEnabled(), ConfigHandler.GetSaveCBuffersEnabled());
                 entity.SaveTexturePlates(savePath);
             }
-        }
+            if (source2Models)
+            {
+                Source2Handler.SaveEntityVMDL($"{savePath}", entity);
+            }
+		}
 
-        if (exportType == EExportType.Full)
+        if (exportType == EExportTypeFlag.Full)
         {
             fbxHandler.InfoHandler.SetMeshName(meshName);
             if (ConfigHandler.GetUnrealInteropEnabled())
             {
                 fbxHandler.InfoHandler.SetUnrealInteropPath(ConfigHandler.GetUnrealInteropPath());
                 AutomatedImporter.SaveInteropUnrealPythonFile(savePath, meshName, AutomatedImporter.EImportType.Entity, ConfigHandler.GetOutputTextureFormat());
-                //AutomatedImporter.SaveInteropBlenderPythonFile(savePath, meshName, AutomatedImporter.EImportType.Entity, ConfigHandler.GetOutputTextureFormat());
-
+            }
+            if(ConfigHandler.GetBlenderInteropEnabled())
+            {
+                AutomatedImporter.SaveInteropBlenderPythonFile(savePath, meshName, AutomatedImporter.EImportType.Entity, ConfigHandler.GetOutputTextureFormat());
             }
         }
+
+        // Scale and rotate
+        // fbxHandler.ScaleAndRotateForBlender(boneNodes[0]);
+        fbxHandler.InfoHandler.AddType("Entity");
         fbxHandler.ExportScene($"{savePath}/{meshName}.fbx");
         fbxHandler.Dispose();
-        _entityLog.Information($"Exported entity model {name} to {savePath.Replace('\\', '/')}/");
+        Log.Information($"Exported entity model {name} to {savePath.Replace('\\', '/')}/");
+    }
+
+    public static void ExportInventoryItem(ApiItem item)
+    {
+        string name = string.Join("_", $"{item.Item.Header.InventoryItemHash.Hash}_{item.ItemName}"
+            .Split(Path.GetInvalidFileNameChars()));
+        // Export the model
+        // todo bad, should be replaced
+        EntitySkeleton overrideSkeleton = new EntitySkeleton(new TagHash("BC38AB80"));
+        var val = InvestmentHandler.GetPatternEntityFromHash(item.Item.Header.InventoryItemHash);
+        // var resource = (D2Class_6E358080)val.PatternAudio.Header.Unk18;
+        // if (resource.PatternAudioGroups[0].WeaponSkeletonEntity != null)
+        // {
+            // overrideSkeleton = resource.PatternAudioGroups[0].WeaponSkeletonEntity.Skeleton;
+        // }
+        if (val != null && val.Skeleton != null)
+        {
+            overrideSkeleton = val.Skeleton;
+        }
+        EntityView.Export(InvestmentHandler.GetEntitiesFromHash(item.Item.Header.InventoryItemHash),
+            name, EExportTypeFlag.Full, overrideSkeleton);
+        
+        // Export the dye info
+        Dictionary<DestinyHash, Dye> dyes = new Dictionary<DestinyHash, Dye>();
+        if (item.Item.Header.Unk90 is D2Class_77738080 translationBlock)
+        {
+            foreach (var dyeEntry in translationBlock.DefaultDyes)
+            {
+                Dye dye = InvestmentHandler.GetDyeFromIndex(dyeEntry.DyeIndex);
+                dyes.Add(InvestmentHandler.GetChannelHashFromIndex(dyeEntry.ChannelIndex), dye);
+            }
+            foreach (var dyeEntry in translationBlock.LockedDyes)
+            {
+                Dye dye = InvestmentHandler.GetDyeFromIndex(dyeEntry.DyeIndex);
+                dyes.Add(InvestmentHandler.GetChannelHashFromIndex(dyeEntry.ChannelIndex), dye);
+            }
+        }
+        
+        string savePath = ConfigHandler.GetExportSavePath();
+        string meshName = name;
+        savePath += $"/{meshName}";
+        Directory.CreateDirectory(savePath);
+        AutomatedImporter.SaveBlenderApiFile(savePath, string.Join("_", item.ItemName.Split(Path.GetInvalidFileNameChars())),
+            ConfigHandler.GetOutputTextureFormat(), dyes.Values.ToList());
     }
 
     public void LoadAnimation(TagHash tagHash, FbxHandler fbxHandler)

@@ -3,7 +3,6 @@ using DirectXTexNet;
 using Field.Entities;
 using Field.General;
 using Field.Models;
-using Field.Textures;
 using Vector2 = System.Numerics.Vector2;
 using Vector4 = System.Numerics.Vector4;
 
@@ -168,8 +167,8 @@ public class TexturePlate : Tag
         foreach (var transform in Header.PlateTransforms)
         {
             ScratchImage original = transform.Texture.GetScratchImage();
-            ScratchImage resizedOriginal = original.Resize(transform.Scale.X, transform.Scale.Y, 0);
-            TexHelper.Instance.CopyRectangle(resizedOriginal.GetImage(0, 0, 0), 0, 0, transform.Scale.X, transform.Scale.Y, outputPlate.GetImage(0, 0, 0), bSrgb ? TEX_FILTER_FLAGS.SRGB : 0, transform.Translation.X, transform.Translation.Y);
+            ScratchImage resizedOriginal = original.Resize(transform.Scale.X, transform.Scale.Y, TEX_FILTER_FLAGS.SEPARATE_ALPHA);
+            TexHelper.Instance.CopyRectangle(resizedOriginal.GetImage(0, 0, 0), 0, 0, transform.Scale.X, transform.Scale.Y, outputPlate.GetImage(0, 0, 0), bSrgb ? TEX_FILTER_FLAGS.SEPARATE_ALPHA : 0, transform.Translation.X, transform.Translation.Y);
             original.Dispose();
             resizedOriginal.Dispose();
         }
@@ -193,7 +192,7 @@ public class TexturePlate : Tag
             {
                 maxDimension = transform.Translation.X + transform.Scale.X;
             }
-            else if (transform.Translation.Y + transform.Scale.Y > maxDimension)
+            if (transform.Translation.Y + transform.Scale.Y > maxDimension)
             {
                 maxDimension = transform.Translation.Y + transform.Scale.Y;
             }
@@ -329,14 +328,12 @@ public struct D2Class_4F9F8080
     public Field.Models.Vector4 Translation;
 }
 
-[StructLayout(LayoutKind.Sequential, Size = 0x10)]  // technically its actually 0x8, but they do dumb stuff so we'll just ignore it
+[StructLayout(LayoutKind.Sequential, Size = 8)]
 public struct D2Class_40868080
 {
     public ushort Unk00;
     public ushort Unk02;
-    public ushort Unk04;
-    [DestinyOffset(0xC), DestinyField(FieldType.Resource)]
-    public dynamic? Unk0C;
+    public uint Unk04;
 }
 
 [StructLayout(LayoutKind.Sequential, Size = 0x108)]
@@ -433,7 +430,20 @@ public struct D2Class_C56E8080
     [DestinyField(FieldType.TablePointer)]
     public List<D2Class_CB6E8080> Parts;
     [MarshalAs(UnmanagedType.ByValArray, SizeConst = 37)]
-    public short[] PartGroups;
+    public short[] StagePartOffsets;
+}
+
+public enum ELodCategory : byte
+{
+    _lod_category_0 = 0, // main geometry lod0
+    _lod_category_01 = 1,  // grip/stock lod0
+    _lod_category_012 = 2,  // stickers lod0
+    _lod_category_0123 = 3,  // internal geom lod0
+    _lod_category_1 = 4,  // low poly geom lod1
+    _lod_category_2 = 7,  // low poly geom lod2
+    _lod_category_23 = 8,  // grip/stock/scope lod2
+    _lod_category_3 = 9,  // low poly geom lod3
+    _lod_category_detail = 10 // detail lod0
 }
 
 [StructLayout(LayoutKind.Sequential, Size = 0x24)]
@@ -441,19 +451,19 @@ public struct D2Class_CB6E8080  // TODO use DCG to figure out what this is
 {
     [DestinyField(FieldType.TagHash)]
     public Material Material;  // AA6D8080
-    public short ExternalMaterialIndex;
+    public short VariantShaderIndex;  // variant_shader_index
     public short PrimitiveType;
     public uint IndexOffset;
     public uint IndexCount;
     public uint Unk10;  // might be number of strips?
-    public short Unk14;
+    public short ExternalIdentifier;  // external_identifier
     public short Unk16;  // some kind of index
-    public int Unk18;  // sbyte gear_dye_change_color_index
-    public sbyte Unk1C;
-    public sbyte DetailLevel;
-    public sbyte Unk1E;
-    public sbyte Unk1F;
-    public int Unk20;
+    public int Flags;
+    public byte GearDyeChangeColorIndex;   // sbyte gear_dye_change_color_index
+    public ELodCategory LodCategory;
+    public byte Unk1E;
+    public byte LodRun;  // lod_run
+    public int Unk20; // variant_shader_index?
 }
 
 [StructLayout(LayoutKind.Sequential, Size = 0x320)]
@@ -1202,20 +1212,46 @@ public struct VertexWeight
     public IntVector4 WeightIndices;
 }
 
-#region Named entities
-
-[StructLayout(LayoutKind.Sequential, Size = 0x50)]
-public struct D2Class_75988080
+[StructLayout(LayoutKind.Sequential, Size = 8)]
+public struct D2Class_44318080
 {
     public long FileSize;
-    [DestinyField(FieldType.RelativePointer)]
-    public string DestinationGlobalTagBagName;
+    [DestinyField(FieldType.TagHash64)]
+    public Entity? Entity;
+}
+
+#region Named entities
+
+//I think this is the old struct for named bags, it seems like it changed to 1D478080? 
+
+//[StructLayout(LayoutKind.Sequential, Size = 0x50)]
+//public struct D2Class_75988080
+//{
+//    public long FileSize;
+//    // [DestinyField(FieldType.RelativePointer)]
+//    // public string DestinationGlobalTagBagName;
+//    public TagHash DestinationGlobalTagBag;
+//    // [DestinyOffset(0x20)] 
+//    // public TagHash PatrolTable1;
+//    // [DestinyOffset(0x28), DestinyField(FieldType.RelativePointer)] 
+//    // public string PatrolTableName;
+//    // public TagHash PatrolTable2;
+//}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x18)]
+public struct D2Class_1D478080
+{
+    public long FileSize;
+    [DestinyField(FieldType.TablePointer)]
+    public List<D2Class_D3598080> DestinationGlobalTagBags;
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x10)]
+public struct D2Class_D3598080
+{
     public TagHash DestinationGlobalTagBag;
-    [DestinyOffset(0x20)] 
-    public TagHash PatrolTable1;
-    [DestinyOffset(0x28), DestinyField(FieldType.RelativePointer)] 
-    public string PatrolTableName;
-    public TagHash PatrolTable2;
+    [DestinyOffset(0x8), DestinyField(FieldType.RelativePointer)]
+    public string DestinationGlobalTagBagName;
 }
 
 #endregion
@@ -1239,6 +1275,8 @@ public struct D2Class_9B318080
     public TagHash StringContainer;  // idk why but i presume debug strings
     public DestinyHash WeaponContentGroup2Hash;  // "weaponContentGroupHash" from API
     // theres other stringcontainer stuff but skipping it
+    [DestinyOffset(0xA0), DestinyField(FieldType.TagHash64)]
+    public Entity? WeaponSkeletonEntity;
     [DestinyOffset(0xD0), DestinyField(FieldType.TagHash64)]
     public Tag<D2Class_A36F8080> AudioGroup;
     public float UnkE0;

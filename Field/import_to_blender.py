@@ -2,20 +2,17 @@ import bpy
 import json
 import mathutils
 import os
-#MAYBE TO DO: Add color sampling so non-color textures that arent normals dont connect to the normal node?
-#https://www.geeksforgeeks.org/find-most-used-colors-in-image-using-python/
-
+#!!!DO NOT MANUALLY IMPORT THE FBX, THE SCRIPT WILL DO IT FOR YOU!!!
 
 #Adapted from Monteven's UE5 import script
 
 #Globally gets all the objects in the scene
 objects = bpy.data.objects
-vis_objects = [ob for ob in bpy.context.view_layer.objects if ob.visible_get()]
 scene = bpy.context.scene
-BPY = bpy.ops
 
 #Info
-Name = "MAP_HASH"
+Type = "IMPORT_TYPE"
+Name = "HASH"
 Filepath = os.path.abspath(bpy.context.space_data.text.filepath+"/..") #"OUTPUT_DIR"
 #
 
@@ -25,86 +22,124 @@ config = json.load(open(Filepath + f"\\{info_name}"))
 FileName = Filepath + "\\" + Name + ".fbx" 
 #
 
-original_statics = {} #original static objects
+static_names = {} #original static objects
 
 def assemble_map():
-    print("Starting import on map: " + Name)
+    print(f"Starting import on {Type}: {Name}")
     
-    #Grab all the objects currently in the scene
-    oldobjects = bpy.data.objects.items()
+    #make a collection with the name of the imported fbx for the objects
+    bpy.data.collections.new(str(Name))
+    bpy.context.scene.collection.children.link(bpy.data.collections[str(Name)])
+    bpy.context.view_layer.active_layer_collection = bpy.context.view_layer.layer_collection.children[str(Name)]
 
-    BPY.import_scene.fbx(filepath=FileName) #Just imports the fbx, no special settings needed
+    bpy.ops.import_scene.fbx(filepath=FileName, use_custom_normals=True, ignore_leaf_bones=True, automatic_bone_orientation=True) #Just imports the fbx, no special settings needed
     
-    #Now grabs all the objects in the scene after the import
-    newobjects = bpy.data.objects.items()
+    assign_materials()
+    add_to_collection() 
 
-    for ob in oldobjects:
-        if ob[0] not in newobjects:
-            newobjects.remove(ob) #Removes every object from the list that wasnt imported (makes things not instance multiple times?)
+    newobjects = bpy.data.collections[str(Name)].objects
 
-    print("Imported map: " + Name)
-    print("Instancing...")
-
-    static_names = {}
-    for x in newobjects:
-        if len(config["Instances"].items()) == 1: #Fix for error that occurs when theres only 1 object in the fbx
-            for newname, value in config["Instances"].items():
-                x[1].name = newname
-
-        obj_name = x[1].name[:8]
-        if obj_name not in static_names.keys():
-            static_names[obj_name] = []
-        static_names[obj_name].append(x)
-
-    for static, instances in config["Instances"].items():
-        try:  # fix this
-            parts = static_names[static]
-        except:
-            print(f"Failed on {static}. FBX may contain only 1 object")
-            continue
-
-        for part in parts:
-            for instance in instances:
-                ob_copy = part[1].copy()
-                bpy.context.collection.objects.link(ob_copy) #makes the instances?
-
-                location = [instance["Translation"][0], instance["Translation"][1], instance["Translation"][2]]
-                #Reminder that blender uses WXYZ, the order in the confing file is XYZW, so W is always first
-                quat = mathutils.Quaternion([instance["Rotation"][3], instance["Rotation"][0], instance["Rotation"][1], instance["Rotation"][2]])
-
-                ob_copy.location = location
-                ob_copy.rotation_mode = 'QUATERNION'
-                ob_copy.rotation_quaternion = quat
-                ob_copy.scale = [instance["Scale"]]*3
-  
-    add_to_collection()
-    print("Assigning materials...")
-    assign_map_materials()
-
-def assign_map_materials():
-    materials = bpy.data.materials
+    print(f"Imported {Type}: {Name}")
     
-    static_names = {}
-    for x in objects: #find the original static objects and add them to static_names
-        part = x.name.rpartition('.')
-        obj_name = part[0]
-        if obj_name not in static_names.keys():
-            static_names[obj_name] = []
-            original_statics[obj_name] = []
+    #Merge statics, create instances for maps only
+    if Is_Map():
+        print("Merging Map Statics... ")
+        tmp = []
+        for obj in newobjects:
+            #deselect all objects
+            bpy.ops.object.select_all(action='DESELECT')
+            tmp.append(obj.name[:8])
 
-        static_names[obj_name].append(x)
-        original_statics[obj_name].append(x)
+        #merge static parts into one object
+        for obj in tmp:
+            bpy.ops.object.select_all(action='DESELECT')
+            for meshes, mats in config["Parts"].items():
+                if meshes[:8] == obj and meshes in bpy.context.view_layer.objects:
+                    print(meshes + " belongs to " + obj)
+                    bpy.data.objects[meshes].select_set(True)
+                    bpy.context.view_layer.objects.active = bpy.data.objects[meshes]
+            bpy.ops.object.join()
+        bpy.ops.outliner.orphans_purge()
+
+        #merge static parts into one object, Old method
+        # for x in range(0, 4): #For some reason one pass doesnt work, this slows the import down a bit, idk a better fix
+        #     for obj in tmp:
+        #         bpy.ops.object.select_all(action='DESELECT')
+        #         #print(obj)
+        #         for obj2 in newobjects:
+        #             if obj2.name[:8] == obj and obj in tmp:
+        #                 tmp.remove(obj)
+        #                 obj2.select_set(True)
+        #                 bpy.context.view_layer.objects.active = obj2
+        #         bpy.ops.object.join()
+        #         bpy.ops.outliner.orphans_purge()
+
+        newobjects = [] #Clears the list just in case
+        newobjects = bpy.data.collections[str(Name)].objects #Readds the objects in the collection to the list
+
+        for x in newobjects:
+            if len(config["Instances"].items()) <= 1 and len(config["Parts"].items()) <= 1: #Fix for error that occurs when theres only 1 object in the fbx
+                for newname, value in config["Instances"].items():
+                    x.name = newname
+
+            obj_name = x.name[:8]
+            if obj_name not in static_names.keys():
+                static_names[obj_name] = []
+            static_names[obj_name].append(x.name)
+
+        print("Instancing...")
+
+        for static, instances in config["Instances"].items():
+            try:  # fix this
+                parts = static_names[static]
+            except:
+                print(f"Failed on {static}. FBX may contain only 1 object")
+                continue
+
+            for part in parts:
+                for instance in instances:
+                    ob_copy = bpy.data.objects[part].copy()
+                    bpy.context.collection.objects.link(ob_copy) #makes the instances
+
+                    location = [instance["Translation"][0], instance["Translation"][1], instance["Translation"][2]]
+                    #Reminder that blender uses WXYZ, the order in the confing file is XYZW, so W is always first
+                    quat = mathutils.Quaternion([instance["Rotation"][3], instance["Rotation"][0], instance["Rotation"][1], instance["Rotation"][2]])
+
+                    ob_copy.location = location
+                    ob_copy.rotation_mode = 'QUATERNION'
+                    ob_copy.rotation_quaternion = quat
+                    ob_copy.scale = [instance["Scale"]]*3
         
-    for staticname, matname in config["Parts"].items(): #assign the objects matching material from the config file
-        if staticname in static_names.keys():
-            obj = bpy.data.objects[str(staticname)]
-            for slt in obj.material_slots:
-                if matname in materials.keys():
-                    slt.material = materials[matname]
-                    print(f"Existing material {matname} assigned to {staticname}")
-                else: 
-                    if slt.material.name != matname:
-                        slt.material.name = matname
+        if "Terrain" in Type:
+            for x in newobjects:
+                x.select_set(True)
+                bpy.ops.object.rotation_clear(clear_delta=False) #Clears the rotation of the terrain
+
+    if not Is_Map():
+        for x in newobjects:
+            x.select_set(True)
+            #Clear the scale and rotation of the entity
+            bpy.ops.object.rotation_clear(clear_delta=False)
+            bpy.ops.object.scale_clear(clear_delta=False)
+
+    cleanup()
+
+def assign_materials():
+    print("Assigning materials...")
+    
+    materials = bpy.data.materials
+    for k in materials: #Removes the last _ and anything after it in the material name, so the name matches the config files
+        if k.name.count("_") > 1:
+            k.name = k.name[:k.name.rfind("_")]
+
+    for staticname, matname in config["Parts"].items(): #Renames the materials to the actual material hash in the config file
+        for mats in materials:
+            if mats.name == staticname:
+                mats.name = matname
+            else:
+                if len(config["Parts"].items()) <= 1:
+                    for name, mat in config["Parts"].items():
+                        bpy.data.objects[name].active_material.name = mat
 
     for obj in bpy.data.objects: #remove any duplicate materials that may have been created
         for slt in obj.material_slots:
@@ -112,7 +147,6 @@ def assign_map_materials():
             if part[2].isnumeric() and part[0] in materials:
                 slt.material = materials.get(part[0])
         
-
     #Get all the images in the directory and load them
     for img in os.listdir(Filepath + "/Textures/"):
         if img.endswith("TEX_EXT"):
@@ -124,15 +158,16 @@ def assign_map_materials():
     
     for k, mat in d.items():
         matnodes = bpy.data.materials[k].node_tree.nodes
-        matnodes['Principled BSDF'].inputs['Metallic'].default_value = 0 
+        if matnodes.find('Principled BSDF') != -1:
+            matnodes['Principled BSDF'].inputs['Metallic'].default_value = 0 
 
         #To make sure the current material already doesnt have at least one texture node
         if not len(find_nodes_by_type(bpy.data.materials[k], 'TEX_IMAGE')) > 0: #
             tex_num = 0 #To keep track of the current position in the list
             for n, info in mat.items():
-                #print(k + " " + n)
-                current_image = "PS_" + str(n) + "_" + info["Hash"] + "TEX_EXT"
-            
+                #current_image = "PS_" + str(n) + "_" + info["Hash"] + "TEX_EXT"
+                current_image = info["Hash"] + "TEX_EXT"
+                
                 if info["SRGB"]:
                     colorspace = "sRGB"
                 else: 
@@ -140,10 +175,9 @@ def assign_map_materials():
 
                 texnode = matnodes.new('ShaderNodeTexImage')
                 texnode.hide = True
-                texnode.location = (-370.0, 200.0 + (float(n)*-1.1)*50) #shitty offsetting
+                texnode.location = (-370.0, 200.0 + (float(tex_num)*-1.1)*50) #shitty offsetting
 
                 texture = bpy.data.images.get(current_image)
-    
                 if texture:
                     texnode.label = texture.name
                     texture.colorspace_settings.name = colorspace
@@ -160,8 +194,6 @@ def assign_map_materials():
                             link_normal(bpy.data.materials[k], int(tex_num))
                 tex_num += 1
                 
-
-
 def find_nodes_by_type(material, node_type):
     """ Return a list of all of the nodes in the material
         that match the node type.
@@ -218,11 +250,11 @@ def link_normal(material, num = 0):
                      
 def cleanup():
     print(f"Cleaning up...")
-    #Delete all the objects in original_statics
-    for x in objects:
-        if x.name in original_statics.keys():
-            bpy.data.objects.remove(x)
-
+    #Delete all the objects in static_names
+    if Is_Map():
+        for name in static_names.values():
+            bpy.data.objects.remove(bpy.data.objects[name[0]])
+        
     #Removes unused data such as duplicate images, materials, etc.
     for block in bpy.data.meshes:
         if block.users == 0:
@@ -242,16 +274,10 @@ def cleanup():
     print("Done cleaning up!")
 
 def add_to_collection():
-
-    #make a collection for the objects
-    bpy.data.collections.new(str(Name))
-    bpy.context.scene.collection.children.link(bpy.data.collections[str(Name)])
-
-    C = bpy.context
     # List of object references
-    objs = C.selected_objects
+    objs = bpy.context.selected_objects
     # Set target collection to a known collection 
-    coll_target = C.scene.collection.children.get(str(Name))
+    coll_target = bpy.context.scene.collection.children.get(str(Name))
     # If target found and object list not empty
     if coll_target and objs:
         # Loop through all objects
@@ -263,8 +289,24 @@ def add_to_collection():
             # Link each object to the target collection
             coll_target.objects.link(ob)
 
+def Is_Map():
+    if "Map" in Type:
+        return True
+    if "Terrain" in Type:
+        return True
+    else:
+        return False
+
+def ShowMessageBox(message = "", title = "Message Box", icon = 'INFO'):
+    def draw(self, context):
+        self.layout.label(text=message)
+    bpy.context.window_manager.popup_menu(draw, title = title, icon = icon)
+
+
 if __name__ == "__main__":
+    #Shows a message box with a message, custom title, and a specific icon
+    ShowMessageBox(f"Importing {Name}", "This might take some time! (Especially on multiple imports)", 'ERROR')
+    #To give the message box a chance to show up
+    bpy.app.timers.register(assemble_map, first_interval=0.3)
     #Deselect all objects just in case 
     bpy.ops.object.select_all(action='DESELECT')
-    assemble_map()
-    cleanup()

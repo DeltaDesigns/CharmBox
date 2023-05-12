@@ -4,7 +4,7 @@ using DirectXTex;
 using DirectXTexNet;
 using Field.General;
 
-namespace Field.Textures;
+namespace Field;
 
 public class TextureHeader : Tag
 {
@@ -42,7 +42,7 @@ public class TextureHeader : Tag
             data = PackageHandler.GetTag(typeof(TextureBuffer), PackageHandler.GetEntryReference(Hash)).GetBufferData();
         }
 
-        DirectXTexUtility.TexMetadata metadata = DirectXTexUtility.GenerateMetaData(Header.Width, Header.Height, Header.MipLevels, (DirectXTexUtility.DXGIFormat)format, Header.ArraySize == 6);
+        DirectXTexUtility.TexMetadata metadata = DirectXTexUtility.GenerateMetaData(Header.Width, Header.Height, 1, (DirectXTexUtility.DXGIFormat)format, Header.ArraySize == 6);
         DirectXTexUtility.DDSHeader ddsHeader;
         DirectXTexUtility.DX10Header dx10Header;
         DirectXTexUtility.GenerateDDSHeader(metadata, DirectXTexUtility.DDSFlags.NONE, out ddsHeader, out dx10Header);
@@ -52,7 +52,7 @@ public class TextureHeader : Tag
         Array.Copy(data, 0, final, header.Length, data.Length);
         GCHandle gcHandle = GCHandle.Alloc(final, GCHandleType.Pinned);
         IntPtr pixelPtr = gcHandle.AddrOfPinnedObject();
-        var scratchImage = TexHelper.Instance.LoadFromDDSMemory(pixelPtr, final.Length, DDS_FLAGS.ALLOW_LARGE_FILES);
+        var scratchImage = TexHelper.Instance.LoadFromDDSMemory(pixelPtr, final.Length, DDS_FLAGS.NONE);
         gcHandle.Free();
         if (IsCubemap())
         {
@@ -87,8 +87,8 @@ public class TextureHeader : Tag
             }
             else if (TexHelper.Instance.IsSRGB(format))
             {
-                scratchImage = scratchImage.Convert(DXGI_FORMAT.B8G8R8A8_UNORM_SRGB, TEX_FILTER_FLAGS.SRGB, 0);
-            }
+				scratchImage = scratchImage.Convert(DXGI_FORMAT.B8G8R8A8_UNORM_SRGB, TEX_FILTER_FLAGS.SEPARATE_ALPHA, 0);
+			}
             else
             {
                 scratchImage = scratchImage.Convert(DXGI_FORMAT.B8G8R8A8_UNORM, 0, 0);
@@ -103,7 +103,7 @@ public class TextureHeader : Tag
         {
             try
             {
-                scratchImage = scratchImage.Decompress(DXGI_FORMAT.B8G8R8A8_UNORM);
+                scratchImage = scratchImage.Decompress(format);
                 return scratchImage;
             }
             catch (AccessViolationException)
@@ -200,7 +200,7 @@ public struct D2Class_TextureHeader
     public ushort Height;
     public ushort Depth;
     public ushort ArraySize;
-    public ushort MipLevels;
+    public ushort MipLevels; // not mip levels ig
     public ushort Unk2C;
     public ushort Unk2E;
     public ushort Unk30;

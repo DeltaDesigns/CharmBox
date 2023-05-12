@@ -49,6 +49,13 @@ Not yet implemented:
 - animations https://github.com/MontagueM/Charm/issues/45
 
 
+## Source 2: **Only supports S&Box at the moment**
+ - [Import guide](https://github.com/DeltaDesigns/Charm/wiki/Source-2-Importing)
+ - Generates .shader files for semi-accurate game shaders (similar to UE5 shaders)
+ - Generates .vmat (material) and .vmdl (model) files for statics and maps
+
+***
+
 ### Some tricks
 
 * Middle click tabs to close them.

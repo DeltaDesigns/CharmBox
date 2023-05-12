@@ -2,8 +2,8 @@ using System.Collections.Concurrent;
 using System.Text.Json;
 using Field.Models;
 using Field.Statics;
-using Field.Textures;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Field.General;
 
@@ -20,6 +20,8 @@ public class InfoConfigHandler
         _config.TryAdd("Parts", parts);
         ConcurrentDictionary<string, ConcurrentBag<JsonInstance>> instances = new ConcurrentDictionary<string, ConcurrentBag<JsonInstance>>();
         _config.TryAdd("Instances", instances);
+        ConcurrentDictionary<string, ConcurrentBag<JsonInstance>> dynamics = new ConcurrentDictionary<string, ConcurrentBag<JsonInstance>>();
+        _config.TryAdd("Dynamics", dynamics);
         bOpen = true;
     }
 
@@ -68,6 +70,11 @@ public class InfoConfigHandler
         _config["Parts"].TryAdd(partName, part.Material.Hash.GetHashString());
     }
 
+    public void AddType(string type)
+    {
+        _config["Type"] = type;
+    }
+
     public void SetMeshName(string meshName)
     {
         _config["MeshName"] = meshName;
@@ -89,33 +96,42 @@ public class InfoConfigHandler
         public float Scale;
     }
 
+    public void AddInstance(string modelHash, float scale, Vector4 quatRotation, Vector3 translation)
+    {
+        if (!_config["Instances"].ContainsKey(modelHash))
+        {
+            _config["Instances"][modelHash] = new ConcurrentBag<JsonInstance>();
+        }
+        _config["Instances"][modelHash].Add(new JsonInstance
+        {
+            Translation = new [] { translation.X, translation.Y, translation.Z },
+            Rotation = new [] { quatRotation.X, quatRotation.Y, quatRotation.Z, quatRotation.W },
+            Scale = scale
+        });
+    }
+
     public void AddStaticInstances(List<D2Class_406D8080> instances, string staticMesh)
     {
-        ConcurrentBag<JsonInstance> jsonInstances = new ConcurrentBag<JsonInstance>();
         foreach (var instance in instances)
         {
-            jsonInstances.Add(new JsonInstance
-            {
-                Translation = new [] {instance.Position.X, instance.Position.Y, instance.Position.Z},
-                Rotation = new [] {instance.Rotation.X, instance.Rotation.Y, instance.Rotation.Z, instance.Rotation.W},
-                Scale = instance.Scale.X,
-            });
+            AddInstance(staticMesh, instance.Scale.X, instance.Rotation, instance.Position);
         }
-        if (_config["Instances"].ContainsKey(staticMesh))
+    }
+
+    public void AddCustomTexture(string material, int index, TextureHeader texture)
+    {
+        if (!_config["Materials"].ContainsKey(material))
         {
-            foreach (var jsonInstance in jsonInstances)
-            {
-                _config["Instances"][staticMesh].Add(jsonInstance);
-            }
+            var textures = new Dictionary<string, Dictionary<int, TexInfo>>();
+            textures.Add("PS",  new Dictionary<int, TexInfo>());
+            _config["Materials"][material] = textures;
         }
-        else
-        {
-            _config["Instances"].TryAdd(staticMesh, jsonInstances);
-        }
+        _config["Materials"][material]["PS"].TryAdd(index, new TexInfo { Hash = texture.Hash, SRGB = texture.IsSrgb()});
     }
     
     public void WriteToFile(string path)
     {
+
         // If theres only 1 part, we need to rename it + the instance to the name of the mesh (unreal imports to fbx name if only 1 mesh inside)
         if (_config["Parts"].Count == 1)
         {
@@ -130,6 +146,32 @@ public class InfoConfigHandler
             _config["Parts"] = new ConcurrentDictionary<string, string>();
             _config["Parts"][_config["MeshName"]] = part;
         }
+
+        
+        //im not smart enough to have done this, so i made an ai do it lol
+        //this just sorts the "instances" part of the cfg so its ordered by scale
+        //makes it easier for instancing models in Hammer/S&Box
+
+        var sortedDict = new ConcurrentDictionary<string, ConcurrentBag<JsonInstance>>();
+
+        // Use LINQ's OrderBy method to sort the values in each array
+        // based on the "Scale" key. The lambda expression specifies that
+        // the "Scale" property should be used as the key for the order.
+        foreach (var keyValuePair in (ConcurrentDictionary<string, ConcurrentBag<JsonInstance>>)_config["Instances"])
+        {
+            var array = keyValuePair.Value;
+            var sortedArray = array.OrderBy(x => x.Scale);
+
+            // Convert the sorted array to a ConcurrentBag
+            var sortedBag = new ConcurrentBag<JsonInstance>(sortedArray);
+
+            // Add the sorted bag to the dictionary
+            sortedDict.TryAdd(keyValuePair.Key, sortedBag);
+        }
+
+        // Finally, update the _config["Instances"] object with the sorted values
+        _config["Instances"] = sortedDict;
+
         
         string s = JsonConvert.SerializeObject(_config, Formatting.Indented);
         if (_config.ContainsKey("MeshName"))

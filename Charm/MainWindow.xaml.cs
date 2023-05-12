@@ -16,7 +16,7 @@ using Field;
 using Field.General;
 using Field.Models;
 using Field.Statics;
-using Field.Textures;
+using NAudio.SoundFont;
 using Serilog;
 using VersionChecker;
 
@@ -69,7 +69,7 @@ public partial class MainWindow
         }
 
         // Check version
-        CheckVersion();
+        CheckVersionAsync();
 
         // Log game version
         CheckGameVersion();
@@ -78,24 +78,26 @@ public partial class MainWindow
         var a = 0;
     }
 
-    private void CheckGameVersion()
+    public string CheckGameVersion()
     {
+        string version = "";
         try
         {
             var path = ConfigHandler.GetPackagesPath().Split("packages")[0] + "destiny2.exe";
             var versionInfo = FileVersionInfo.GetVersionInfo(path);
-            string version = versionInfo.FileVersion;
+            version = versionInfo.FileVersion;
             Log.Information("Game version: " + version);
         }
         catch (Exception e)
         {
             Log.Error($"Could not get game version error {e}.");
         }
+        return version;
     }
 
-    private async void CheckVersion()
+    private async void CheckVersionAsync()
     {
-        var currentVersion = new ApplicationVersion("1.1.4");
+        var currentVersion = new ApplicationVersion("1.3.2");
         var versionChecker = new ApplicationVersionChecker("https://github.com/MontagueM/Charm/raw/main/", currentVersion);
         versionChecker.LatestVersionName = "version";
         try
@@ -125,6 +127,7 @@ public partial class MainWindow
     {
         Progress.SetProgressStages(new List<string>
         {
+            "packages cache",
             "fonts",
             "fnv hashes",
             "hash 64",
@@ -132,6 +135,10 @@ public partial class MainWindow
             "global string cache",
             "activity names",
         });
+        // to check if we need to update caches
+        PackageHandler.Initialise();
+        Progress.CompleteStage();
+
         // Load all the fonts
         await Task.Run(() =>
         {
@@ -139,16 +146,16 @@ public partial class MainWindow
         });
         Progress.CompleteStage();
 
-        // Initialise FNV handler -- must be first bc my code is shit
-        await Task.Run(FnvHandler.Initialise);
-        Progress.CompleteStage();
-
         // Get all hash64 -- must be before InvestmentHandler
         await Task.Run(TagHash64Handler.Initialise);
         Progress.CompleteStage();
 
-        // Initialise investment
-        await Task.Run(InvestmentHandler.Initialise);
+		// Initialise FNV handler -- must be first bc my code is shit
+		await Task.Run(FnvHandler.Initialise);
+		Progress.CompleteStage();
+
+		// Initialise investment
+		await Task.Run(InvestmentHandler.Initialise);
         Progress.CompleteStage();
 
         // Initialise global string cache
@@ -278,7 +285,7 @@ public partial class MainWindow
 
     private void MenuTab_OnMouseDown(object sender, MouseButtonEventArgs e)
     {
-        if (e.ChangedButton == MouseButton.Middle)
+        if (e.ChangedButton == MouseButton.Middle && e.Source is TabItem)
         {
             TabItem tab = (TabItem)sender;
             MainTabControl.Items.Remove(tab);

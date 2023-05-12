@@ -1,10 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System.Text;
+using System.Collections.Generic;
 using System.IO;
+using System;
 using System.Security.Policy;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using Field.General;
+using Field;
 using Field.Models;
 using Field.Statics;
 
@@ -33,12 +36,15 @@ public partial class StaticView : UserControl
         MVM.Title = hash.GetHashString();
     }
 
-    public void ExportStatic(TagHash hash, string name, EExportType exportType)
+    public static void ExportStatic(TagHash hash, string name, EExportTypeFlag exportType, string extraPath = "")
     {
-        FbxHandler fbxHandler = new FbxHandler(exportType == EExportType.Full);
-        string savePath = ConfigHandler.GetExportSavePath();
+        bool lodexport = false;
+        bool source2Models = ConfigHandler.GetS2VMDLExportEnabled();
+        FbxHandler fbxHandler = new FbxHandler(exportType == EExportTypeFlag.Full);
+        FbxHandler lodfbxHandler = new FbxHandler(exportType == EExportTypeFlag.Full);
+        string savePath = ConfigHandler.GetExportSavePath() + "/" + extraPath + "/";
         string meshName = hash.GetHashString();
-        if (exportType == EExportType.Full)
+        if (exportType == EExportTypeFlag.Full)
         {
             savePath += $"/{name}";
         }
@@ -46,19 +52,43 @@ public partial class StaticView : UserControl
         List<Part> parts = container.Load(ELOD.MostDetail);
         fbxHandler.AddStaticToScene(parts, meshName);
         Directory.CreateDirectory(savePath);
-        if (exportType == EExportType.Full)
+        if (exportType == EExportTypeFlag.Full)
         {
-            container.SaveMaterialsFromParts(savePath, parts, ConfigHandler.GetUnrealInteropEnabled());
+            container.SaveMaterialsFromParts(savePath, parts, ConfigHandler.GetUnrealInteropEnabled() || ConfigHandler.GetS2ShaderExportEnabled(), ConfigHandler.GetSaveCBuffersEnabled());
             fbxHandler.InfoHandler.SetMeshName(meshName);
             if (ConfigHandler.GetUnrealInteropEnabled())
             {
                 fbxHandler.InfoHandler.SetUnrealInteropPath(ConfigHandler.GetUnrealInteropPath());
                 AutomatedImporter.SaveInteropUnrealPythonFile(savePath, meshName, AutomatedImporter.EImportType.Static, ConfigHandler.GetOutputTextureFormat());
-                //AutomatedImporter.SaveInteropBlenderPythonFile(savePath, meshName, AutomatedImporter.EImportType.Static, ConfigHandler.GetOutputTextureFormat());
+                AutomatedImporter.SaveInteropBlenderPythonFile(savePath, meshName, AutomatedImporter.EImportType.Static, ConfigHandler.GetOutputTextureFormat());
+            }
 
+            if(source2Models)
+            {
+				Source2Handler.SaveStaticVMDL($"{savePath}", meshName, parts);
             }
         }
+        if (exportType == EExportTypeFlag.Full)
+        {
+            fbxHandler.InfoHandler.AddType("Static");
+        }
         fbxHandler.ExportScene($"{savePath}/{name}.fbx");
+
+        if(lodexport)
+        {
+            List<Part> lodparts = container.Load(ELOD.LeastDetail);
+            Directory.CreateDirectory(savePath + "/LOD");
+
+            foreach (Part lodpart in lodparts)
+            {
+                Console.WriteLine($"Exporting LOD {lodpart.LodCategory}");
+                Console.WriteLine(lodpart.Material.Hash.ToString());
+            }
+
+            lodfbxHandler.AddStaticToScene(lodparts, $"{meshName}_LOD");
+            lodfbxHandler.InfoHandler.SetMeshName($"{meshName}_LOD");
+            lodfbxHandler.ExportScene($"{savePath}/LOD/{name}_LOD.fbx");
+        }
     }
 
     private List<MainViewModel.DisplayPart> MakeDisplayParts(List<Part> containerParts)

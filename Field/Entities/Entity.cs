@@ -68,8 +68,14 @@ public class Entity : Tag
         }
     }
 
-    public List<DynamicPart> Load(ELOD detailLevel)
+    public List<DynamicPart> Load(ELOD detailLevel, bool forceLoad = false)
     {
+        if(forceLoad) //force the entity to re-parse its data because it's dumb
+        {
+            ParseStructs(); 
+            ParseData();
+        }
+
         var dynamicParts = new List<DynamicPart>();
         if (Model != null)
         {
@@ -82,7 +88,7 @@ public class Entity : Tag
         return dynamicParts;
     }
 
-    public void SaveMaterialsFromParts(string saveDirectory, List<DynamicPart> dynamicParts, bool bSaveShaders)
+    public void SaveMaterialsFromParts(string saveDirectory, List<DynamicPart> dynamicParts, bool bSaveShaders, bool bSaveCBuffers)
     {
         Directory.CreateDirectory($"{saveDirectory}/Textures");
         Directory.CreateDirectory($"{saveDirectory}/Shaders");
@@ -93,7 +99,8 @@ public class Entity : Tag
             // dynamicPart.Material.SaveVertexShader(saveDirectory);
             if (bSaveShaders)
             {
-                dynamicPart.Material.SavePixelShader($"{saveDirectory}/Shaders");
+                dynamicPart.Material.SavePixelShader($"{saveDirectory}/Shaders", false, bSaveCBuffers);
+                dynamicPart.Material.SaveVertexShader($"{saveDirectory}/Shaders", bSaveCBuffers);
             }
             // Environment.Exit(5);
         }
@@ -111,5 +118,36 @@ public class Entity : Tag
         rsrc.NormalPlate.SavePlatedTexture($"{saveDirectory}/Textures/{Hash}_normal");
         rsrc.GStackPlate.SavePlatedTexture($"{saveDirectory}/Textures/{Hash}_gstack");
         rsrc.DyemapPlate.SavePlatedTexture($"{saveDirectory}/Textures/{Hash}_dyemap");
+    }
+
+    public bool HasGeometry() //yoinked from LoadEntityList in TagListView
+    { 
+        // Check the entity has geometry
+        bool bHasGeometry = false;
+        using (var handle = GetHandle())//new Tag(PackageHandler.GetTag(typeof(Entity), ent.Hash)).GetHandle())
+        {
+            handle.BaseStream.Seek(8, SeekOrigin.Begin);
+            int resourceCount = handle.ReadInt32();
+            if (resourceCount > 2)
+            {
+                handle.BaseStream.Seek(0x10, SeekOrigin.Begin);
+                int resourcesOffset = handle.ReadInt32() + 0x20;
+                for (int i = 0; i < 2; i++)
+                {
+                    handle.BaseStream.Seek(resourcesOffset + i * 0xC, SeekOrigin.Begin);
+                    using (var handle2 = new Tag(new TagHash(handle.ReadUInt32())).GetHandle())
+                    {
+                        handle2.BaseStream.Seek(0x10, SeekOrigin.Begin);
+                        int checkOffset = handle2.ReadInt32() + 0x10 - 4;
+                        handle2.BaseStream.Seek(checkOffset, SeekOrigin.Begin);
+                        if (handle2.ReadUInt32() == 0x80806d8a)
+                        {
+                            bHasGeometry = true;
+                        }
+                    }
+                }
+            }
+        }
+        return bHasGeometry;
     }
 }
