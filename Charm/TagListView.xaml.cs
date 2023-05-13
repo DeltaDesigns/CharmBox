@@ -127,7 +127,7 @@ public partial class TagListView : UserControl
     private TagListView _tagListControl = null;
     private ToggleButton _previouslySelected = null;
     private int _selectedIndex = -1;
-    private FbxHandler _globalFbxHandler = null;
+    private FbxHandler _globalFbxHandler = new FbxHandler(false);
     private string _weaponItemName = null;
     private string _currentPKG = null;
 

@@ -320,7 +320,7 @@ public partial class ActivityMapView : UserControl
 
                    
                     var dynamicParts = ent.Load(ELOD.MostDetail, true);
-                    entHandler.AddEntityToScene(ent, dynamicParts, ELOD.MostDetail, skeletonNodes);
+                    entHandler.AddEntityToScene(ent, dynamicParts, ELOD.MostDetail, null, skeletonNodes);
 
                     ent.SaveMaterialsFromParts(savePath, dynamicParts, ConfigHandler.GetUnrealInteropEnabled() || ConfigHandler.GetS2ShaderExportEnabled(), ConfigHandler.GetSaveCBuffersEnabled());
                     ent.SaveTexturePlates(savePath);
@@ -361,7 +361,7 @@ public partial class ActivityMapView : UserControl
                 Directory.CreateDirectory(savePath);
 
                 var dynamicParts = ent.Load(ELOD.MostDetail, true);
-                entHandler.AddEntityToScene(ent, dynamicParts, ELOD.MostDetail, skeletonNodes);
+                entHandler.AddEntityToScene(ent, dynamicParts, ELOD.MostDetail, null, skeletonNodes);
 
                 ent.SaveMaterialsFromParts(savePath, dynamicParts, ConfigHandler.GetUnrealInteropEnabled() || ConfigHandler.GetS2ShaderExportEnabled(), ConfigHandler.GetSaveCBuffersEnabled());
                 ent.SaveTexturePlates(savePath);

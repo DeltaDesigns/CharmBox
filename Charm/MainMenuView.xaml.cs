@@ -71,7 +71,15 @@ public partial class MainMenuView : UserControl
         _mainWindow.MakeNewTab("statics", tagListView);
         _mainWindow.SetNewestTabSelected();    
     }
-    
+
+    private void AllAnimationsViewButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        TagListViewerView tagListView = new TagListViewerView();
+        tagListView.LoadContent(ETagListType.AnimationList);
+        _mainWindow.MakeNewTab("animations", tagListView);
+        _mainWindow.SetNewestTabSelected();
+    }
+
     private void WeaponAudioViewButton_Click(object sender, RoutedEventArgs e)
     {
         TagListViewerView tagListView = new TagListViewerView();

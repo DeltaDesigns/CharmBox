@@ -127,6 +127,20 @@
                         FontSize="40"
                         Text="LIST" />
                 </Button>
+                <Button
+                    Width="300"
+                    Height="76"
+                    Padding="10,0,10,0"
+                    HorizontalContentAlignment="Center"
+                    Click="AllAnimationsViewButton_OnClick">
+                    <TextBlock
+                        Padding="0,10,0,10"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        FontFamily="{DynamicResource ResourceKey=Neue Haas Grotesk Text Pro 55 Roman}"
+                        FontSize="40"
+                        Text="Animations" />
+                </Button>
             </StackPanel>
 
             <StackPanel
