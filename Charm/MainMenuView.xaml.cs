@@ -211,6 +211,7 @@ public partial class MainMenuView : UserControl
 
     private void AnimationsButton_OnClick(object sender, RoutedEventArgs e)
     {
+        MessageBox.Show("ANIMATIONS ARE SUPER WIP!\nTHINGS CAN AND WILL BREAK/CRASH/NOT WORK!\nsr_cinematics pkgs are the most reliable\n\"Compressed: True\" animations will crash");
         TagListViewerView tagListView = new TagListViewerView();
         tagListView.LoadContent(ETagListType.AnimationPackageList);
         _mainWindow.MakeNewTab("animations", tagListView);

@@ -455,11 +455,12 @@ public class FbxHandler
     public List<FbxNode> MakeFbxSkeletonHierarchy(List<BoneNode> boneNodes)
     {
         var jointNodes = new List<FbxNode>();
-        
+
         for (int i = 0; i < boneNodes.Count; i++)
         {
             var node = boneNodes[i];
-            
+            FbxNode parentNode;
+
             FbxSkeleton skeleton;
             FbxNode joint;
             lock (_fbxLock)
@@ -473,7 +474,7 @@ public class FbxHandler
 
             if (node.ParentNodeIndex >= 0)
             {
-                var parentNode = jointNodes[node.ParentNodeIndex];
+                parentNode = jointNodes[node.ParentNodeIndex];
                 parentNode.AddChild(joint);
             }
             else
@@ -489,7 +490,7 @@ public class FbxHandler
                     _scene.GetRootNode().AddChild(rootNode);
                 }
             }
-            
+
             // Set the transform
             FbxAMatrix globalTransform = joint.EvaluateGlobalTransform();
             FbxAMatrix objectSpaceTransform = new FbxAMatrix();
@@ -503,7 +504,6 @@ public class FbxHandler
             joint.LclTranslation.Set(localTranslation.ToDouble3());
             joint.LclRotation.Set(localRotation.ToDouble3());
         }
-
         return jointNodes;
     }
 
