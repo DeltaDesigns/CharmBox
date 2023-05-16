@@ -1,6 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using Field.General;
 using Field.Models;
+using Microsoft.VisualBasic.Logging;
 
 namespace Field;
 
@@ -8,6 +9,7 @@ namespace Field;
 /// cannot allow the direct search of animations and instead need to understand the interfaces
 /// of the animations so we can pair it with skeletons correctly.
 
+//Rasputin door 1820DF80, anim AE21DF80
 
 /// <summary>
 /// 
@@ -277,7 +279,13 @@ public struct AnimationTrack
         {
             TrackScales = animationNode.ScaleStream.ToList();
         }
-        
+        if (animationNode.RotationStream.Count != 0)
+        {
+            //foreach (var k in animationNode.RotationStream)
+            //{
+            //    Console.WriteLine($"QUAT {TrackIndex} X: {k.X} Y: {k.Y} Z: {k.Z} W: {k.W}");
+            //}
+        }
         if (animationNode.RotationStream.Count == 1) // static
         {
             TrackRotations = TrackTimes.Select(x => animationNode.RotationStream[0].QuaternionToEulerAngles()).ToList();
@@ -291,7 +299,8 @@ public struct AnimationTrack
             TrackRotations = animationNode.RotationStream.Select(x => x.QuaternionToEulerAngles()).ToList();
         }
         // testing reassignment
-        // TrackRotations = TrackRotations.Select(x => new Vector3(-x.Z, -x.X, x.Y)).ToList();
+
+        //TrackRotations = TrackRotations.Select(x => new Vector3(x.X - 90, x.Y + 90, x.Z)).ToList();
         // xyz
         // TrackRotations = TrackRotations.Select(x => new Vector3(x.X, x.Y, x.Z)).ToList();
         
@@ -307,6 +316,7 @@ public struct AnimationTrack
         {
             TrackTranslations = animationNode.TranslationStream.ToList();
         }
+        
         // TrackTranslations = TrackTranslations.Select(x => new Vector3(-x.Z, -x.X, x.Y)).ToList();
         // tried xyz, xzy
         // TrackTranslations = TrackTranslations.Select(x => new Vector3(x.Z, x.X, x.Y)).ToList();

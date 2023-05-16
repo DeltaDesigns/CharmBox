@@ -346,12 +346,26 @@ public class FbxHandler
             }
             skeleton.SetSkeletonType(FbxSkeleton.EType.eLimbNode);
             node.SetNodeAttribute(skeleton);
+
             Vector3 location = boneNode.DefaultObjectSpaceTransform.Translation;
+            Vector4 rotation = boneNode.DefaultObjectSpaceTransform.QuaternionRotation;
+      
             if (boneNode.ParentNodeIndex != -1)
             {
+                rotation -= boneNodes[boneNode.ParentNodeIndex].DefaultObjectSpaceTransform.QuaternionRotation;
                 location -= boneNodes[boneNode.ParentNodeIndex].DefaultObjectSpaceTransform.Translation;
             }
+
+            //Console.WriteLine($"{boneNode.Hash}: {rotation.X}, {rotation.Y}, {rotation.Z}, {rotation.W}");
+            //FbxQuaternion quat = new();
+            //quat.Set(rotation.X, rotation.Y, rotation.Z, rotation.W);
+
+            //FbxVector4 eular = new();
+            //eular.SetXYZ(quat);
+
+            //node.LclRotation.Set(eular.ToDouble3());
             node.LclTranslation.Set(new FbxDouble3(location.X, location.Y, location.Z));
+
             if (rootNode == null)
             {
                 skeleton.SetSkeletonType(FbxSkeleton.EType.eRoot);

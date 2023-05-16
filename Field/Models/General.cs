@@ -297,6 +297,11 @@ public struct Vector4
         return new Vector3(X, Y, Z);
     }
 
+    public static Vector4 operator -(Vector4 x, Vector4 y)
+    {
+        return new Vector4(x.X - y.X, x.Y - y.Y, x.Z - y.Z, x.W - y.W);
+    }
+
     public float this[int index]
     {
         get
@@ -335,7 +340,7 @@ public struct Vector4
             throw new IndexOutOfRangeException();
         }
     }
-    
+
     // From https://github.com/OwlGamingCommunity/V/blob/492d0cb3e89a97112ac39bf88de39da57a3a1fbf/Source/owl_core/Server/MapLoader.cs
     public Vector3 QuaternionToEulerAngles()
     {
@@ -372,9 +377,43 @@ public struct Vector4
             retVal.Y *= (float)(180.0f / Math.PI);
         }
         retVal.Z *= (float)(180.0f / Math.PI);
-        
+
         return retVal;
     }
+
+    //public Vector3 QuaternionToEulerAngles()
+    //{
+    //    float SINGULARITY_THRESHOLD = 0.4999995f;
+    //    float SingularityTest = Z * X - W * Y;
+
+    //    float num = 2f * W * W + 2f * X * X - 1f;
+    //    float num2 = 2f * X * Y + 2f * W * Z;
+    //    float num3 = 2f * X * Z - 2f * W * Y;
+    //    float num4 = 2f * Y * Z + 2f * W * X;
+    //    float num5 = 2f * W * W + 2f * Z * Z - 1f;
+    //    Vector3 result = default;
+
+    //    if (SingularityTest < -SINGULARITY_THRESHOLD)
+    //    {
+    //        result.X = -90f;
+    //        result.Y = MathF.Atan2(W, X) - 90;
+    //        result.Z = MathF.Atan2(Y, Z) - 90;
+    //    }
+    //    else if (SingularityTest > SINGULARITY_THRESHOLD)
+    //    {
+    //        result.X = 90f;
+    //        result.Y = -MathF.Atan2(W, X) + 90;
+    //        result.Z = MathF.Atan2(Y, Z) + 90;
+    //    }
+    //    else
+    //    {
+    //        result.X = MathF.Asin(0 - num3);
+    //        result.Y = MathF.Atan2(num2, num);
+    //        result.Z = MathF.Atan2(num4, num5);
+    //    }
+
+    //    return result;
+    //}
 }
 
 public struct IntVector4
