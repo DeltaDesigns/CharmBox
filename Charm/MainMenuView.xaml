@@ -106,6 +106,12 @@
                 Margin="30,0,0,0"
                 VerticalAlignment="Center"
                 Orientation="Horizontal">
+                <!-- <Button Height="75" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Click="AnimationsButton_OnClick" FontFamily="{DynamicResource ResourceKey=Neue Haas Grotesk Text Pro 55 Roman}" FontSize="64" Margin="20,0,20,40" Padding="20, 20, 20, 20" >
+                <TextBlock Text="ANIMATIONS" VerticalAlignment="Center" FontSize="42" FontFamily="{DynamicResource ResourceKey=Neue Haas Grotesk Text Pro 55 Roman}"  HorizontalAlignment="Center" Padding="0,10,0,10"/>
+            </Button>
+            <Button Height="75" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Click="CinematicsButton_OnClick" FontFamily="{DynamicResource ResourceKey=Neue Haas Grotesk Text Pro 55 Roman}" FontSize="64" Margin="20,0,20,40" Padding="20, 20, 20, 20" >
+                <TextBlock Text="CINEMATICS" VerticalAlignment="Center" FontSize="42" FontFamily="{DynamicResource ResourceKey=Neue Haas Grotesk Text Pro 55 Roman}"  HorizontalAlignment="Center" Padding="0,10,0,10"/>
+            </Button> -->
                 <TextBlock
                     Width="300"
                     VerticalAlignment="Center"

@@ -74,6 +74,8 @@ public partial class EntityView : UserControl
     private void AddEntity(Entity entity, ELOD detailLevel, FbxHandler fbxHandler, Animation animation=null)
     {
         var dynamicParts = entity.Load(detailLevel);
+        if (dynamicParts.Count == 0)
+            return;
         ModelView.SetGroupIndices(new HashSet<int>(dynamicParts.Select(x => x.GroupIndex)));
         dynamicParts = dynamicParts.Where(x => x.GroupIndex == ModelView.GetSelectedGroupIndex()).ToList();
         if (animation != null)
@@ -202,6 +204,22 @@ public partial class EntityView : UserControl
         // to load an animation into the viewer, we need to save the fbx then load
         fbxHandler.Clear();
         AddEntity(_loadedEntity, ModelView.GetSelectedLod(), fbxHandler, animation);
+        LoadUI(fbxHandler);
+    }
+    
+    public void LoadAnimationWithPlayerModels(TagHash tagHash, FbxHandler fbxHandler)
+    {
+        Animation animation = PackageHandler.GetTag(typeof(Animation), tagHash);
+        // to load an animation into the viewer, we need to save the fbx then load
+        fbxHandler.Clear();
+
+        fbxHandler.AddPlayerSkeletonAndMesh();
+
+        // Add animation
+        animation.Load();
+        // animation.SaveToFile($"C:/T/animation_{animHash}.json");
+        fbxHandler.AddAnimationToEntity(animation, fbxHandler._globalSkeletonNodes);
+
         LoadUI(fbxHandler);
     }
 }

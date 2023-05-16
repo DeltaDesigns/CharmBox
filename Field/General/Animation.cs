@@ -1,7 +1,11 @@
 ﻿using System.Runtime.InteropServices;
+using Field.Entities;
 using Field.General;
 using Field.Models;
-using Microsoft.VisualBasic.Logging;
+using Newtonsoft.Json;
+using SharpDX;
+using Vector3 = Field.Models.Vector3;
+using Vector4 = Field.Models.Vector4;
 
 namespace Field;
 
@@ -24,8 +28,8 @@ public class Animation : Tag
     public Vector3 rot;
     public Vector3 flipTra;
     public Vector3 flipRot;
-    public string[] traXYZ;
-    public string[] rotXYZ;
+    public string[] traXYZ = { "X", "Y", "Z" };
+    public string[] rotXYZ = { "X", "Y", "Z" };
 
     public Animation(TagHash hash) : base(hash)
     {
@@ -50,13 +54,26 @@ public class Animation : Tag
     /// </summary>
     public void Load()
     {
-        if (_nodes != null)
-            return;
+        // if (_nodes != null)
+        // {
+        //     _Debug_ExtractFirstFrameToObj();
+        //     return;
+        // }
         MakeAnimationNodes();
         ParseStaticData();
-        ParseAnimatedData();
+        // ParseAnimatedData();
         MakeAnimationTracks();
+        // _Debug_ExtractFirstFrameToObj();
         var a = 0;
+    }
+
+    private void _Debug_ExtractFirstFrameToObj()
+    {
+        Entity playerBase = PackageHandler.GetTag(typeof(Entity), new TagHash("0000670F342E9595")); // 64 bit more permanent 
+        var nodes = playerBase.Skeleton.GetBoneNodes();
+        ObjExtractor.SaveFromVertices(Tracks.Select(x => x.TrackTranslations.First() + nodes[x.TrackIndex].DefaultObjectSpaceTransform.Translation).ToList(), $"C:/T/AnimationDebug/{Hash}.obj");
+        // ObjExtractor.SaveFromVertices(Tracks[1].TrackTranslations.ToList(), $"C:/T/AnimationDebug/{Hash}.obj");
+        SaveToFile($"C:/T/AnimationDebug/{Hash}.json");
     }
 
     private void MakeAnimationTracks()
@@ -71,6 +88,8 @@ public class Animation : Tag
 
     private void ParseAnimatedData()
     {
+        if ((object)Header.AnimatedBoneData == null)
+            return;
         if (Header.AnimatedBoneData is D2Class_428B8080 uncomp)
         {
             if (uncomp.CodecType != (AnimationCodecType)2)
@@ -218,7 +237,7 @@ public class Animation : Tag
             }
             foreach (var index in Header.StaticRotationControlMap)
             {
-                var rot = stream.ReadQuantisedFloat4(new FloatQuantise { Minimum = 2, Extent = -1 });
+                var rot = stream.ReadQuantisedFloat4(new FloatQuantise { Extent = 2, Minimum = -1 });
                 _nodes[index.Value].RotationStream.Add(rot);
             }
             foreach (var index in Header.StaticTranslationControlMap)
@@ -227,6 +246,90 @@ public class Animation : Tag
                 _nodes[index.Value].TranslationStream.Add(tra);
             }
         }
+    }
+
+    public void SaveToFile(string savePath)
+    {
+        AnimationHeaderJson obj = new AnimationHeaderJson();
+        obj.frame_count = Header.FrameCount;
+        obj.duration_in_frames = Header.FrameCount - 1;
+        obj.node_count = Header.NodeCount;
+        obj.rig_control_count = Header.RigControlCount;
+        obj.static_bone_data = new AnimationBoneDataJson();
+        obj.animated_bone_data = new AnimationBoneDataJson();
+        obj.static_bone_data.transform_stream_header = new TransformStreamHeaderJson();
+        var staticHeader = (D2Class_408B8080)Header.StaticBoneData;
+        obj.static_bone_data.transform_stream_header.scale_stream_count = staticHeader.ScaleStreamCount;
+        obj.static_bone_data.transform_stream_header.rotation_stream_count = staticHeader.RotationStreamCount;
+        obj.static_bone_data.transform_stream_header.translation_stream_count = staticHeader.TranslationStreamCount;
+        // obj.static_bone_data.transform_stream_header.streams = new StreamsJson();
+        // obj.static_bone_data.transform_stream_header.streams.frame_count = staticHeader.FrameCount;
+        // obj.static_bone_data.transform_stream_header.streams.frames = new List<FrameJson>();
+        obj.animated_bone_data.transform_stream_header = new TransformStreamHeaderJson();
+        var animatedHeader = (D2Class_428B8080)Header.AnimatedBoneData;
+        obj.animated_bone_data.transform_stream_header.scale_stream_count = animatedHeader.ScaleStreamCount;
+        obj.animated_bone_data.transform_stream_header.rotation_stream_count = animatedHeader.RotationStreamCount;
+        obj.animated_bone_data.transform_stream_header.translation_stream_count = animatedHeader.TranslationStreamCount;
+        // obj.animated_bone_data.transform_stream_header.streams = new StreamsJson();
+        // obj.animated_bone_data.transform_stream_header.streams.frame_count = animatedHeader.FrameCount;
+        // obj.animated_bone_data.transform_stream_header.streams.frames = new List<FrameJson>();
+
+        obj.bone_data_frames = new Dictionary<int, FrameJson>();
+            
+        foreach (var track in Tracks)
+        {
+            obj.bone_data_frames.Add(track.TrackIndex, new FrameJson
+            {
+                scales = track.TrackScales,
+                rotations = track.TrackRotations,
+                translations = track.TrackTranslations
+            });
+        }
+        
+        JsonSerializer serializer = new JsonSerializer();
+        serializer.Formatting = Formatting.Indented;
+        using (var sw = new StreamWriter(savePath))
+            serializer.Serialize(sw, obj);
+    }
+
+    private struct AnimationHeaderJson
+    {
+        public int frame_count;
+        public int duration_in_frames;
+        public int node_count;
+        public int rig_control_count;
+        public AnimationBoneDataJson static_bone_data;
+        public AnimationBoneDataJson animated_bone_data;
+        public Dictionary<int, FrameJson> bone_data_frames; // not correct but want it here
+    }
+
+    private struct AnimationBoneDataJson
+    {
+        public TransformStreamHeaderJson transform_stream_header;
+        public List<int> scale_control_map;
+        public List<int> rotation_control_map;
+        public List<int> translation_control_map;
+    }
+
+    private struct TransformStreamHeaderJson
+    {
+        public int scale_stream_count;
+        public int rotation_stream_count;
+        public int translation_stream_count;
+        public StreamsJson streams;
+    }
+
+    private struct StreamsJson
+    {
+        public int frame_count;
+        public List<FrameJson> frames;
+    }
+
+    private struct FrameJson
+    {
+        public List<float> scales;
+        public List<Vector3> rotations;
+        public List<Vector3> translations;
     }
 }
 
@@ -273,7 +376,7 @@ public struct AnimationTrack
         }
         else if (animationNode.ScaleStream.Count == 0)
         {
-            throw new NotImplementedException();
+            // throw new NotImplementedException();
         }
         else
         {
@@ -288,15 +391,15 @@ public struct AnimationTrack
         }
         if (animationNode.RotationStream.Count == 1) // static
         {
-            TrackRotations = TrackTimes.Select(x => animationNode.RotationStream[0].QuaternionToEulerAngles()).ToList();
+            TrackRotations = TrackTimes.Select(x => animationNode.RotationStream[0].QuaternionToEulerAnglesZYX()).ToList();
         }
         else if (animationNode.RotationStream.Count == 0)
         {
-            throw new NotImplementedException();
+            // throw new NotImplementedException();
         }
         else
         {
-            TrackRotations = animationNode.RotationStream.Select(x => x.QuaternionToEulerAngles()).ToList();
+            TrackRotations = animationNode.RotationStream.Select(x => x.QuaternionToEulerAnglesZYX()).ToList();
         }
         // testing reassignment
 
@@ -310,7 +413,7 @@ public struct AnimationTrack
         }
         else if (animationNode.TranslationStream.Count == 0)
         {
-            throw new NotImplementedException();
+            // throw new NotImplementedException();
         }
         else
         {
@@ -367,9 +470,9 @@ public class AnimationStream : IDisposable
     {
         var vec = ReadFloat3();
         var corrected = new Vector3(
-            vec.X * quantisation.Minimum.X + quantisation.Extent.X,
-            vec.Y * quantisation.Minimum.Y + quantisation.Extent.Y,
-            vec.Z * quantisation.Minimum.Z + quantisation.Extent.Z);
+            vec.X * quantisation.Extent.X + quantisation.Minimum.X,
+            vec.Y * quantisation.Extent.Y + quantisation.Minimum.Y,
+            vec.Z * quantisation.Extent.Z + quantisation.Minimum.Z);
         return corrected;
     }
 
@@ -377,10 +480,10 @@ public class AnimationStream : IDisposable
     {
         var vec = ReadFloat4();
         var corrected = new Vector4(
-            vec.X * quantisation.Minimum + quantisation.Extent,
-            vec.Y * quantisation.Minimum + quantisation.Extent,
-            vec.Z * quantisation.Minimum + quantisation.Extent,
-            vec.W * quantisation.Minimum + quantisation.Extent);
+            vec.X * quantisation.Extent + quantisation.Minimum,
+            vec.Y * quantisation.Extent + quantisation.Minimum,
+            vec.Z * quantisation.Extent + quantisation.Minimum,
+            vec.W * quantisation.Extent + quantisation.Minimum);
         return corrected;
     }
     
@@ -388,10 +491,12 @@ public class AnimationStream : IDisposable
     {
         var vec = ReadFloat4();
         var corrected = new Vector4(
-            vec.X * quantisation.Minimum.X + quantisation.Extent.X,
-            vec.Y * quantisation.Minimum.Y + quantisation.Extent.Y,
-            vec.Z * quantisation.Minimum.Z + quantisation.Extent.Z,
-            vec.W * quantisation.Minimum.W + quantisation.Extent.W);
+            vec.X * quantisation.Extent.X + quantisation.Minimum.X,
+            vec.Y * quantisation.Extent.Y + quantisation.Minimum.Y,
+            vec.Z * quantisation.Extent.Z + quantisation.Minimum.Z,
+            vec.W * quantisation.Extent.W + quantisation.Minimum.W);
+        if (Math.Round(corrected.Magnitude, 4) != 1)
+            throw new Exception("Quaternion magnitude is not 1");
         return corrected;
     }
 }
@@ -468,22 +573,22 @@ public enum AnimationCodecType : short
 [StructLayout(LayoutKind.Sequential, Size = 0x8)]
 public struct FloatQuantise
 {
-    public float Minimum;
     public float Extent;
+    public float Minimum;
 }
 
 [StructLayout(LayoutKind.Sequential, Size = 0x18)]
 public struct Float3Quantise
 {
-    public Vector3 Minimum;
     public Vector3 Extent;
+    public Vector3 Minimum;
 }
 
 [StructLayout(LayoutKind.Sequential, Size = 0x20)]
 public struct Float4Quantise
 {
-    public Vector4 Minimum;
     public Vector4 Extent;
+    public Vector4 Minimum;
 }
 
 /// <summary>
@@ -519,9 +624,9 @@ public struct D2Class_428B8080
     [DestinyOffset(0x18), DestinyField(FieldType.TablePointer)]
     public List<D2Class_0A008080> StreamData;
     [DestinyField(FieldType.TablePointer)]
-    public List<D2Class_0F008080> SRTQuantisationMinimums;
-    [DestinyField(FieldType.TablePointer)]
     public List<D2Class_0F008080> SRTQuantisationExtents;
+    [DestinyField(FieldType.TablePointer)]
+    public List<D2Class_0F008080> SRTQuantisationMinimums;
 }
 
 /// <summary>

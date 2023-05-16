@@ -1,5 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using Field.General;
+using Field.Textures;
+using Internal.Fbx;
 
 namespace Field.Models;
 
@@ -77,6 +79,13 @@ public struct Vector3
         Y = y;
         Z = z;
     }
+    
+    public Vector3(double x, double y, double z)
+    {
+        X = (float)x;
+        Y = (float)y;
+        Z = (float)z;
+    }
 
     public static Vector3 Zero {
         get
@@ -103,6 +112,11 @@ public struct Vector3
     public static Vector3 operator -(Vector3 x, Vector3 y)
     {
         return new Vector3(x.X - y.X, x.Y - y.Y, x.Z - y.Z);
+    }
+    
+    public static Vector3 operator +(Vector3 x, Vector3 y)
+    {
+        return new Vector3(x.X + y.X, x.Y + y.Y, x.Z + y.Z);
     }
     
     public float this[int index]
@@ -137,6 +151,11 @@ public struct Vector3
             }
             throw new IndexOutOfRangeException();
         }
+    }
+
+    public FbxVector4 ToFbxVector4()
+    {
+        return new FbxVector4(X, Y, Z);
     }
 }
 
@@ -342,7 +361,8 @@ public struct Vector4
     }
 
     // From https://github.com/OwlGamingCommunity/V/blob/492d0cb3e89a97112ac39bf88de39da57a3a1fbf/Source/owl_core/Server/MapLoader.cs
-    public Vector3 QuaternionToEulerAngles()
+    // from https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
+    public Vector3 QuaternionToEulerAnglesZYX()
     {
         Vector3 retVal = new Vector3();
 
@@ -414,6 +434,58 @@ public struct Vector4
 
     //    return result;
     //}
+    
+    public Vector3 ToEuler()
+    {
+        float Singularity = 0.499f;
+        float ww = W * W;
+        float xx = X * X;
+        float yy = Y * Y;
+        float zz = Z * Z;
+        float lengthSqd = xx + yy + zz + ww;
+        float singularityTest = Y * W - X * Z;
+        float singularityValue = Singularity * lengthSqd;
+        return singularityTest > singularityValue
+            ? new Vector3(-2 * Math.Atan2(Z, W), 90.0f, 0.0f)
+            : singularityTest < -singularityValue
+                ? new Vector3(2 * Math.Atan2(Z, W), -90.0f, 0.0f)
+                : new Vector3(Math.Atan2(2.0f * (Y * Z + X * W), 1.0f - 2.0f * (xx + yy)),
+                    Math.Asin(2.0f * singularityTest / lengthSqd),
+                    Math.Atan2(2.0f * (X * Y + Z * W), 1.0f - 2.0f * (yy + zz)));
+    }
+    
+    public Vector3 FromQuat ()
+    {
+        double sqw = W * W;
+        double sqx = X * X;
+        double sqy = Y * Y;
+        double sqz = Z * Z;
+        double unit = sqx + sqy + sqz + sqw; // if normalised is one, otherwise is correction factor
+        double test = X * W - Y * Z;
+        Vector3 v;
+
+        if (test>0.4995f*unit) { // singularity at north pole
+            v.Y = (float)(2f * Math.Atan2(Y, X) * 180f / Math.PI);
+            v.X = (float)(Math.PI / 2 * 180f / Math.PI);
+            v.Z = (float)(0 * 180f / Math.PI);
+            return v;
+        }
+        if (test<-0.4995f*unit) { // singularity at south pole
+            v.Y = (float)(-2f * Math.Atan2(Y, X) * 180f / Math.PI);
+            v.X = (float)(-Math.PI / 2 * 180f / Math.PI);
+            v.Z = (float)(0 * 180f / Math.PI);
+            return v;
+        }
+        v.Y = (float)(Math.Atan2 (2f * X * W + 2f * Y * Z, 1 - 2f * (Z * Z + W * W))* 180f / Math.PI);     // Yaw
+        v.X = (float)(Math.Asin (2f * (X * Z - W * Y))* 180f / Math.PI);                             // Pitch
+        v.Z = (float)(Math.Atan2 (2f * X * Y + 2f * Z * W, 1 - 2f * (Y * Y + Z * Z))* 180f / Math.PI);      // Roll
+        return v;
+    }
+
+    public FbxQuaternion ToFbxQuaternion()
+    {
+        return new FbxQuaternion(X, Y, Z, W);
+    }
 }
 
 public struct IntVector4

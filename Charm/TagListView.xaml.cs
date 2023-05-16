@@ -96,6 +96,10 @@ public enum ETagListType
     WeaponAudioList,
     [Description("Weapon Audio [Final]")]
     WeaponAudio,
+    [Description("Animation Package List [Packages]")]
+    AnimationPackageList,
+    [Description("Animation From Packages [Final]")]
+    AnimationFromPackages,
     [Description("Animation List")]
     AnimationList,
     [Description("Animation [Final]")]
@@ -273,6 +277,12 @@ public partial class TagListView : UserControl
                     break;
                 case ETagListType.WeaponAudio:
                     LoadWeaponAudio(contentValue);
+                    break;
+                case ETagListType.AnimationPackageList:
+                    await LoadAnimationPackageList();
+                    break;
+                case ETagListType.AnimationFromPackages:
+                    LoadAnimationFromPackage(contentValue);
                     break;
                 case ETagListType.AnimationList:
                     LoadAnimationList(contentValue);
@@ -1728,6 +1738,79 @@ public partial class TagListView : UserControl
 
     #region Animation
     
+    
+    private async Task LoadAnimationPackageList()
+    {
+        // If there are packages, we don't want to reload the view as very poor for performance.
+        if (_allTagItems != null)
+            return;
+        
+        MainWindow.Progress.SetProgressStages(new List<string>
+        {
+            "caching animation tags",
+            "load animation list",
+        });
+        
+        await Task.Run(() =>
+        {
+            _allTagItems = new ConcurrentBag<TagItem>();
+            var vals = PackageHandler.GetAllTagsWithReference(0x80808be0);
+            PackageHandler.CacheHashDataList(vals.Select(x => x.Hash).ToArray());
+            MainWindow.Progress.CompleteStage();
+
+            Parallel.ForEach(vals, val =>
+            {
+                int nodeCount;
+                int frameCount;
+                string typeName;
+                string debugTypeName;
+                using (var handle = new Tag(new TagHash(val)).GetHandle())
+                {
+                    handle.BaseStream.Seek(0x18, SeekOrigin.Begin);
+                    int offset = handle.ReadInt32();
+                    handle.BaseStream.Seek(offset-8, SeekOrigin.Current);
+                    uint classType = handle.ReadUInt32();
+                    typeName = Endian.U32ToString(classType);
+                    handle.BaseStream.Seek(0x140, SeekOrigin.Begin);
+                    frameCount = handle.ReadInt16();
+                    nodeCount = handle.ReadInt16();
+                    handle.BaseStream.Seek(0x20, SeekOrigin.Begin);
+                    int offset2 = handle.ReadInt32();
+                    handle.BaseStream.Seek(offset2-8, SeekOrigin.Current);
+                    classType = handle.ReadUInt32();
+                    debugTypeName = Endian.U32ToString(classType);
+                }
+
+                if (nodeCount == 72)
+                {
+                    _allTagItems.Add(new TagItem
+                    {
+                        Hash = val,
+                        Name = $"Frames: {frameCount}, Joints: {nodeCount}, Length: {Math.Round((float)frameCount / Animation.FrameRate, 2)} seconds, Compressed: {typeName != "428B8080"} DebugType: {debugTypeName} [{typeName ?? "NONE"}]",
+                        TagType = ETagListType.AnimationFromPackages
+                    });  
+                }
+
+            });
+            MainWindow.Progress.CompleteStage();
+
+            MakePackageTagItems();
+        });
+
+        RefreshItemList();  // bc of async stuff
+    }
+    
+    /// <summary>
+    /// Assume a plauer skeleton, load into the entity view.
+    /// </summary>
+    /// <param name="tagHash"></param>
+    private void LoadAnimationFromPackage(TagHash tagHash)
+    {
+        SetViewer(TagView.EViewerType.Entity);
+        var viewer = GetViewer();
+        viewer.EntityControl.LoadAnimationWithPlayerModels(tagHash, _globalFbxHandler);
+    }
+    
     /// <summary>
     /// Animations come from Entity.
     /// </summary>
@@ -1751,7 +1834,7 @@ public partial class TagListView : UserControl
             _allTagItems.Add(new TagItem 
             { 
                 Hash = anim.Hash,
-                Name = $"Frames: {anim.Header.FrameCount}, Length: {Math.Round((float)anim.Header.FrameCount / Animation.FrameRate, 2)} seconds, Compressed: {anim.Header.AnimatedBoneData is not D2Class_428B8080} [{typeName ?? "NONE"}]",
+                Name = $"Frames: {anim.Header.FrameCount}, Joints: {anim.Header.NodeCount}, Length: {Math.Round((float)anim.Header.FrameCount / Animation.FrameRate, 2)} seconds, Compressed: {anim.Header.AnimatedBoneData is not D2Class_428B8080} [{typeName ?? "NONE"}]",
                 TagType = ETagListType.Animation
             });
         });

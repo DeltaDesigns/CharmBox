@@ -1,4 +1,5 @@
-﻿using Field.Entities;
+﻿using System.Runtime.InteropServices;
+using Field.Entities;
 using Field.General;
 using Field.Statics;
 using Internal.Fbx;
@@ -14,6 +15,8 @@ public class FbxHandler
     public InfoConfigHandler InfoHandler;
     List<TagHash> addedEntities = new List<TagHash>();
     private static object _fbxLock = new object();
+    public List<FbxNode> _globalSkeletonNodes = new List<FbxNode>();  // used for attaching all models to one skeleton
+    public List<BoneNode> _globalBoneNodes = new List<BoneNode>();
     public FbxHandler(bool bMakeInfoHandler=true)
     {
         lock (_fbxLock) // bc fbx is not thread-safe
@@ -230,6 +233,31 @@ public class FbxHandler
         if (mesh.GetLayer(1) == null)
             mesh.CreateLayer();
         mesh.GetLayer(1).SetVertexColors(colLayer);
+    /// <summary>
+    /// Bind pose uses global transforms?
+    /// </summary>
+    private void AddBindPose(List<FbxNode> clusterNodes, List<BoneNode> boneNodes)
+    {
+        FbxPose pose = FbxPose.Create(_scene, "bindPoseName");
+        pose.SetIsBindPose(true);
+        
+        for (int i = 0; i < clusterNodes.Count; i++)
+        {
+            // Setting the global transform for each cluster (but really its node link)
+            var node = clusterNodes[i];
+            var boneNode = boneNodes[i];
+            // setting the bind matrix from DOST
+            FbxMatrix bindMatrix = new FbxMatrix();
+            bindMatrix.SetIdentity();
+            bindMatrix.SetTQS(
+                boneNode.DefaultObjectSpaceTransform.Translation.ToFbxVector4(),
+                boneNode.DefaultObjectSpaceTransform.QuaternionRotation.ToFbxQuaternion(),
+                new FbxVector4(boneNode.DefaultObjectSpaceTransform.Scale, boneNode.DefaultObjectSpaceTransform.Scale, boneNode.DefaultObjectSpaceTransform.Scale)
+            );
+            pose.Add(node, bindMatrix);
+        }
+        
+        _scene.AddPose(pose);
     }
 
     private void AddWeightsToMesh(FbxMesh mesh, DynamicPart part, List<FbxNode> skeletonNodes)
@@ -251,12 +279,14 @@ public class FbxHandler
             }
             weightCluster.SetLink(node);
             weightCluster.SetLinkMode(FbxCluster.ELinkMode.eTotalOne);
-            FbxAMatrix transform = node.EvaluateGlobalTransform();
+            FbxAMatrix transform = node.EvaluateGlobalTransform(); // dodgy?
             weightCluster.SetTransformLinkMatrix(transform);
+            
+            
+            
             weightClusters.Add(weightCluster);
         }
         
-        // for (int i = 0; i < part.VertexWeights.Count; i++)
         // Conversion lookup table
         Dictionary<int, int> lookup = new Dictionary<int, int>();
         for (int i = 0; i < part.VertexIndices.Count; i++)
@@ -285,6 +315,15 @@ public class FbxHandler
         }
         
         mesh.AddDeformer(skin);
+    }
+    
+    private FbxAMatrix GetGeometry(FbxNode pNode)
+    {
+        FbxVector4 lT = pNode.GetGeometricTranslation(FbxNode.EPivotSet.eSourcePivot);
+        FbxVector4 lR = pNode.GetGeometricRotation(FbxNode.EPivotSet.eSourcePivot);
+        FbxVector4 lS = pNode.GetGeometricScaling(FbxNode.EPivotSet.eSourcePivot);
+
+        return new FbxAMatrix(lT, lR, lS);
     }
 
     private void AddMaterial(FbxMesh mesh, FbxNode node, int index, Material material)
@@ -329,6 +368,42 @@ public class FbxHandler
         mesh.GetLayer(0).SetSmoothing(smoothingLayer);
         
         mesh.SetMeshSmoothness(FbxMesh.ESmoothness.eFine);
+    }
+
+    public void AddPlayerSkeletonAndMesh()
+    {
+        // player skeleton + necklace and hands
+        Entity playerBase = PackageHandler.GetTag(typeof(Entity), new TagHash("0000670F342E9595")); // 64 bit more permanent 
+        AddEntityToScene(playerBase, playerBase.Load(ELOD.MostDetail), ELOD.MostDetail);
+
+        // Add model
+        uint sunbracers = 3787517196;
+        uint contraverse = 1906093346;
+        uint astrocyte = 866590993;
+        uint chromatic = 3488362706;
+        uint phoenix = 3488362707;
+        uint transversive = 138282166;
+        uint wise_bond = 1016461220;
+        var helm = astrocyte;
+        var chest = phoenix;
+        var arms = sunbracers;
+        var legs = transversive;
+        var classitem = wise_bond;
+        List<uint> models = new List<uint>
+        {
+            helm,
+            chest,
+            arms,
+            legs,
+            classitem
+        };
+        foreach (var model in models)
+        {
+            var entities = InvestmentHandler.GetEntitiesFromHash(new DestinyHash(model));
+            var entity = entities[0];
+            var parts = entity.Load(ELOD.MostDetail);
+            AddEntityToScene(entity, parts, ELOD.MostDetail);
+        }
     }
 
     public List<FbxNode> AddSkeleton(List<BoneNode> boneNodes)
@@ -381,6 +456,62 @@ public class FbxHandler
         _scene.GetRootNode().AddChild(rootNode);
         return skeletonNodes;
     }
+    
+    public List<FbxNode> MakeFbxSkeletonHierarchy(List<BoneNode> boneNodes)
+    {
+        var jointNodes = new List<FbxNode>();
+        
+        for (int i = 0; i < boneNodes.Count; i++)
+        {
+            var node = boneNodes[i];
+            
+            FbxSkeleton skeleton;
+            FbxNode joint;
+            lock (_fbxLock)
+            {
+                skeleton = FbxSkeleton.Create(_manager, node.Hash.ToString());
+                joint = FbxNode.Create(_manager, node.Hash.ToString());
+            }
+            skeleton.SetSkeletonType(FbxSkeleton.EType.eLimbNode);
+            joint.SetNodeAttribute(skeleton);
+            jointNodes.Add(joint);
+
+            if (node.ParentNodeIndex >= 0)
+            {
+                var parentNode = jointNodes[node.ParentNodeIndex];
+                parentNode.AddChild(joint);
+            }
+            else
+            {
+                lock (_fbxLock)
+                {
+                    FbxSkeleton rootNodeSkeleton;
+                    FbxNode rootNode;
+                    rootNodeSkeleton = FbxSkeleton.Create(_manager, node.Hash.ToString());
+                    rootNode = FbxNode.Create(_manager, node.Hash.ToString());
+                    rootNode.AddChild(joint);
+                    rootNode.SetNodeAttribute(rootNodeSkeleton);
+                    _scene.GetRootNode().AddChild(rootNode);
+                }
+            }
+            
+            // Set the transform
+            FbxAMatrix globalTransform = joint.EvaluateGlobalTransform();
+            FbxAMatrix objectSpaceTransform = new FbxAMatrix();
+            objectSpaceTransform.SetIdentity();
+            objectSpaceTransform.SetT(node.DefaultObjectSpaceTransform.Translation.ToFbxVector4());
+            objectSpaceTransform.SetQ(node.DefaultObjectSpaceTransform.QuaternionRotation.ToFbxQuaternion());
+
+            FbxAMatrix localTransform = globalTransform.Inverse().mul(objectSpaceTransform);
+            var localTranslation = localTransform.GetT();
+            var localRotation = localTransform.GetR();
+            joint.LclTranslation.Set(localTranslation.ToDouble3());
+            joint.LclRotation.Set(localRotation.ToDouble3());
+        }
+
+        return jointNodes;
+    }
+
 
     public void ExportScene(string fileName)
     {
@@ -422,9 +553,12 @@ public class FbxHandler
         // _scene.GetRootNode().LclRotation.Set(new FbxDouble3(90, 0, 0));
         // List<FbxNode> skeletonNodes = new List<FbxNode>();
         
+        // List<FbxNode> skeletonNodes = new List<FbxNode>();
         if (entity.Skeleton != null)
         {
-            skeletonNodes = AddSkeleton(entity.Skeleton.GetBoneNodes());
+            // skeletonNodes = AddSkeleton(entity.Skeleton.GetBoneNodes());
+            _globalBoneNodes = entity.Skeleton.GetBoneNodes();
+            _globalSkeletonNodes = MakeFbxSkeletonHierarchy(_globalBoneNodes);
         }
         for( int i = 0; i < dynamicParts.Count; i++)
         {
@@ -445,14 +579,20 @@ public class FbxHandler
             
             if (dynamicPart.VertexWeights.Count > 0)
             {
-                if (skeletonNodes.Count > 0)
+                // if (skeletonNodes.Count > 0)
+                // {
+                //     AddWeightsToMesh(mesh, dynamicPart, skeletonNodes);
+                //     AddBindPose(skeletonNodes, entity.Skeleton.GetBoneNodes());
+                // }
+                if (_globalSkeletonNodes.Count > 0)
                 {
-                    AddWeightsToMesh(mesh, dynamicPart, skeletonNodes);
+                    AddWeightsToMesh(mesh, dynamicPart, _globalSkeletonNodes);
+                    AddBindPose(_globalSkeletonNodes, _globalBoneNodes);
                 }
             }
         }
         if (animation != null)
-            AddAnimationToEntity(animation, skeletonNodes);
+            AddAnimationToEntity(animation, _globalSkeletonNodes);
     }
 
 
@@ -497,20 +637,29 @@ public class FbxHandler
                 {
                     float frameTime = track.TrackTimes[i];
                     time.SetSecondDouble(frameTime);
-                    
-                    var scaleKeyIndex = scale[d].KeyAdd(time);
-                    scale[d].KeySetValue(scaleKeyIndex, track.TrackScales[i]);
-                    scale[d].KeySetInterpolation(scaleKeyIndex, FbxAnimCurveDef.EInterpolationType.eInterpolationLinear);
-                    
-                    var rotDim = Array.FindIndex(dims, x => x == animation.rotXYZ[d]);
-                    var rotationKeyIndex = rotation[d].KeyAdd(time);
-                    rotation[d].KeySetValue(rotationKeyIndex, (animation.flipRot[d] == 1 ? -1 : 1) * track.TrackRotations[i][rotDim] + animation.rot[d]);
-                    rotation[d].KeySetInterpolation(rotationKeyIndex, FbxAnimCurveDef.EInterpolationType.eInterpolationLinear);
-                    
-                    var traDim = Array.FindIndex(dims, x => x == animation.traXYZ[d]);
-                    var translationKeyIndex = translation[d].KeyAdd(time);
-                    translation[d].KeySetValue(translationKeyIndex, (animation.flipTra[d] == 1 ? -1 : 1) * track.TrackTranslations[i][traDim] + animation.tra[d]);
-                    translation[d].KeySetInterpolation(translationKeyIndex, FbxAnimCurveDef.EInterpolationType.eInterpolationLinear);
+
+                    if (track.TrackScales.Count > 0)
+                    {
+                        var scaleKeyIndex = scale[d].KeyAdd(time);
+                        scale[d].KeySetValue(scaleKeyIndex, track.TrackScales[i]);
+                        scale[d].KeySetInterpolation(scaleKeyIndex, FbxAnimCurveDef.EInterpolationType.eInterpolationLinear);
+                    }
+
+                    if (track.TrackRotations.Count > 0)
+                    {
+                        var rotDim = Array.FindIndex(dims, x => x == animation.rotXYZ[d]);
+                        var rotationKeyIndex = rotation[d].KeyAdd(time);
+                        rotation[d].KeySetValue(rotationKeyIndex, (animation.flipRot[d] == 1 ? -1 : 1) * track.TrackRotations[i][rotDim] + animation.rot[d]);
+                        rotation[d].KeySetInterpolation(rotationKeyIndex, FbxAnimCurveDef.EInterpolationType.eInterpolationLinear);
+                    }
+
+                    if (track.TrackTranslations.Count > 0)
+                    {
+                        var traDim = Array.FindIndex(dims, x => x == animation.traXYZ[d]);
+                        var translationKeyIndex = translation[d].KeyAdd(time);
+                        translation[d].KeySetValue(translationKeyIndex, (animation.flipTra[d] == 1 ? -1 : 1) * track.TrackTranslations[i][traDim] + animation.tra[d]);
+                        translation[d].KeySetInterpolation(translationKeyIndex, FbxAnimCurveDef.EInterpolationType.eInterpolationLinear);
+                    }
                 } 
             }
 
@@ -520,9 +669,16 @@ public class FbxHandler
         }
     }
 
+    public void AddAnimationToEntity(Animation animation)
+    {
+        AddAnimationToEntity(animation, _globalSkeletonNodes);
+    }
+
     public void Clear()
     {
         _scene.Clear();
+        _globalSkeletonNodes.Clear();
+        _globalBoneNodes.Clear();
     }
 
     public void Dispose()
@@ -679,5 +835,40 @@ public class FbxHandler
         retVal.Z *= (float)(180.0f / Math.PI);
 
         return retVal;
+    }
+    
+    public void AddStaticInstancesToScene(List<Part> parts, List<D2Class_406D8080> instances, string meshName)
+    {
+        for (int i = 0; i < parts.Count; i++)
+        {
+            FbxMesh mesh = CreateMeshPart(parts[i], i, meshName);
+            for (int j = 0; j < instances.Count; j++)
+            {
+                FbxNode node;
+                lock (_fbxLock)
+                {
+                    node = FbxNode.Create(_manager, $"{meshName}_{i}_{j}");
+                }
+                node.SetNodeAttribute(mesh);
+                Vector4 quatRot = new Vector4(instances[j].Rotation.X, instances[j].Rotation.Y, instances[j].Rotation.Z, instances[j].Rotation.W);
+                Vector3 eulerRot = quatRot.QuaternionToEulerAnglesZYX();
+                
+                node.LclTranslation.Set(new FbxDouble3(instances[j].Position.X, instances[j].Position.Y, instances[j].Position.Z));
+                node.LclRotation.Set(new FbxDouble3(eulerRot.X, eulerRot.Y, eulerRot.Z));
+                node.LclScaling.Set(new FbxDouble3(instances[j].Scale.X, instances[j].Scale.X, instances[j].Scale.X));
+                
+                lock (_fbxLock)
+                {
+                    _scene.GetRootNode().AddChild(node);
+                }
+            }
+        }
+    }
+
+    public void SetGlobalSkeleton(TagHash tagHash)
+    {
+        EntitySkeleton skeleton = PackageHandler.GetTag(typeof(EntitySkeleton), tagHash);
+        _globalBoneNodes = skeleton.GetBoneNodes();
+        _globalSkeletonNodes = MakeFbxSkeletonHierarchy(_globalBoneNodes);
     }
 }
