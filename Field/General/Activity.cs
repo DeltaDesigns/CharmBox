@@ -94,20 +94,28 @@ public struct D2Class_2E898080
 public struct D2Class_26898080
 {
 	public DestinyHash LocationName;
-	public DestinyHash ActivityName;
-	public DestinyHash BubbleName;
-	public DestinyHash Unk0C;
-	public DestinyHash Unk10;
-	[DestinyOffset(0x18)]
-	public DestinyHash BubbleName2;
-	[DestinyOffset(0x20)]
-	public DestinyHash Unk20;
-	public DestinyHash Unk24;
-	public DestinyHash Unk28;
-	[DestinyOffset(0x30)]
-	public int Unk30;
-	[DestinyOffset(0x38), DestinyField(FieldType.TablePointer)]
-	public List<D2Class_48898080> Unk38;
+    public DestinyHash ActivityName;
+    public DestinyHash BubbleName;
+    public DestinyHash Unk0C;
+    public DestinyHash Unk10;
+    [DestinyOffset(0x18)]
+    public DestinyHash BubbleName2;
+    [DestinyOffset(0x20)]
+    public DestinyHash Unk20;
+    public DestinyHash Unk24;
+    public DestinyHash Unk28;
+    [DestinyOffset(0x30)]
+    public int Unk30;
+    [DestinyOffset(0x48)]
+    public DestinyHash Unk48;
+    [DestinyOffset(0x50)]
+    public DestinyHash Unk50;
+    public DestinyHash Unk54;
+    public DestinyHash Unk58;
+    [DestinyOffset(0x6A)] 
+    public short Unk6A;
+    [DestinyOffset(0x70), DestinyField(FieldType.TablePointer)]
+    public List<D2Class_48898080> Unk70;
 }
 
 [StructLayout(LayoutKind.Sequential, Size = 0x18)]

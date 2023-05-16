@@ -61,7 +61,7 @@ public class Animation : Tag
         // }
         MakeAnimationNodes();
         ParseStaticData();
-        // ParseAnimatedData();
+        ParseAnimatedData();
         MakeAnimationTracks();
         // _Debug_ExtractFirstFrameToObj();
         var a = 0;

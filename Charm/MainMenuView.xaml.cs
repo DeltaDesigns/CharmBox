@@ -16,7 +16,7 @@ using Field;
 using Field.Entities;
 using Field.General;
 using Field.Models;
-using Field.Textures;
+using Internal.Fbx;
 using SharpDX.Toolkit.Graphics;
 
 namespace Charm;
@@ -82,14 +82,6 @@ public partial class MainMenuView : UserControl
         tagListView.LoadContent(ETagListType.StaticsList);
         _mainWindow.MakeNewTab("statics", tagListView);
         _mainWindow.SetNewestTabSelected();    
-    }
-
-    private void AllAnimationsViewButton_OnClick(object sender, RoutedEventArgs e)
-    {
-        TagListViewerView tagListView = new TagListViewerView();
-        tagListView.LoadContent(ETagListType.AnimationList);
-        _mainWindow.MakeNewTab("animations", tagListView);
-        _mainWindow.SetNewestTabSelected();
     }
 
     private void WeaponAudioViewButton_Click(object sender, RoutedEventArgs e)

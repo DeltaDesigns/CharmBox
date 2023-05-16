@@ -220,19 +220,21 @@ public class FbxHandler
             for (var i = 0; i < part.VertexPositions.Count; i++)
             {
                 colLayer.GetDirectArray().Add(new FbxColor(part.VertexColourSlots[0].X, part.VertexColourSlots[0].Y, part.VertexColourSlots[0].Z, part.VertexColourSlots[0].W));
-            }  
+            }
         }
         else
         {
             foreach (var colour in part.VertexColourSlots)
             {
                 colLayer.GetDirectArray().Add(new FbxColor(colour.X, colour.Y, colour.Z, colour.W));
-            }  
+            }
         }
 
         if (mesh.GetLayer(1) == null)
             mesh.CreateLayer();
         mesh.GetLayer(1).SetVertexColors(colLayer);
+    }
+
     /// <summary>
     /// Bind pose uses global transforms?
     /// </summary>
@@ -705,8 +707,8 @@ public class FbxHandler
                     node = FbxNode.Create(_manager, $"{meshName}_{i}_{j}");
                 }
                 node.SetNodeAttribute(mesh);
-                Quaternion quatRot = new Quaternion(instances[j].Rotation.X, instances[j].Rotation.Y, instances[j].Rotation.Z, instances[j].Rotation.W);
-                System.Numerics.Vector3 eulerRot = QuaternionToEulerAngles(quatRot);
+                Vector4 quatRot = new Vector4(instances[j].Rotation.X, instances[j].Rotation.Y, instances[j].Rotation.Z, instances[j].Rotation.W);
+                Vector3 eulerRot = quatRot.QuaternionToEulerAnglesZYX();
                 
                 node.LclTranslation.Set(new FbxDouble3(instances[j].Position.X, instances[j].Position.Y, instances[j].Position.Z));
                 node.LclRotation.Set(new FbxDouble3(eulerRot.X, eulerRot.Y, eulerRot.Z));
@@ -835,34 +837,6 @@ public class FbxHandler
         retVal.Z *= (float)(180.0f / Math.PI);
 
         return retVal;
-    }
-    
-    public void AddStaticInstancesToScene(List<Part> parts, List<D2Class_406D8080> instances, string meshName)
-    {
-        for (int i = 0; i < parts.Count; i++)
-        {
-            FbxMesh mesh = CreateMeshPart(parts[i], i, meshName);
-            for (int j = 0; j < instances.Count; j++)
-            {
-                FbxNode node;
-                lock (_fbxLock)
-                {
-                    node = FbxNode.Create(_manager, $"{meshName}_{i}_{j}");
-                }
-                node.SetNodeAttribute(mesh);
-                Vector4 quatRot = new Vector4(instances[j].Rotation.X, instances[j].Rotation.Y, instances[j].Rotation.Z, instances[j].Rotation.W);
-                Vector3 eulerRot = quatRot.QuaternionToEulerAnglesZYX();
-                
-                node.LclTranslation.Set(new FbxDouble3(instances[j].Position.X, instances[j].Position.Y, instances[j].Position.Z));
-                node.LclRotation.Set(new FbxDouble3(eulerRot.X, eulerRot.Y, eulerRot.Z));
-                node.LclScaling.Set(new FbxDouble3(instances[j].Scale.X, instances[j].Scale.X, instances[j].Scale.X));
-                
-                lock (_fbxLock)
-                {
-                    _scene.GetRootNode().AddChild(node);
-                }
-            }
-        }
     }
 
     public void SetGlobalSkeleton(TagHash tagHash)
