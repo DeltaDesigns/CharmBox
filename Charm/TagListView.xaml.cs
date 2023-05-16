@@ -795,7 +795,14 @@ public partial class TagListView : UserControl
         Entity entity = PackageHandler.GetTag(typeof(Entity), new TagHash(info.Hash));  
         EntityView.Export(new List<Entity> { entity }, info.Name, info.ExportType, null, skipCheck);
     }
-    
+
+    private void ExportEntityAnim(ExportInfo info)
+    {
+        var viewer = GetViewer();
+        bool skipCheck = Dispatcher.Invoke(() => (bool)viewer.ExportControl.SkipBlankMatsCheckbox.IsChecked);
+        EntityView.ExportAnimationWithPlayerModels(new TagHash(info.Hash));
+    }
+
     /// <summary>
     /// We load all of them including no names, but add an option to only show names.
     /// Named: destination global tag bags 0x80808930, budget sets 0x80809eed
@@ -1801,17 +1808,6 @@ public partial class TagListView : UserControl
     }
     
     /// <summary>
-    /// Assume a plauer skeleton, load into the entity view.
-    /// </summary>
-    /// <param name="tagHash"></param>
-    private void LoadAnimationFromPackage(TagHash tagHash)
-    {
-        SetViewer(TagView.EViewerType.Entity);
-        var viewer = GetViewer();
-        viewer.EntityControl.LoadAnimationWithPlayerModels(tagHash, _globalFbxHandler);
-    }
-    
-    /// <summary>
     /// Animations come from Entity.
     /// </summary>
     private void LoadAnimationList(TagHash tagHash)
@@ -1845,7 +1841,22 @@ public partial class TagListView : UserControl
         var viewer = GetViewer();
         viewer.EntityControl.LoadAnimation(tagHash, _globalFbxHandler);
     }
-    
+
+    /// <summary>
+    /// Assume a plauer skeleton, load into the entity view.
+    /// </summary>
+    /// <param name="tagHash"></param>
+    private void LoadAnimationFromPackage(TagHash tagHash)
+    {
+        SetViewer(TagView.EViewerType.Entity);
+        var viewer = GetViewer();
+        viewer.EntityControl.LoadAnimationWithPlayerModels(tagHash, _globalFbxHandler);
+        SetExportFunction(ExportEntityAnim, (int)EExportTypeFlag.Full);
+        viewer.ExportControl.SetExportInfo(tagHash);
+        //viewer.EntityControl.ModelView.SetModelFunction(() => viewer.EntityControl.LoadAnimationWithPlayerModels(tagHash, _globalFbxHandler));
+    }
+
+
     #endregion
 }
 

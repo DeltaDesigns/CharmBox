@@ -379,18 +379,11 @@ public class FbxHandler
         AddEntityToScene(playerBase, playerBase.Load(ELOD.MostDetail), ELOD.MostDetail);
 
         // Add model
-        uint sunbracers = 3787517196;
-        uint contraverse = 1906093346;
-        uint astrocyte = 866590993;
-        uint chromatic = 3488362706;
-        uint phoenix = 3488362707;
-        uint transversive = 138282166;
-        uint wise_bond = 1016461220;
-        var helm = astrocyte;
-        var chest = phoenix;
-        var arms = sunbracers;
-        var legs = transversive;
-        var classitem = wise_bond;
+        uint helm = 1637326795;
+        uint chest = 3524020798;
+        uint arms = 68357813;
+        uint legs = 4012977685;
+        uint classitem = 2218948028;
         List<uint> models = new List<uint>
         {
             helm,
@@ -611,14 +604,13 @@ public class FbxHandler
     {
         animation.Load();
         
-
         FbxAnimStack animStack;
         FbxAnimLayer animLayer;
         FbxTime time;
         lock (_fbxLock)
         {
-            animStack = FbxAnimStack.Create(_scene, "animStackName");
-            animLayer = FbxAnimLayer.Create(_scene, "animLayerName");
+            animStack = FbxAnimStack.Create(_scene, $"animStack_{animation.Hash}");
+            animLayer = FbxAnimLayer.Create(_scene, $"animLayer_{animation.Hash}");
             time = new FbxTime();
             animStack.AddMember(animLayer);        
         }

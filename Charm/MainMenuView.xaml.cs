@@ -157,7 +157,8 @@ public partial class MainMenuView : UserControl
     
     private void CinematicsButton_OnClick(object sender, RoutedEventArgs e)
     {
-        string activityHash = "9694ea80";
+        //Broken atm?
+        string activityHash = "4362E580";//"9694EA80";
         Field.Activity activity = PackageHandler.GetTag(typeof(Field.Activity), new TagHash(activityHash));
         EntityResource cinematicResource = ((D2Class_0C468080) activity.Header.Unk40[0].Unk70[0].UnkEntityReference.Header.Unk18.Header.EntityResources[1]
             .EntityResourceParent.Header.EntityResource.Header.Unk18).CinematicEntity.Header.EntityResources.Last().ResourceHash;
@@ -181,7 +182,7 @@ public partial class MainMenuView : UserControl
                             animation.Animation.Load();
                             FbxHandler fbxHandler = new FbxHandler();
                             fbxHandler.AddEntityToScene(entityWithModel, entityWithModel.Load(ELOD.MostDetail), ELOD.MostDetail, animation.Animation);
-                            fbxHandler.ExportScene($"C:/T/cinematic/{entityWithModel.Hash}_{animation.Animation.Hash}_{animation.Animation.Header.FrameCount}_{Math.Round((float)animation.Animation.Header.FrameCount/30)}.fbx");
+                            fbxHandler.ExportScene($"{ConfigHandler.GetExportSavePath()}/{entityWithModel.Hash}_{animation.Animation.Hash}_{animation.Animation.Header.FrameCount}_{Math.Round((float)animation.Animation.Header.FrameCount/30)}.fbx");
                             fbxHandler.Dispose();
                         }
                     }
@@ -194,7 +195,7 @@ public partial class MainMenuView : UserControl
                             FbxHandler fbxHandler = new FbxHandler();
                             fbxHandler.AddPlayerSkeletonAndMesh();
                             fbxHandler.AddAnimationToEntity(animation.Animation);
-                            fbxHandler.ExportScene($"C:/T/cinematic/player_{animation.Animation.Hash}_{animation.Animation.Header.FrameCount}_{Math.Round((float)animation.Animation.Header.FrameCount/30)}.fbx");
+                            fbxHandler.ExportScene($"{ConfigHandler.GetExportSavePath()}/player_{animation.Animation.Hash}_{animation.Animation.Header.FrameCount}_{Math.Round((float)animation.Animation.Header.FrameCount/30)}.fbx");
                             fbxHandler.Dispose();
                         }
 

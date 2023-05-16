@@ -222,4 +222,20 @@ public partial class EntityView : UserControl
 
         LoadUI(fbxHandler);
     }
+
+    public static void ExportAnimationWithPlayerModels(TagHash tagHash)
+    {
+        FbxHandler fbxHandler = new(false);
+        Animation animation = PackageHandler.GetTag(typeof(Animation), tagHash);
+
+        fbxHandler.AddPlayerSkeletonAndMesh();
+
+        // Add animation
+        animation.Load();
+        // animation.SaveToFile($"C:/T/animation_{animHash}.json");
+        fbxHandler.AddAnimationToEntity(animation, fbxHandler._globalSkeletonNodes);
+        
+        Directory.CreateDirectory($"{ConfigHandler.GetExportSavePath()}/Animations/");
+        fbxHandler.ExportScene($"{ConfigHandler.GetExportSavePath()}/Animations/anim_player_{animation.Hash}.fbx");
+    }
 }
