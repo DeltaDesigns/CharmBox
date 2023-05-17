@@ -40,6 +40,15 @@
                 Visibility="Hidden">
                 Skip Blank Materials
             </CheckBox>
+            <CheckBox
+                x:Name="ExportAnimWithModel"
+                Grid.Column="1"
+                VerticalAlignment="Center"
+                VerticalContentAlignment="Center"
+                IsChecked="False"
+                Visibility="Hidden">
+                Export With Model
+            </CheckBox>
             <Button
                 x:Name="ExportButton"
                 Grid.Column="2"

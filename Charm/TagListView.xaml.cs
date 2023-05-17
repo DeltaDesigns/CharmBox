@@ -799,8 +799,8 @@ public partial class TagListView : UserControl
     private void ExportEntityAnim(ExportInfo info)
     {
         var viewer = GetViewer();
-        bool skipCheck = Dispatcher.Invoke(() => (bool)viewer.ExportControl.SkipBlankMatsCheckbox.IsChecked);
-        EntityView.ExportAnimationWithPlayerModels(new TagHash(info.Hash));
+        bool modelCheck = Dispatcher.Invoke(() => (bool)!viewer.ExportControl.ExportAnimWithModel.IsChecked);
+        EntityView.ExportAnimationWithPlayerModels(new TagHash(info.Hash), modelCheck);
     }
 
     /// <summary>
@@ -1743,9 +1743,10 @@ public partial class TagListView : UserControl
 
     #endregion
 
+
     #region Animation
-    
-    
+
+
     private async Task LoadAnimationPackageList()
     {
         // If there are packages, we don't want to reload the view as very poor for performance.
@@ -1850,6 +1851,7 @@ public partial class TagListView : UserControl
     {
         SetViewer(TagView.EViewerType.Entity);
         var viewer = GetViewer();
+        viewer.ExportControl.ExportAnimWithModel.Visibility = Visibility.Visible;
         viewer.EntityControl.LoadAnimationWithPlayerModels(tagHash, _globalFbxHandler);
         SetExportFunction(ExportEntityAnim, (int)EExportTypeFlag.Full);
         viewer.ExportControl.SetExportInfo(tagHash);

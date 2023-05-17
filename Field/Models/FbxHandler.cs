@@ -372,32 +372,35 @@ public class FbxHandler
         mesh.SetMeshSmoothness(FbxMesh.ESmoothness.eFine);
     }
 
-    public void AddPlayerSkeletonAndMesh()
+    public void AddPlayerSkeletonAndMesh(bool skipModel = false)
     {
         // player skeleton + necklace and hands
         Entity playerBase = PackageHandler.GetTag(typeof(Entity), new TagHash("0000670F342E9595")); // 64 bit more permanent 
         AddEntityToScene(playerBase, playerBase.Load(ELOD.MostDetail), ELOD.MostDetail);
 
-        // Add model
-        uint helm = 1637326795;
-        uint chest = 3524020798;
-        uint arms = 68357813;
-        uint legs = 4012977685;
-        uint classitem = 2218948028;
-        List<uint> models = new List<uint>
+        if (!skipModel)
         {
-            helm,
-            chest,
-            arms,
-            legs,
-            classitem
-        };
-        foreach (var model in models)
-        {
-            var entities = InvestmentHandler.GetEntitiesFromHash(new DestinyHash(model));
-            var entity = entities[0];
-            var parts = entity.Load(ELOD.MostDetail);
-            AddEntityToScene(entity, parts, ELOD.MostDetail);
+            // Add model
+            uint helm = 997252576; //1637326795;
+            uint chest = 648507367; //3524020798;
+            uint arms = 2899766705; //68357813;
+            uint legs = 2731019523; //4012977685;
+            //uint classitem = //2218948028;
+            List<uint> models = new List<uint>
+            {
+                helm,
+                chest,
+                arms,
+                legs,
+                //classitem
+            };
+            foreach (var model in models)
+            {
+                var entities = InvestmentHandler.GetEntitiesFromHash(new DestinyHash(model));
+                var entity = entities[0];
+                var parts = entity.Load(ELOD.MostDetail);
+                AddEntityToScene(entity, parts, ELOD.MostDetail);
+            }
         }
     }
 

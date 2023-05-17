@@ -16,12 +16,17 @@ public partial class FullEntityView : UserControl
     public bool LoadEntity(TagHash entityHash, FbxHandler fbxHandler)
     {
         bool bLoadedSuccessfully = true;
-        
+
         // Load basic geometry
         bLoadedSuccessfully &= GeometryControl.LoadEntity(entityHash, fbxHandler, true);
+        //GeometryControl.LoadContent(ETagListType.Entity, entityHash, true);
+
+        //Load entity sounds
+        //SoundControl.LoadContent(ETagListType.EntityAudioList, entityHash, true);
 
         // Load geom for animation screen + the animation list
         Entity entity = PackageHandler.GetTag(typeof(Entity), entityHash);
+       
         if (entity.AnimationGroup != null)
             AnimationControl.LoadContent(ETagListType.AnimationList, entityHash, true);
         else

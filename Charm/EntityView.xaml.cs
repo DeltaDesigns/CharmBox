@@ -42,6 +42,39 @@ public partial class EntityView : UserControl
     {
         fbxHandler.Clear();
         Entity entity = PackageHandler.GetTag(typeof(Entity), entityHash);
+
+        //Scuffed sound export testing
+        foreach (var e in entity.Header.EntityResources)
+        {
+            if (e.ResourceHash.Header.Unk18 is D2Class_79818080 a)
+            {
+                foreach (var d2ClassF1918080 in a.WwiseSounds1)
+                {
+                    if (d2ClassF1918080.Unk10 is D2Class_40668080 b)
+                    {
+                        if (b.Sound != null)
+                        {
+                            var soundSavePath = $"{ConfigHandler.GetExportSavePath()}/Sound/Entity_{entityHash}/";
+                            Directory.CreateDirectory(soundSavePath);
+                            b.Sound.ExportSound(soundSavePath);
+                        }
+                    }
+                }
+                foreach (var d2ClassF1918080 in a.WwiseSounds2)
+                {
+                    if (d2ClassF1918080.Unk10 is D2Class_40668080 b)
+                    {
+                        if (b.Sound != null)
+                        {
+                            var soundSavePath = $"{ConfigHandler.GetExportSavePath()}/Sound/Entity_{entityHash}/";
+                            Directory.CreateDirectory(soundSavePath);
+                            b.Sound.ExportSound(soundSavePath);
+                        }
+                    }
+                }
+            }
+        }
+
         _loadedEntity = entity;
         // todo fix this
         if (entity.AnimationGroup != null && !bBlockRecursion)  // Make a new tab and use that with FullEntityView
@@ -223,12 +256,12 @@ public partial class EntityView : UserControl
         LoadUI(fbxHandler);
     }
 
-    public static void ExportAnimationWithPlayerModels(TagHash tagHash)
+    public static void ExportAnimationWithPlayerModels(TagHash tagHash, bool skipModel = true)
     {
         FbxHandler fbxHandler = new(false);
         Animation animation = PackageHandler.GetTag(typeof(Animation), tagHash);
 
-        fbxHandler.AddPlayerSkeletonAndMesh();
+        fbxHandler.AddPlayerSkeletonAndMesh(skipModel);
 
         // Add animation
         animation.Load();
