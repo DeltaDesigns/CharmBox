@@ -28,7 +28,7 @@
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
             Click="ExportDevMapButton_OnClick"
-            Content="export dev map" />
+            Content="Export Dev Map" />
 
         <TextBlock
             x:Name="HashLocation"
@@ -49,6 +49,7 @@
             KeyDown="TagHashBoxKeydown"
             Text="1820DF80"
             TextAlignment="Center" />
+
         <!--  AB8FA380 variks  -->
         <!--  3b00ab80 atraks  -->
         <!--  4901ab80 taniks normal, 100bb780 abomination  -->

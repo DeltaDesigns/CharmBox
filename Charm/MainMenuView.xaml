@@ -136,9 +136,25 @@
                 <Button
                     Width="300"
                     Height="76"
+                    Margin="10,0,10,0"
                     Padding="10,0,10,0"
                     HorizontalContentAlignment="Center"
                     Click="AnimationsButton_OnClick">
+                    <TextBlock
+                        Padding="0,10,0,10"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        FontFamily="{DynamicResource ResourceKey=Neue Haas Grotesk Text Pro 55 Roman}"
+                        FontSize="35"
+                        Text="Animations" />
+                </Button>
+                <Button
+                    Width="300"
+                    Height="76"
+                    Margin="10,0,10,0"
+                    Padding="10,0,10,0"
+                    HorizontalContentAlignment="Center"
+                    Click="ExportCinematicButton_OnClick">
                     <TextBlock
                         Padding="0,10,0,10"
                         HorizontalAlignment="Center"

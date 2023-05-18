@@ -106,6 +106,8 @@ public struct D2Class_26898080
     public DestinyHash Unk28;
     [DestinyOffset(0x30)]
     public int Unk30;
+    [DestinyOffset(0x38), DestinyField(FieldType.TablePointer)]
+    public List<D2Class_48898080> Unk38;
     [DestinyOffset(0x48)]
     public DestinyHash Unk48;
     [DestinyOffset(0x50)]

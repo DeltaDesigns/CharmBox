@@ -590,7 +590,7 @@ public class FbxHandler
             }
         }
         if (animation != null)
-            AddAnimationToEntity(animation, _globalSkeletonNodes);
+            AddAnimationToEntity(animation, _globalSkeletonNodes, entity);
     }
 
 
@@ -603,8 +603,12 @@ public class FbxHandler
         }
     }
     
-    public void AddAnimationToEntity(Animation animation, List<FbxNode> skeletonNodes)
+    public void AddAnimationToEntity(Animation animation, List<FbxNode> skeletonNodes, Entity entity = null)
     {
+        string entHash = "";
+        if (entity != null) //scuffed
+            entHash = $"{entity.Hash}_";
+
         animation.Load();
         
         FbxAnimStack animStack;
@@ -612,8 +616,8 @@ public class FbxHandler
         FbxTime time;
         lock (_fbxLock)
         {
-            animStack = FbxAnimStack.Create(_scene, $"animStack_{animation.Hash}");
-            animLayer = FbxAnimLayer.Create(_scene, $"animLayer_{animation.Hash}");
+            animStack = FbxAnimStack.Create(_scene, $"{entHash}animStack_{animation.Hash}");
+            animLayer = FbxAnimLayer.Create(_scene, $"{entHash}animLayer_{animation.Hash}");
             time = new FbxTime();
             animStack.AddMember(animLayer);        
         }
