@@ -104,6 +104,10 @@ public enum ETagListType
     AnimationList,
     [Description("Animation [Final]")]
     Animation,
+    [Description("Cinematic Animation List")]
+    CinematicAnimationList,
+    [Description("Cinematic Animation [Final]")]
+    CinematicAnimation,
 }
 
 /// <summary>
@@ -289,6 +293,12 @@ public partial class TagListView : UserControl
                     break;
                 case ETagListType.Animation:
                     LoadAnimation(contentValue);
+                    break;
+                case ETagListType.CinematicAnimationList:
+                    LoadCinematicAnimationList();
+                    break;
+                case ETagListType.CinematicAnimation:
+                    LoadCinematicAnimation(contentValue);
                     break;
                 default:
 					MessageBox.Show("Not Implemented");
@@ -1844,7 +1854,7 @@ public partial class TagListView : UserControl
     }
 
     /// <summary>
-    /// Assume a plauer skeleton, load into the entity view.
+    /// Assume a player skeleton, load into the entity view.
     /// </summary>
     /// <param name="tagHash"></param>
     private void LoadAnimationFromPackage(TagHash tagHash)
@@ -1858,6 +1868,112 @@ public partial class TagListView : UserControl
         //viewer.EntityControl.ModelView.SetModelFunction(() => viewer.EntityControl.LoadAnimationWithPlayerModels(tagHash, _globalFbxHandler));
     }
 
+
+    #endregion
+
+    #region Cinemation Animations
+
+    private void LoadCinematicAnimationList()
+    {
+        _allTagItems = new ConcurrentBag<TagItem>();
+        var vals = PackageHandler.GetAllTagsWithReference(0x80808e8e);
+        PackageHandler.CacheHashDataList(vals.Select(x => x.Hash).ToArray());
+
+        Parallel.ForEach(vals, val =>
+        {
+            //Console.WriteLine($"{PackageHandler.GetActivityName(val)} {val.Hash}");
+            if(!PackageHandler.GetActivityName(val).Contains("ambient"))
+            {
+                 _allTagItems.Add(new TagItem
+                {
+                    Hash = val,
+                    Name = PackageHandler.GetActivityName(val),
+                    Subname = "",
+                    TagType = ETagListType.CinematicAnimation
+                });  
+            }
+        });
+    }
+
+    private async void LoadCinematicAnimation(TagHash tagHash)
+    {
+        //string activityHash = "EA64D580";
+        Field.Activity activity = PackageHandler.GetTag(typeof(Field.Activity), new TagHash(tagHash));
+        //Console.WriteLine(activity.Hash.ToString());
+       
+        if(activity.Header.Unk40.Count == 0)
+        {
+            MessageBox.Show("No cinematic found for this activity.");
+            return;
+        }
+
+        if ((object)activity.Header.Unk40[0].Unk38[0].UnkEntityReference.Header.Unk18.Header.EntityResources[1].EntityResourceParent.Header.EntityResource.Header.Unk18 == null)
+        {
+            MessageBox.Show("No cinematic found for this activity.");
+            return;
+        }
+           
+        D2Class_0C468080 unk18 = (D2Class_0C468080)activity.Header.Unk40[0].Unk38[0].UnkEntityReference.Header.Unk18.Header.EntityResources[1]
+            .EntityResourceParent.Header.EntityResource.Header.Unk18;
+        
+        EntityResource cinematicResource = unk18.CinematicEntity.Header.EntityResources.Last().ResourceHash;
+        if(cinematicResource.Header.Unk18 is null)
+        {
+            MessageBox.Show("No cinematic found for this activity.");
+            return;
+        }
+
+        MainWindow.Progress.SetProgressStages(new List<string>
+        {
+            $"Exporting Cinematic from {PackageHandler.GetActivityName(activity.Hash)}"
+        });
+
+        HashSet<string> cinematicModels = new HashSet<string>();
+        await Task.Run(() =>
+        {
+            foreach (D2Class_AE5F8080 groupEntry in ((D2Class_B75F8080)cinematicResource.Header.Unk18).CinematicEntityGroups)
+            {
+                foreach (D2Class_B15F8080 entityEntry in groupEntry.CinematicEntities)
+                {
+                    var entityWithModel = entityEntry.CinematicEntityModel;
+                    var entityWithAnims = entityEntry.CinematicEntityAnimations;
+                    if (entityWithModel != null)
+                    {
+                        cinematicModels.Add(entityWithModel.Hash.ToString());
+                        if (entityWithAnims.AnimationGroup != null) // caiatl
+                        {
+                            foreach (var animation in ((D2Class_F8258080)entityWithAnims.AnimationGroup.Header.Unk18).AnimationGroup.Header.Animations)
+                            {
+                                if (animation.Animation == null)
+                                    continue;
+                                animation.Animation.ParseTag();
+                                animation.Animation.Load();
+                                FbxHandler fbxHandler = new FbxHandler(false);
+                                fbxHandler.AddEntityToScene(entityWithModel, entityWithModel.Load(ELOD.MostDetail), ELOD.MostDetail, animation.Animation, null, true);
+                                fbxHandler.ExportScene($"{ConfigHandler.GetExportSavePath()}/cinematic/{tagHash.ToString()}/{entityWithModel.Hash}_{animation.Animation.Hash}_{animation.Animation.Header.FrameCount}_{Math.Round((float)animation.Animation.Header.FrameCount / 30)}.fbx");
+                                fbxHandler.Dispose();
+                            }
+                        }
+                        if (entityWithModel.Hash == "5518DA80" && entityWithAnims.AnimationGroup != null) // player
+                        {
+                            foreach (var animation in ((D2Class_F8258080)entityWithAnims.AnimationGroup.Header.Unk18).AnimationGroup.Header.Animations)
+                            {
+                                animation.Animation.ParseTag();
+                                animation.Animation.Load();
+                                FbxHandler fbxHandler = new FbxHandler(false);
+                                fbxHandler.AddPlayerSkeletonAndMesh();
+                                fbxHandler.AddAnimationToEntity(animation.Animation);
+                                fbxHandler.ExportScene($"{ConfigHandler.GetExportSavePath()}/cinematic/{tagHash.ToString()}/player_{animation.Animation.Hash}_{animation.Animation.Header.FrameCount}_{Math.Round((float)animation.Animation.Header.FrameCount / 30)}.fbx");
+                                fbxHandler.Dispose();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        MainWindow.Progress.CompleteStage();
+        MessageBox.Show("Successfully exported activity cinematic");
+    }
 
     #endregion
 }

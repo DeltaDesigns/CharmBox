@@ -141,13 +141,15 @@ public partial class MainWindow
         PackageHandler.Initialise();
         Progress.CompleteStage();
 
+#if !DEBUG
         // Load all the fonts
         await Task.Run(() =>
         {
             RegisterFonts(FontHandler.Initialise());
         });
+        
+#endif
         Progress.CompleteStage();
-
         // Get all hash64 -- must be before InvestmentHandler
         await Task.Run(TagHash64Handler.Initialise);
         Progress.CompleteStage();

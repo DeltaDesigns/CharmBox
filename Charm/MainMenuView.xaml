@@ -154,7 +154,7 @@
                     Margin="10,0,10,0"
                     Padding="10,0,10,0"
                     HorizontalContentAlignment="Center"
-                    Click="ExportCinematicButton_OnClick">
+                    Click="AllCinematicsViewButton_OnClick">
                     <TextBlock
                         Padding="0,10,0,10"
                         HorizontalAlignment="Center"

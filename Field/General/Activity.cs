@@ -116,8 +116,8 @@ public struct D2Class_26898080
     public DestinyHash Unk58;
     [DestinyOffset(0x6A)] 
     public short Unk6A;
-    [DestinyOffset(0x70), DestinyField(FieldType.TablePointer)]
-    public List<D2Class_48898080> Unk70;
+    //[DestinyOffset(0x70), DestinyField(FieldType.TablePointer)]
+    //public List<D2Class_48898080> Unk70;
 }
 
 [StructLayout(LayoutKind.Sequential, Size = 0x18)]

@@ -155,10 +155,18 @@ public partial class MainMenuView : UserControl
         Image.Height = 160;
     }
 
+    private void AllCinematicsViewButton_OnClick(object sender, RoutedEventArgs e)
+    {
+        TagListViewerView tagListView = new TagListViewerView();
+        tagListView.LoadContent(ETagListType.CinematicAnimationList);
+        _mainWindow.MakeNewTab("Cinematic Animations", tagListView);
+        _mainWindow.SetNewestTabSelected();
+    }
+
     private void ExportCinematicButton_OnClick(object sender, RoutedEventArgs e)
     {
         //string strHash = TagHashBox.Text.Replace(" ", "");
-        string activityHash = "9223fa80";
+        string activityHash = "EA64D580";
         Field.Activity activity = PackageHandler.GetTag(typeof(Field.Activity), new TagHash(activityHash));
         Console.WriteLine(activity.Hash.ToString());
         if ((object)activity.Header.Unk40[0].Unk38[0].UnkEntityReference.Header.Unk18.Header.EntityResources[1].EntityResourceParent.Header.EntityResource.Header.Unk18 == null)
@@ -187,7 +195,7 @@ public partial class MainMenuView : UserControl
                                 continue;
                             animation.Animation.ParseTag();
                             animation.Animation.Load();
-                            FbxHandler fbxHandler = new FbxHandler();
+                            FbxHandler fbxHandler = new FbxHandler(false);
                             fbxHandler.AddEntityToScene(entityWithModel, entityWithModel.Load(ELOD.MostDetail), ELOD.MostDetail, animation.Animation, null, true);
                             fbxHandler.ExportScene($"{ConfigHandler.GetExportSavePath()}/cinematic/{activityHash}/{entityWithModel.Hash}_{animation.Animation.Hash}_{animation.Animation.Header.FrameCount}_{Math.Round((float)animation.Animation.Header.FrameCount / 30)}.fbx");
                             fbxHandler.Dispose();
@@ -199,7 +207,7 @@ public partial class MainMenuView : UserControl
                         {
                             animation.Animation.ParseTag();
                             animation.Animation.Load();
-                            FbxHandler fbxHandler = new FbxHandler();
+                            FbxHandler fbxHandler = new FbxHandler(false);
                             fbxHandler.AddPlayerSkeletonAndMesh();
                             fbxHandler.AddAnimationToEntity(animation.Animation);
                             fbxHandler.ExportScene($"{ConfigHandler.GetExportSavePath()}/cinematic/{activityHash}/player_{animation.Animation.Hash}_{animation.Animation.Header.FrameCount}_{Math.Round((float)animation.Animation.Header.FrameCount / 30)}.fbx");
