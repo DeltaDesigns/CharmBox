@@ -38,7 +38,7 @@ public partial class MainMenuView : UserControl
         if(ConfigHandler.GetPackagesPath() != "" && File.Exists(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "/paths.cache"))
         {
             GameVersion = $"Game Version:\n{_mainWindow.CheckGameVersion()}";
-            LoadTexture(new TextureHeader(new Field.General.TagHash("6A20A080")));
+            LoadTexture(new TextureHeader(new Field.General.TagHash("E154AE80")));
         }
     }
 
@@ -130,9 +130,9 @@ public partial class MainMenuView : UserControl
     private void MainMenuImage_OnClick(object sender, RoutedEventArgs e)
     {
         if (MainMenuImage.IsChecked == true)
-            LoadTexture(new TextureHeader(new Field.General.TagHash("9E20A080")));
+            LoadTexture(new TextureHeader(new Field.General.TagHash("EB5AAE80"))); //9E20A080 WQ logo
         else
-            LoadTexture(new TextureHeader(new Field.General.TagHash("6A20A080")));
+            LoadTexture(new TextureHeader(new Field.General.TagHash("E154AE80"))); //6A20A080 destiny logo, EB5AAE80
     }
 
     public void LoadTexture(TextureHeader textureHeader)
