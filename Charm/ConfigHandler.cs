@@ -521,7 +521,151 @@ public class ConfigHandler
     }
 
     #endregion
-    
+
+    #region AnimationHashes
+
+    public static string GetAnimationHelmetHash()
+    {
+        if (_config.AppSettings.Settings["animHelmet"] == null)
+        {
+            return "866590993";
+        }
+        return _config.AppSettings.Settings["animHelmet"].Value;
+    }
+
+    public static bool TrySetAnimationHelmetHash(string hash)
+    {
+        if (hash == "")
+        {
+            return false;
+        }
+
+        if (_config.AppSettings.Settings["animHelmet"] == null)
+        {
+            _config.AppSettings.Settings.Add("animHelmet", hash);
+        }
+        else
+        {
+            _config.AppSettings.Settings["animHelmet"].Value = hash;
+        }
+        Save();
+        return true;
+    }
+
+    public static string GetAnimationArmsHash()
+    {
+        if (_config.AppSettings.Settings["animArms"] == null)
+        {
+            return "3787517196";
+        }
+        return _config.AppSettings.Settings["animArms"].Value;
+    }
+
+    public static bool TrySetAnimationArmsHash(string hash)
+    {
+        if (hash == "")
+        {
+            return false;
+        }
+
+        if (_config.AppSettings.Settings["animArms"] == null)
+        {
+            _config.AppSettings.Settings.Add("animArms", hash);
+        }
+        else
+        {
+            _config.AppSettings.Settings["animArms"].Value = hash;
+        }
+        Save();
+        return true;
+    }
+
+    public static string GetAnimationChestHash()
+    {
+        if (_config.AppSettings.Settings["animChest"] == null)
+        {
+            return "3488362707";
+        }
+        return _config.AppSettings.Settings["animChest"].Value;
+    }
+
+    public static bool TrySetAnimationChestHash(string hash)
+    {
+        if (hash == "")
+        {
+            return false;
+        }
+
+        if (_config.AppSettings.Settings["animChest"] == null)
+        {
+            _config.AppSettings.Settings.Add("animChest", hash);
+        }
+        else
+        {
+            _config.AppSettings.Settings["animChest"].Value = hash;
+        }
+        Save();
+        return true;
+    }
+
+    public static string GetAnimationLegsHash()
+    {
+        if (_config.AppSettings.Settings["animLegs"] == null)
+        {
+            return "138282166";
+        }
+        return _config.AppSettings.Settings["animLegs"].Value;
+    }
+
+    public static bool TrySetAnimationLegsHash(string hash)
+    {
+        if (hash == "")
+        {
+            return false;
+        }
+
+        if (_config.AppSettings.Settings["animLegs"] == null)
+        {
+            _config.AppSettings.Settings.Add("animLegs", hash);
+        }
+        else
+        {
+            _config.AppSettings.Settings["animLegs"].Value = hash;
+        }
+        Save();
+        return true;
+    }
+
+    public static string GetAnimationClassItemHash()
+    {
+        if (_config.AppSettings.Settings["animClassItem"] == null)
+        {
+            return "1016461220";
+        }
+        return _config.AppSettings.Settings["animClassItem"].Value;
+    }
+
+    public static bool TrySetAnimationClassItemHash(string hash)
+    {
+        if (hash == "")
+        {
+            return false;
+        }
+
+        if (_config.AppSettings.Settings["animClassItem"] == null)
+        {
+            _config.AppSettings.Settings.Add("animClassItem", hash);
+        }
+        else
+        {
+            _config.AppSettings.Settings["animClassItem"].Value = hash;
+        }
+        Save();
+        return true;
+    }
+
+    #endregion
+
     private static void Save()
     {
         _config.Save(ConfigurationSaveMode.Modified);

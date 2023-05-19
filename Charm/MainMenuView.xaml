@@ -334,6 +334,16 @@
                 Style="{StaticResource EmptyToggleButton}">
                 <Image x:Name="Image" />
             </ToggleButton>
+            <TextBlock
+                Grid.Row="0"
+                Width="339"
+                Height="53"
+                Margin="0,58,0,0"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Top"
+                FontSize="15"
+                Text="EXPERIMENTAL"
+                TextAlignment="Center" />
         </Grid>
     </Border>
 </UserControl>

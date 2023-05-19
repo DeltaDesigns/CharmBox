@@ -75,9 +75,57 @@ public class FieldConfigHandler
         }
         return _config.AppSettings.Settings["s2VMDLExportEnabled"].Value == "True";
     }
-    
+
     #endregion
 
+    #region AnimationHashes
+
+    public static string GetAnimationHelmetHash()
+    {
+        if (_config.AppSettings.Settings["animHelmet"] == null || _config.AppSettings.Settings["animHelmet"].ToString() == "0")
+        {
+            return "997252576";
+        }
+        return _config.AppSettings.Settings["animHelmet"].Value;
+    }
+
+    public static string GetAnimationArmsHash()
+    {
+        if (_config.AppSettings.Settings["animArms"] == null || _config.AppSettings.Settings["animArms"].ToString() == "0")
+        {
+            return "648507367";
+        }
+        return _config.AppSettings.Settings["animArms"].Value;
+    }
+
+    public static string GetAnimationChestHash()
+    {
+        if (_config.AppSettings.Settings["animChest"] == null || _config.AppSettings.Settings["animChest"].ToString() == "0")
+        {
+            return "2899766705";
+        }
+        return _config.AppSettings.Settings["animChest"].Value;
+    }
+
+    public static string GetAnimationLegsHash()
+    {
+        if (_config.AppSettings.Settings["animLegs"] == null || _config.AppSettings.Settings["animLegs"].ToString() == "0")
+        {
+            return "2731019523";
+        }
+        return _config.AppSettings.Settings["animLegs"].Value;
+    }
+
+    public static string GetAnimationClassItemHash()
+    {
+        if (_config.AppSettings.Settings["animClassItem"] == null || _config.AppSettings.Settings["animClassItem"].ToString() == "0")
+        {
+            return "1016461220";
+        }
+        return _config.AppSettings.Settings["animClassItem"].Value;
+    }
+
+    #endregion
 
     #region exportSavePath
 

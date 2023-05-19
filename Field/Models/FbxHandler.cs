@@ -380,19 +380,32 @@ public class FbxHandler
 
         if (!skipModel)
         {
-            // Add model
-            uint helm = 997252576; //1637326795;
-            uint chest = 648507367; //3524020798;
-            uint arms = 2899766705; //68357813;
-            uint legs = 2731019523; //4012977685;
-            //uint classitem = //2218948028;
+            //// Add model
+            //uint helm = 997252576; //1637326795;
+            //uint chest = 648507367; //3524020798;
+            //uint arms = 2899766705; //68357813;
+            //uint legs = 2731019523; //4012977685;
+            ////uint classitem = //2218948028;
+            //List<uint> models = new List<uint>
+            //{
+            //    helm,
+            //    chest,
+            //    arms,
+            //    legs,
+            //    //classitem
+            //};
+            uint helm = Convert.ToUInt32(FieldConfigHandler.GetAnimationHelmetHash());
+            uint arms = Convert.ToUInt32(FieldConfigHandler.GetAnimationArmsHash());
+            uint chest = Convert.ToUInt32(FieldConfigHandler.GetAnimationChestHash());
+            uint legs = Convert.ToUInt32(FieldConfigHandler.GetAnimationLegsHash());
+            uint classitem = Convert.ToUInt32(FieldConfigHandler.GetAnimationClassItemHash());
             List<uint> models = new List<uint>
             {
                 helm,
                 chest,
                 arms,
                 legs,
-                //classitem
+                classitem
             };
             foreach (var model in models)
             {
