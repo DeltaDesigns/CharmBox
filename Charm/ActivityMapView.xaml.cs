@@ -77,6 +77,9 @@ public partial class ActivityMapView : UserControl
 
     private void StaticMapPart_OnCheck(object sender, RoutedEventArgs e)
     {
+        if ((sender as CheckBox).Tag is null)
+            return;
+
         TagHash hash = new TagHash((sender as CheckBox).Tag as string);
         Tag<D2Class_07878080> map = PackageHandler.GetTag<D2Class_07878080>(hash);
         

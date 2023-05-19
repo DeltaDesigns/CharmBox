@@ -79,11 +79,10 @@ public class DestinyHash : IComparable<DestinyHash>
         bool parsed;
         if (hash.Length == 8)
         {
-            //if (hash.EndsWith("80") || hash.EndsWith("81") || bBigEndianString)
             parsed = uint.TryParse(hash, NumberStyles.HexNumber, null, out Hash);
             if (parsed)
             {
-                if (hash.EndsWith("80") || bBigEndianString)
+                if (hash.EndsWith("80") || hash.EndsWith("81") || bBigEndianString)
                 {
                     Hash = Endian.SwapU32(Hash);
                 }
