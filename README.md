@@ -1,5 +1,7 @@
 # Charm - the Destiny tool that does everything
 
+## Experimental Branch. Dont expect support, things can and will break
+
 ## What is this?
 
 A new, flashier, fully C# version of my previous tool Phonon. It is designed to only support the latest versions of the game. The tool focuses on providing as much access to the information in the game files as possible, ideal for artists and content preservation.
