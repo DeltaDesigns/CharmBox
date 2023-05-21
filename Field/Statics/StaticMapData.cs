@@ -394,5 +394,14 @@ public struct D2Class_04868080
     public Tag Unk10;  // 24878080, smth related to havok volumes
 }
 
+/// <summary>
+/// Unk data resource.
+/// </summary>
+[StructLayout(LayoutKind.Sequential, Size = 0x110)]
+public struct D2Class_716C8080
+{
+    
+}
+
 
 #endregion

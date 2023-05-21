@@ -23,6 +23,8 @@ using Field;
 using Microsoft.Toolkit.Mvvm.Input;
 using Serilog;
 using System.Text;
+using SharpDX.Direct3D9;
+using System.Security.Policy;
 
 namespace Charm;
 
@@ -84,6 +86,14 @@ public enum ETagListType
     SoundsList,
     [Description("Sound [Final]")]
     Sound,
+
+    [Description("Map Sounds List")]
+    MapSoundsList,
+    [Description("Map Sounds [Final]")]
+    MapSounds,
+    [Description("Map Load Sounds List")]
+    MapLoadSoundsList,
+
     [Description("Music List")]
     MusicList,
     [Description("Music [Final]")]
@@ -261,6 +271,17 @@ public partial class TagListView : UserControl
                 case ETagListType.SoundsList:
                     LoadSoundsList(contentValue);
                     break;
+
+                case ETagListType.MapSoundsList:
+                    LoadMapSounds(contentValue);
+                    break;
+                case ETagListType.MapSounds:
+                    LoadMapSoundsList(contentValue);
+                    break;
+                case ETagListType.MapLoadSoundsList:
+                    LoadMapLoadSounds(contentValue);
+                    break;
+
                 case ETagListType.Sound:
                     LoadSound(contentValue);
                     break;
@@ -1516,7 +1537,100 @@ public partial class TagListView : UserControl
         Wem wem = PackageHandler.GetTag(typeof(Wem), new TagHash(info.Hash));
         string saveDirectory = ConfigHandler.GetExportSavePath() + $"/Sound/{info.Hash}_{info.Name}/";
         Directory.CreateDirectory(saveDirectory);
-        wem.SaveToFile($"{saveDirectory}/{info.Name}.wem");
+        wem.SaveToFile($"{saveDirectory}/{info.Name}.wav"); //was .wem
+    }
+
+    #endregion
+
+    #region Map Sounds
+    private async void LoadMapSounds(TagHash tagHash)
+    {
+        await Task.Run(() =>
+        {
+            Field.Activity activity = PackageHandler.GetTag(typeof(Field.Activity), tagHash);
+            _allTagItems = new ConcurrentBag<TagItem>();
+
+            Parallel.ForEach(activity.Header.Unk50, mapEntry =>
+            {
+                foreach (var mapReferences in mapEntry.MapReferences)
+                {
+                    if (mapReferences.MapReference is null || mapReferences.MapReference.Header.ChildMapReference == null)
+                        continue;
+
+                    _allTagItems.Add(new TagItem
+                    {
+                        Name = $"{mapEntry.BubbleName} ({mapEntry.LocationName})",
+                        Hash = mapReferences.MapReference.Header.ChildMapReference.Hash,
+                        TagType = ETagListType.MapSounds
+                    });
+                }
+            });
+        });
+
+        
+        RefreshItemList();
+    }
+
+    private void LoadMapSoundsList(TagHash tagHash)
+    {
+        SetViewer(TagView.EViewerType.TagList);
+        var viewer = GetViewer();
+        viewer.MusicPlayer.Visibility = Visibility.Visible;
+        viewer.TagListControl.LoadContent(ETagListType.MapLoadSoundsList, tagHash, true);
+    }
+
+    private async void LoadMapLoadSounds(TagHash tagHash)
+    {
+        MainWindow.Progress.SetProgressStages(new List<string>
+        {
+            "loading sounds",
+        });
+
+        await Task.Run(() =>
+        {
+            Tag<D2Class_01878080> bubbleMaps = PackageHandler.GetTag<D2Class_01878080>(tagHash);
+         
+            _allTagItems = new ConcurrentBag<TagItem>();
+
+            Parallel.ForEach(bubbleMaps.Header.MapResources, m => //This is a mess..
+            {
+                if (m.MapResource.Header.DataTables.Count > 1)
+                {
+                    if (m.MapResource.Header.DataTables[1].DataTable.Header.DataEntries.Count > 0)
+                    {
+                        foreach (var data in m.MapResource.Header.DataTables)
+                        {
+                            data.DataTable.Header.DataEntries.ForEach(entry =>
+                            {
+                                if (entry.DataResource is D2Class_6F668080 a) //map ambient sounds
+                                {
+                                    if (a.AudioContainer is not null)
+                                    {
+                                        var b = PackageHandler.GetTag<D2Class_38978080>(a.AudioContainer.Hash);
+                                        foreach (var wem in b.Header.Unk20)
+                                        {
+                                            if (wem.GetData().Length == 1)
+                                                continue;
+
+                                            _allTagItems.Add(new TagItem
+                                            {
+                                                Name = PackageHandler.GetEntryReference(wem.Hash),
+                                                Hash = wem.Hash,
+                                                Subname = wem.Duration,
+                                                TagType = ETagListType.Sound
+                                            });
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    }
+                }
+            });
+        });
+
+        MainWindow.Progress.CompleteStage();
+        RefreshItemList();
     }
 
     #endregion

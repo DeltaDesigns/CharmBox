@@ -242,7 +242,7 @@ public partial class MapView : UserControl
         FbxHandler dynamicHandler = new FbxHandler();
         dynamicHandler.InfoHandler.SetMeshName($"{map.Hash.GetHashString()}_Dynamics");
         dynamicHandler.InfoHandler.AddType("Dynamics");
-        //FbxHandler dynamicPoints = new FbxHandler(false);
+        FbxHandler dynamicPoints = new FbxHandler(false);
        
         Parallel.ForEach(map.Header.DataTables, data =>
         {
@@ -262,15 +262,15 @@ public partial class MapView : UserControl
                 else if(entry is D2Class_85988080 dynamicResource)
                 {
                     dynamicHandler.AddDynamicToScene(dynamicResource, dynamicResource.Entity.Hash, savePath, ConfigHandler.GetUnrealInteropEnabled() || ConfigHandler.GetS2ShaderExportEnabled(), ConfigHandler.GetSaveCBuffersEnabled());
-                    //dynamicPoints.AddDynamicPointsToScene(dynamicResource, dynamicResource.Entity.Hash, dynamicPoints);
+                    dynamicPoints.AddDynamicPointsToScene(dynamicResource, dynamicResource.Entity.Hash, dynamicPoints);
                 }
             });
         });
         dynamicHandler.ExportScene($"{savePath}/{map.Hash.GetHashString()}_Dynamics.fbx");
         dynamicHandler.Dispose();
 
-        //dynamicPoints.ExportScene($"{savePath}/{map.Hash.GetHashString()}_DynamicPoints.fbx");
-        //dynamicPoints.Dispose();
+        dynamicPoints.ExportScene($"{savePath}/{map.Hash.GetHashString()}_DynamicPoints.fbx");
+        dynamicPoints.Dispose();
     }
 
     private static void ExportStatics(bool exportStatics, string savePath, Tag<D2Class_07878080> map)

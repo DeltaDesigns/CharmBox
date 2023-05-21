@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -51,9 +52,13 @@ public partial class EntityView : UserControl
                 foreach (var d2ClassF1918080 in a.WwiseSounds1)
                 {
                     if (d2ClassF1918080.Unk10 is D2Class_40668080 b)
-                    {
+                    { 
                         if (b.Sound != null)
                         {
+                            Wem wem = PackageHandler.GetTag(typeof(Wem), b.Sound.Hash);
+                            if (wem.GetData().Length == 1)
+                                continue;
+
                             var soundSavePath = $"{ConfigHandler.GetExportSavePath()}/Sound/Entity_{entityHash}/";
                             Directory.CreateDirectory(soundSavePath);
                             b.Sound.ExportSound(soundSavePath);
@@ -66,6 +71,10 @@ public partial class EntityView : UserControl
                     {
                         if (b.Sound != null)
                         {
+                            Wem wem = PackageHandler.GetTag(typeof(Wem), b.Sound.Hash);
+                            if (wem.GetData().Length == 1)
+                                continue;
+
                             var soundSavePath = $"{ConfigHandler.GetExportSavePath()}/Sound/Entity_{entityHash}/";
                             Directory.CreateDirectory(soundSavePath);
                             b.Sound.ExportSound(soundSavePath);

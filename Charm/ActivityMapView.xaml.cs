@@ -129,13 +129,34 @@ public partial class ActivityMapView : UserControl
 
     private void PopulateDynamicsList(Tag<D2Class_07878080> map)//(Tag<D2Class_01878080> bubbleMaps)
     {
+        //var eVals = PackageHandler.GetAllTagsWithReference(0x80806c71); //716C8080
+        //foreach(var val in eVals)
+        //{
+        //    Console.WriteLine(val.ToString());
+        //}
+
         ConcurrentBag<DisplayDynamicMap> items = new ConcurrentBag<DisplayDynamicMap>();   
         Parallel.ForEach(map.Header.DataTables, data =>
         {
             data.DataTable.Header.DataEntries.ForEach(entry =>
             {
-                if(entry is D2Class_85988080 dynamicResource)
-                {    
+                //if (entry.DataResource is not null)
+                //    Console.WriteLine(entry.DataResource);
+
+                //if (entry.DataResource is D2Class_7B918080 a)
+                //{
+                //    if (a.Unk00 is not null)
+                //    {
+                //        Console.WriteLine($"D2Class_7B918080 Unk00 {a.Unk00.Hash}"); 
+                //    }
+
+                //}
+
+                if (entry is D2Class_85988080 dynamicResource)
+                {
+                    //if (dynamicResource.DataResource is not null)
+                    //    Console.WriteLine($"dynamicResource {dynamicResource.DataResource}");
+
                     if (!items.Contains(new DisplayDynamicMap { Hash = dynamicResource.Entity.Hash }))
                     {
                         if (dynamicResource.Entity.HasGeometry())

@@ -27,6 +27,11 @@ public partial class AnimConfigView : UserControl
         header.FontSize = 30;
         AnimConfigPanel.Children.Add(header);
 
+        TextBlock header2 = new TextBlock();
+        header2.Text = "Requires Restart";
+        header2.FontSize = 15;
+        AnimConfigPanel.Children.Add(header2);
+
         // Helmet Hash
         ConfigSettingTextControl chh = new ConfigSettingTextControl();
         chh.SettingName = "Animation Helmet Hash";
