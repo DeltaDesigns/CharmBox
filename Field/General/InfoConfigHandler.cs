@@ -22,6 +22,10 @@ public class InfoConfigHandler
         _config.TryAdd("Instances", instances);
         ConcurrentDictionary<string, ConcurrentBag<JsonInstance>> dynamics = new ConcurrentDictionary<string, ConcurrentBag<JsonInstance>>();
         _config.TryAdd("Dynamics", dynamics);
+
+        ConcurrentDictionary<string, ConcurrentBag<JsonSound>> sounds = new ConcurrentDictionary<string, ConcurrentBag<JsonSound>>();
+        _config.TryAdd("Sounds", sounds);
+
         bOpen = true;
     }
 
@@ -115,6 +119,35 @@ public class InfoConfigHandler
         foreach (var instance in instances)
         {
             AddInstance(staticMesh, instance.Scale.X, instance.Rotation, instance.Position);
+        }
+    }
+
+    private struct JsonSound
+    {
+        public float[] Translation;
+        public float Range;
+    }
+
+    public void AddSound(string soundHash, float range, Vector4 translation)
+    {
+        if (!_config["Sounds"].ContainsKey(soundHash))
+        {
+            _config["Sounds"][soundHash] = new ConcurrentBag<JsonSound>();
+        }
+        _config["Sounds"][soundHash].Add(new JsonSound
+        {
+            Translation = new[] { translation.X, translation.Y, translation.Z },
+            Range = range
+        });
+    }
+
+    public void AddSounds(D2Class_6D668080 audioContainer)
+    {
+        Console.WriteLine($"Added {audioContainer.AudioContainer.Hash} to cfg");
+        var b = PackageHandler.GetTag<D2Class_38978080>(audioContainer.AudioContainer.Hash);
+        foreach (var sound in b.Header.Unk20)
+        {
+            AddSound(sound.Hash, audioContainer.Unk40, audioContainer.AudioPositions[0].Translation);
         }
     }
 

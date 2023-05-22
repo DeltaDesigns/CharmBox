@@ -126,6 +126,8 @@ public partial class MapView : UserControl
 
         ExtractDataTables(map, savePath, fbxHandler, EExportTypeFlag.Full);
 
+        //ExportSounds(map, fbxHandler);
+
         if (ConfigHandler.GetUnrealInteropEnabled())
         {
             fbxHandler.InfoHandler.SetUnrealInteropPath(ConfigHandler.GetUnrealInteropPath());
@@ -242,7 +244,7 @@ public partial class MapView : UserControl
         FbxHandler dynamicHandler = new FbxHandler();
         dynamicHandler.InfoHandler.SetMeshName($"{map.Hash.GetHashString()}_Dynamics");
         dynamicHandler.InfoHandler.AddType("Dynamics");
-        FbxHandler dynamicPoints = new FbxHandler(false);
+        //FbxHandler dynamicPoints = new FbxHandler(false);
        
         Parallel.ForEach(map.Header.DataTables, data =>
         {
@@ -262,15 +264,15 @@ public partial class MapView : UserControl
                 else if(entry is D2Class_85988080 dynamicResource)
                 {
                     dynamicHandler.AddDynamicToScene(dynamicResource, dynamicResource.Entity.Hash, savePath, ConfigHandler.GetUnrealInteropEnabled() || ConfigHandler.GetS2ShaderExportEnabled(), ConfigHandler.GetSaveCBuffersEnabled());
-                    dynamicPoints.AddDynamicPointsToScene(dynamicResource, dynamicResource.Entity.Hash, dynamicPoints);
+                    //dynamicPoints.AddDynamicPointsToScene(dynamicResource, dynamicResource.Entity.Hash, dynamicPoints);
                 }
             });
         });
         dynamicHandler.ExportScene($"{savePath}/{map.Hash.GetHashString()}_Dynamics.fbx");
         dynamicHandler.Dispose();
 
-        dynamicPoints.ExportScene($"{savePath}/{map.Hash.GetHashString()}_DynamicPoints.fbx");
-        dynamicPoints.Dispose();
+        //dynamicPoints.ExportScene($"{savePath}/{map.Hash.GetHashString()}_DynamicPoints.fbx");
+        //dynamicPoints.Dispose();
     }
 
     private static void ExportStatics(bool exportStatics, string savePath, Tag<D2Class_07878080> map)
@@ -338,7 +340,7 @@ public partial class MapView : UserControl
         });
     }
     
-        public static void ExportMinimalMap(StaticMapData staticMapData)
+    public static void ExportMinimalMap(StaticMapData staticMapData)
     {
         FbxHandler fbxHandler = new FbxHandler();
         string meshName = staticMapData.Hash.GetHashString();
@@ -360,6 +362,24 @@ public partial class MapView : UserControl
         
         fbxHandler.ExportScene($"{savePath}/{meshName}.fbx");
         fbxHandler.Dispose();
+    }
+
+    private static void ExportSounds(Tag<D2Class_07878080> map, FbxHandler fbxHandler)
+    {
+        Parallel.ForEach(map.Header.DataTables, data =>
+        {
+            Console.WriteLine("Exporting Sounds...");
+            data.DataTable.Header.DataEntries.ForEach(entry =>
+            {
+                if (entry.DataResource is D2Class_6D668080 a) //spatial audio
+                {
+                    if (a.AudioContainer is not null)
+                    {
+                        fbxHandler.InfoHandler.AddSounds(a); 
+                    }
+                }
+            });
+        });
     }
 
     private List<MainViewModel.DisplayPart> MakeDisplayParts(StaticMapData staticMap, ELOD detailLevel)

@@ -101,11 +101,44 @@ public partial class ActivityMapView : UserControl
 
     private void PopulateStaticList(Tag<D2Class_01878080> bubbleMaps)
     {
+        var eVals = PackageHandler.GetAllTagsWithReference(0x80806963); //63698080
+        foreach (var val in eVals)
+        {
+            Console.WriteLine(val.ToString());
+        }
+
         ConcurrentBag<DisplayStaticMap> items = new ConcurrentBag<DisplayStaticMap>();
         Parallel.ForEach(bubbleMaps.Header.MapResources, m =>
-        {
+        {  
             if (m.MapResource.Header.DataTables.Count > 1)
             {
+                //for (int i = 0; i < m.MapResource.Header.DataTables.Count; i++)
+                //{
+                //    Console.WriteLine($"{i} {m.MapResource.Header.DataTables[i].DataTable.Header.DataEntries.Count}");
+                //    foreach (var val in m.MapResource.Header.DataTables[i].DataTable.Header.DataEntries)
+                //    {
+                //        //if (val.DataResource is not null)
+                //        //    Console.WriteLine($"{i} {val.DataResource}");
+
+                //        //if (val.DataResource is D2Class_6F668080 a) //map ambient sounds
+                //        //{
+                //        //    if (a.AudioContainer is not null)
+                //        //    {
+                //        //        var b = PackageHandler.GetTag<D2Class_38978080>(a.AudioContainer.Hash);
+                //        //        Console.WriteLine($"{i} audio count {b.Header.Unk20.Count}");
+                //        //        //foreach (var wem in b.Header.Unk20)
+                //        //        //{
+                //        //        //    if (wem.GetData().Length == 1)
+                //        //        //        continue;
+
+                //        //        //    wem.SaveToFile($"{ConfigHandler.GetExportSavePath()}/temp_sound/{wem.Hash}.wav");
+                //        //        //}
+                //        //    }
+                //        //}
+                //    }
+                //}
+
+
                 if (m.MapResource.Header.DataTables[1].DataTable.Header.DataEntries.Count > 0)
                 {
                     StaticMapData tag = m.MapResource.Header.DataTables[1].DataTable.Header.DataEntries[0].DataResource.StaticMapParent.Header.StaticMap;
@@ -129,34 +162,37 @@ public partial class ActivityMapView : UserControl
 
     private void PopulateDynamicsList(Tag<D2Class_07878080> map)//(Tag<D2Class_01878080> bubbleMaps)
     {
-        //var eVals = PackageHandler.GetAllTagsWithReference(0x80806c71); //716C8080
-        //foreach(var val in eVals)
-        //{
-        //    Console.WriteLine(val.ToString());
-        //}
-
         ConcurrentBag<DisplayDynamicMap> items = new ConcurrentBag<DisplayDynamicMap>();   
         Parallel.ForEach(map.Header.DataTables, data =>
         {
             data.DataTable.Header.DataEntries.ForEach(entry =>
             {
-                //if (entry.DataResource is not null)
-                //    Console.WriteLine(entry.DataResource);
+                if (entry.DataResource is D2Class_5B698080 t)
+                    Console.WriteLine($"Unk28 {t.Unk28}");
 
-                //if (entry.DataResource is D2Class_7B918080 a)
+                //if(entry.DataResource is not null)
                 //{
-                //    if (a.Unk00 is not null)
+                //    if (entry.DataResource is D2Class_55698080 a)
                 //    {
-                //        Console.WriteLine($"D2Class_7B918080 Unk00 {a.Unk00.Hash}"); 
+                //        Console.WriteLine($"{a.Unk10.Header.Unk7C}");
                 //    }
+                //}
 
+                //if (entry.DataResource is D2Class_6D668080 a) //spatial audio
+                //{ 
+                //    if (a.AudioContainer is not null)
+                //    {
+                //        var b = PackageHandler.GetTag<D2Class_38978080>(a.AudioContainer.Hash);
+                //        Console.WriteLine($"D2Class_38978080 {b.Hash} : Sounds {b.Header.Unk20.Count} AudioPositions {a.AudioPositions.Count}");
+                //        foreach (var loc in a.AudioPositions)
+                //        {
+                //            Console.WriteLine($"X: {loc.Translation.X} Y: {loc.Translation.Y} Z: {loc.Translation.Z} W: {loc.Translation.W}");
+                //        }
+                //    }
                 //}
 
                 if (entry is D2Class_85988080 dynamicResource)
-                {
-                    //if (dynamicResource.DataResource is not null)
-                    //    Console.WriteLine($"dynamicResource {dynamicResource.DataResource}");
-
+                {      
                     if (!items.Contains(new DisplayDynamicMap { Hash = dynamicResource.Entity.Hash }))
                     {
                         if (dynamicResource.Entity.HasGeometry())
@@ -167,15 +203,6 @@ public partial class ActivityMapView : UserControl
                                 Hash = dynamicResource.Entity.Hash
                             });
                         }
-                        //else
-                        //{
-                        //    items.Add(new DisplayDynamicMap
-                        //    {
-                        //        Hash = dynamicResource.Entity.Hash,
-                        //        Name = $"{dynamicResource.Entity.Hash}: 0 meshes",
-                        //        Models = 0
-                        //    });
-                        //}
                     }
                 }
             });

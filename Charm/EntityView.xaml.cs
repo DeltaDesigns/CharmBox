@@ -45,39 +45,42 @@ public partial class EntityView : UserControl
         Entity entity = PackageHandler.GetTag(typeof(Entity), entityHash);
 
         //Scuffed sound export testing
-        foreach (var e in entity.Header.EntityResources)
+        if (entity.Header.EntityResources is not null)
         {
-            if (e.ResourceHash.Header.Unk18 is D2Class_79818080 a)
+            foreach (var e in entity.Header.EntityResources)
             {
-                foreach (var d2ClassF1918080 in a.WwiseSounds1)
+                if (e.ResourceHash.Header.Unk18 is D2Class_79818080 a)
                 {
-                    if (d2ClassF1918080.Unk10 is D2Class_40668080 b)
-                    { 
-                        if (b.Sound != null)
+                    foreach (var d2ClassF1918080 in a.WwiseSounds1)
+                    {
+                        if (d2ClassF1918080.Unk10 is D2Class_40668080 b)
                         {
-                            Wem wem = PackageHandler.GetTag(typeof(Wem), b.Sound.Hash);
-                            if (wem.GetData().Length == 1)
-                                continue;
+                            if (b.Sound != null)
+                            {
+                                Wem wem = PackageHandler.GetTag(typeof(Wem), b.Sound.Hash);
+                                if (wem.GetData().Length == 1)
+                                    continue;
 
-                            var soundSavePath = $"{ConfigHandler.GetExportSavePath()}/Sound/Entity_{entityHash}/";
-                            Directory.CreateDirectory(soundSavePath);
-                            b.Sound.ExportSound(soundSavePath);
+                                var soundSavePath = $"{ConfigHandler.GetExportSavePath()}/Sound/Entity_{entityHash}/";
+                                Directory.CreateDirectory(soundSavePath);
+                                b.Sound.ExportSound(soundSavePath);
+                            }
                         }
                     }
-                }
-                foreach (var d2ClassF1918080 in a.WwiseSounds2)
-                {
-                    if (d2ClassF1918080.Unk10 is D2Class_40668080 b)
+                    foreach (var d2ClassF1918080 in a.WwiseSounds2)
                     {
-                        if (b.Sound != null)
+                        if (d2ClassF1918080.Unk10 is D2Class_40668080 b)
                         {
-                            Wem wem = PackageHandler.GetTag(typeof(Wem), b.Sound.Hash);
-                            if (wem.GetData().Length == 1)
-                                continue;
+                            if (b.Sound != null)
+                            {
+                                Wem wem = PackageHandler.GetTag(typeof(Wem), b.Sound.Hash);
+                                if (wem.GetData().Length == 1)
+                                    continue;
 
-                            var soundSavePath = $"{ConfigHandler.GetExportSavePath()}/Sound/Entity_{entityHash}/";
-                            Directory.CreateDirectory(soundSavePath);
-                            b.Sound.ExportSound(soundSavePath);
+                                var soundSavePath = $"{ConfigHandler.GetExportSavePath()}/Sound/Entity_{entityHash}/";
+                                Directory.CreateDirectory(soundSavePath);
+                                b.Sound.ExportSound(soundSavePath);
+                            }
                         }
                     }
                 }

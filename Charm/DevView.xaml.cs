@@ -78,8 +78,8 @@ public partial class DevView : UserControl
                 data.AppendLine($"PKG: {PackageHandler.GetPackageName(hash.GetPkgId())}");
                 data.AppendLine($"PKG ID: {hash.GetPkgId()}");
                 data.AppendLine($"Entry Index: {hash.GetEntryIndex() }");
-                data.AppendLine($"Dev String: {hash.GetDevString() ?? hash.GetContainerString() ?? "NULL"}");
                 data.AppendLine($"Reference Hash: {hash.Hash}");
+                data.AppendLine($"Entry Reference: {PackageHandler.GetEntryReference(hash)}");
 
                 HashLocation.Text = data.ToString();
                 break;

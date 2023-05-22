@@ -293,13 +293,13 @@ public struct D2Class_6D668080
     public Tag AudioContainer;  // 38978080 audio container
     [DestinyOffset(0x30), DestinyField(FieldType.TablePointer)]
     public List<D2Class_94008080> AudioPositions;
-    public float Unk40;
+    public float Unk40; //Range?
 }
 
 [StructLayout(LayoutKind.Sequential, Size = 0x10)]
 public struct D2Class_94008080
 {
-    public Vector4 Translation;
+    public Vector4 Translation; //W is always 1
 }
 
 /// <summary>
@@ -329,7 +329,38 @@ public struct D2Class_A36A8080
 public struct D2Class_55698080
 {
     [DestinyOffset(0x10), DestinyField(FieldType.TagHash)]
-    public Tag Unk10;  // 5B698080, lights/volumes/smth maybe cubemaps idk
+    public Tag<D2Class_5B698080> Unk10;  // 5B698080, lights/volumes/smth maybe cubemaps idk
+}
+
+/// <summary>
+/// Unk data resource.
+/// </summary>
+[StructLayout(LayoutKind.Sequential, Size = 0x78)]
+public struct D2Class_5B698080 //lights/volumes/smth maybe cubemaps idk
+{
+    [DestinyOffset(0x28), DestinyField(FieldType.ResourcePointer)]
+    public dynamic? Unk28;
+    //[DestinyOffset(0x2C), DestinyField(FieldType.ResourcePointer)]
+    //public dynamic? Unk2C;
+    //?? 2 lists or dynamic arrays: one of D2Class_63698080, one of D2Class_64698080
+}
+
+/// <summary>
+/// Unk data resource.
+/// </summary>
+[StructLayout(LayoutKind.Sequential, Size = 8)]
+public struct D2Class_63698080
+{
+   
+}
+
+/// <summary>
+/// Unk data resource.
+/// </summary>
+[StructLayout(LayoutKind.Sequential, Size = 0x10)]
+public struct D2Class_64698080
+{
+
 }
 
 /// <summary>
