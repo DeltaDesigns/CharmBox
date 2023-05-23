@@ -333,16 +333,16 @@ public struct D2Class_55698080
 }
 
 /// <summary>
-/// Unk data resource.
+/// lights/volumes/smth maybe cubemaps idk
 /// </summary>
 [StructLayout(LayoutKind.Sequential, Size = 0x78)]
-public struct D2Class_5B698080 //lights/volumes/smth maybe cubemaps idk
+public struct D2Class_5B698080
 {
     [DestinyOffset(0x28), DestinyField(FieldType.ResourcePointer)]
     public dynamic? Unk28;
     //[DestinyOffset(0x2C), DestinyField(FieldType.ResourcePointer)]
     //public dynamic? Unk2C;
-    //?? 2 lists or dynamic arrays: one of D2Class_63698080, one of D2Class_64698080
+    //?? 2 lists or dynamic arrays: one of D2Class_63698080, one of D2Class_64698080?
 }
 
 /// <summary>
@@ -401,9 +401,27 @@ public struct D2Class_C0858080
 public struct D2Class_C26A8080
 {
     [DestinyOffset(0x10), DestinyField(FieldType.TagHash)]
-    public Tag Unk10;  // C46A8080
+    public Tag<D2Class_C46A8080> Unk10;  // C46A8080
 }
 
+/// <summary>
+/// Unk data resource.
+/// </summary>
+[StructLayout(LayoutKind.Sequential, Size = 0x28)]
+public struct D2Class_C46A8080
+{
+    [DestinyOffset(0x10), DestinyField(FieldType.TablePointer)]
+    public List<D2Class_D86E8080> Unk10;
+}
+
+/// <summary>
+/// Unk data resource.
+/// </summary>
+[StructLayout(LayoutKind.Sequential, Size = 0xF0)]
+public struct D2Class_D86E8080
+{
+    
+}
 
 /// <summary>
 /// Unk data resource.

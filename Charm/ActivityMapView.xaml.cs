@@ -101,47 +101,80 @@ public partial class ActivityMapView : UserControl
 
     private void PopulateStaticList(Tag<D2Class_01878080> bubbleMaps)
     {
-        var eVals = PackageHandler.GetAllTagsWithReference(0x80806963); //63698080
-        foreach (var val in eVals)
+        //var eVals = PackageHandler.GetAllTagsWithReference(0x80809883); //map data table
+        //foreach (var val in eVals)
+        //{
+        //    if (val.Hash == new TagHash("89FEFE80"))
+        //    {
+        //        var a = PackageHandler.GetTag<D2Class_83988080>(new TagHash("89FEFE80"));
+        //        Console.WriteLine($"Rot X {a.Header.DataEntries[0].Rotation.X}");
+        //        Console.WriteLine($"Rot Y {a.Header.DataEntries[0].Rotation.Y}");
+        //        Console.WriteLine($"Rot Z {a.Header.DataEntries[0].Rotation.Z}");
+        //        Console.WriteLine($"Rot W {a.Header.DataEntries[0].Rotation.W}");
+
+        //        Console.WriteLine($"Trans X {a.Header.DataEntries[0].Translation.X}");
+        //        Console.WriteLine($"Trans Y {a.Header.DataEntries[0].Translation.Y}");
+        //        Console.WriteLine($"Trans Z {a.Header.DataEntries[0].Translation.Z}");
+        //        Console.WriteLine($"Trans W {a.Header.DataEntries[0].Translation.W}");
+
+        //        Console.WriteLine($"{a.Header.DataEntries[0].Entity.Hash.Hash}");
+        //    }
+        //}
+        //Console.WriteLine($"{bubbleMaps.Header.MapResources.Count}");
+
+        //FbxHandler dynamicHandler = new FbxHandler();
+        //dynamicHandler.InfoHandler.SetMeshName($"test_Dynamics");
+        //dynamicHandler.InfoHandler.AddType("Dynamics");
+        //string savePath = ConfigHandler.GetExportSavePath() + "/Test_Dynamics/";
+        //Directory.CreateDirectory(savePath);
+
+        for (int i = 0; i < bubbleMaps.Header.MapResources.Count; i++)
         {
-            Console.WriteLine(val.ToString());
+            Console.WriteLine($"{i} {bubbleMaps.Header.MapResources[i].MapResource.Hash} {bubbleMaps.Header.MapResources[i].MapResource.Header.DataTables.Count}");
+            int i0 = 0;
+            foreach (var val in bubbleMaps.Header.MapResources[i].MapResource.Header.DataTables)
+            {
+                Console.WriteLine($"{bubbleMaps.Header.MapResources[i].MapResource.Hash} DataTable {i0} | {val.DataTable.Header.DataEntries.Count} Entries");
+                int i1 = 0;
+                foreach (var entry2 in val.DataTable.Header.DataEntries)
+                {
+                    Console.WriteLine($"Data Entry {i1} : {entry2}");
+
+                    if(entry2.DataResource is not null)
+                        Console.WriteLine($"{i1} DataResource {entry2.DataResource}");
+
+                    if(entry2.DataResource is D2Class_C96C8080 f)
+                        Console.WriteLine($"{i1} StaticMapParent Statics: {f.StaticMapParent.Header.StaticMap.Header.Statics.Count}");
+
+                    if (entry2.DataResource is D2Class_C26A8080 g)
+                        Console.WriteLine($"{i1} D2Class_C26A8080: {g.Unk10.Hash} {g.Unk10.Header.Unk10.Count}");
+
+                    //if (entry2 is D2Class_85988080 dynamicResource)
+                    //{
+                    //    dynamicHandler.AddDynamicToScene(dynamicResource, dynamicResource.Entity.Hash, savePath, ConfigHandler.GetUnrealInteropEnabled() || ConfigHandler.GetS2ShaderExportEnabled(), ConfigHandler.GetSaveCBuffersEnabled());     
+                    //}
+
+                    if (entry2.Entity.HasGeometry())
+                        Console.WriteLine($"{entry2.Entity.Hash} | {entry2.Translation.X} {entry2.Translation.Y} {entry2.Translation.Z} {entry2.Translation.W}");
+                    i1++;
+                } 
+                i0++;
+                Console.WriteLine("");
+            }
+            Console.WriteLine("----------");
         }
+        //dynamicHandler.ExportScene($"{savePath}/Test_Dynamics.fbx");
+        //dynamicHandler.Dispose();
+
 
         ConcurrentBag<DisplayStaticMap> items = new ConcurrentBag<DisplayStaticMap>();
         Parallel.ForEach(bubbleMaps.Header.MapResources, m =>
         {  
             if (m.MapResource.Header.DataTables.Count > 1)
             {
-                //for (int i = 0; i < m.MapResource.Header.DataTables.Count; i++)
-                //{
-                //    Console.WriteLine($"{i} {m.MapResource.Header.DataTables[i].DataTable.Header.DataEntries.Count}");
-                //    foreach (var val in m.MapResource.Header.DataTables[i].DataTable.Header.DataEntries)
-                //    {
-                //        //if (val.DataResource is not null)
-                //        //    Console.WriteLine($"{i} {val.DataResource}");
-
-                //        //if (val.DataResource is D2Class_6F668080 a) //map ambient sounds
-                //        //{
-                //        //    if (a.AudioContainer is not null)
-                //        //    {
-                //        //        var b = PackageHandler.GetTag<D2Class_38978080>(a.AudioContainer.Hash);
-                //        //        Console.WriteLine($"{i} audio count {b.Header.Unk20.Count}");
-                //        //        //foreach (var wem in b.Header.Unk20)
-                //        //        //{
-                //        //        //    if (wem.GetData().Length == 1)
-                //        //        //        continue;
-
-                //        //        //    wem.SaveToFile($"{ConfigHandler.GetExportSavePath()}/temp_sound/{wem.Hash}.wav");
-                //        //        //}
-                //        //    }
-                //        //}
-                //    }
-                //}
-
-
                 if (m.MapResource.Header.DataTables[1].DataTable.Header.DataEntries.Count > 0)
                 {
-                    StaticMapData tag = m.MapResource.Header.DataTables[1].DataTable.Header.DataEntries[0].DataResource.StaticMapParent.Header.StaticMap;
+                    StaticMapData tag = m.MapResource.Header.DataTables[1].DataTable.Header.DataEntries[0].DataResource.StaticMapParent.Header.StaticMap; //dataresource is D2Class_C96C8080
                     items.Add(new DisplayStaticMap
                     {
                         Hash = m.MapResource.Hash,
@@ -167,9 +200,6 @@ public partial class ActivityMapView : UserControl
         {
             data.DataTable.Header.DataEntries.ForEach(entry =>
             {
-                if (entry.DataResource is D2Class_5B698080 t)
-                    Console.WriteLine($"Unk28 {t.Unk28}");
-
                 //if(entry.DataResource is not null)
                 //{
                 //    if (entry.DataResource is D2Class_55698080 a)

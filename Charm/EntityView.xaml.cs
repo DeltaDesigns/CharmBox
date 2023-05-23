@@ -42,60 +42,60 @@ public partial class EntityView : UserControl
     public bool LoadEntity(TagHash entityHash, FbxHandler fbxHandler, bool bBlockRecursion=false)
     {
         fbxHandler.Clear();
-        Entity entity = PackageHandler.GetTag(typeof(Entity), entityHash);
+        Entity entity = new Entity(entityHash); //PackageHandler.GetTag(typeof(Entity), entityHash); not working for some reason?
 
         //Scuffed sound export testing
-        if (entity.Header.EntityResources is not null)
-        {
-            foreach (var e in entity.Header.EntityResources)
-            {
-                if (e.ResourceHash.Header.Unk18 is D2Class_79818080 a)
-                {
-                    foreach (var d2ClassF1918080 in a.WwiseSounds1)
-                    {
-                        if (d2ClassF1918080.Unk10 is D2Class_40668080 b)
-                        {
-                            if (b.Sound != null)
-                            {
-                                Wem wem = PackageHandler.GetTag(typeof(Wem), b.Sound.Hash);
-                                if (wem.GetData().Length == 1)
-                                    continue;
+        //if (entity.Header.EntityResources is not null)
+        //{
+        //    foreach (var e in entity.Header.EntityResources)
+        //    {
+        //        if (e.ResourceHash.Header.Unk18 is D2Class_79818080 a)
+        //        {
+        //            foreach (var d2ClassF1918080 in a.WwiseSounds1)
+        //            {
+        //                if (d2ClassF1918080.Unk10 is D2Class_40668080 b)
+        //                {
+        //                    if (b.Sound != null)
+        //                    {
+        //                        Wem wem = PackageHandler.GetTag(typeof(Wem), b.Sound.Hash);
+        //                        if (wem.GetData().Length == 1)
+        //                            continue;
 
-                                var soundSavePath = $"{ConfigHandler.GetExportSavePath()}/Sound/Entity_{entityHash}/";
-                                Directory.CreateDirectory(soundSavePath);
-                                b.Sound.ExportSound(soundSavePath);
-                            }
-                        }
-                    }
-                    foreach (var d2ClassF1918080 in a.WwiseSounds2)
-                    {
-                        if (d2ClassF1918080.Unk10 is D2Class_40668080 b)
-                        {
-                            if (b.Sound != null)
-                            {
-                                Wem wem = PackageHandler.GetTag(typeof(Wem), b.Sound.Hash);
-                                if (wem.GetData().Length == 1)
-                                    continue;
+        //                        var soundSavePath = $"{ConfigHandler.GetExportSavePath()}/Sound/Entity_{entityHash}/";
+        //                        Directory.CreateDirectory(soundSavePath);
+        //                        b.Sound.ExportSound(soundSavePath);
+        //                    }
+        //                }
+        //            }
+        //            foreach (var d2ClassF1918080 in a.WwiseSounds2)
+        //            {
+        //                if (d2ClassF1918080.Unk10 is D2Class_40668080 b)
+        //                {
+        //                    if (b.Sound != null)
+        //                    {
+        //                        Wem wem = PackageHandler.GetTag(typeof(Wem), b.Sound.Hash);
+        //                        if (wem.GetData().Length == 1)
+        //                            continue;
 
-                                var soundSavePath = $"{ConfigHandler.GetExportSavePath()}/Sound/Entity_{entityHash}/";
-                                Directory.CreateDirectory(soundSavePath);
-                                b.Sound.ExportSound(soundSavePath);
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        //                        var soundSavePath = $"{ConfigHandler.GetExportSavePath()}/Sound/Entity_{entityHash}/";
+        //                        Directory.CreateDirectory(soundSavePath);
+        //                        b.Sound.ExportSound(soundSavePath);
+        //                    }
+        //                }
+        //            }
+        //        }
+        //    }
+        //}
 
         _loadedEntity = entity;
         // todo fix this
-        if (entity.AnimationGroup != null && !bBlockRecursion)  // Make a new tab and use that with FullEntityView
-        {
-            var fev = new FullEntityView();
-            _mainWindow.MakeNewTab(entityHash, fev);
-            _mainWindow.SetNewestTabSelected();
-            return fev.LoadEntity(entityHash, fbxHandler);
-        }
+        //if (entity.AnimationGroup != null && !bBlockRecursion)  // Make a new tab and use that with FullEntityView
+        //{
+        //    var fev = new FullEntityView();
+        //    _mainWindow.MakeNewTab(entityHash, fev);
+        //    _mainWindow.SetNewestTabSelected();
+        //    return fev.LoadEntity(entityHash, fbxHandler);
+        //}
         AddEntity(entity, ModelView.GetSelectedLod(), fbxHandler);
         return LoadUI(fbxHandler);
     }
@@ -132,7 +132,7 @@ public partial class EntityView : UserControl
             animation.traXYZ = new [] { TraXX.Text, TraYY.Text, TraZZ.Text };
             animation.rotXYZ = new [] { RotXX.Text, RotYY.Text, RotZZ.Text };
         }
-        fbxHandler.AddEntityToScene(entity, dynamicParts, detailLevel, animation);
+        fbxHandler.AddEntityToScene(entity, dynamicParts, detailLevel);
     }
 
     private bool LoadUI(FbxHandler fbxHandler)
