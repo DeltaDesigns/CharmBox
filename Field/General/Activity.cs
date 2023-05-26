@@ -58,12 +58,12 @@ public struct D2Class_8B8E8080
 	[DestinyOffset(0x10), DestinyField(FieldType.TagHash64)]
 	public StringContainer StringContainer;
 	[DestinyField(FieldType.TagHash)]
-	public Tag Events;
+	public Tag<D2Class_E1998080> Events;
 	[DestinyField(FieldType.TagHash)]
-	public Tag Patrols;
+	public Tag<D2Class_75988080> Patrols;
 	public uint Unk28;
 	[DestinyField(FieldType.TagHash)]
-	public Tag Unk2C;
+	public Tag Unk2C; //Different class but same thing as Patrols?
 	[DestinyField(FieldType.TablePointer)]
 	public List<D2Class_DE448080> TagBags;
 	[DestinyOffset(0x48), DestinyField(FieldType.TablePointer)]
@@ -77,6 +77,57 @@ public struct D2Class_DE448080
 {
 	[DestinyField(FieldType.TagHash)]
 	public Tag Unk00;
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x18)]
+public struct D2Class_E1998080
+{
+    public ulong Unk00;
+    [DestinyField(FieldType.TablePointer)]
+    public List<D2Class_E3998080> Unk08;
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x48)]
+public struct D2Class_E3998080
+{
+    [DestinyField(FieldType.RelativePointer)]
+    public string Unk00; //Event schedule string
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x28)]
+public struct D2Class_E7998080
+{
+
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x48)]
+public struct D2Class_75988080 //Patrol related
+{
+	public ulong Unk00;
+    [DestinyField(FieldType.TagHash)]
+	public Tag<D2Class_20808080> PatrolTable;
+    [DestinyOffset(0x10), DestinyField(FieldType.RelativePointer)]
+    public string PatrolTableString;
+    [DestinyOffset(0x18), DestinyField(FieldType.TagHash)]
+	public Tag Unk18; //A8418080
+	//[DestinyOffset(0x28), DestinyField(FieldType.TagHash64)] //always FFFFFFFF?
+	//public Tag Unk28;
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x18)]
+public struct D2Class_20808080 //Patrol table
+{
+	[DestinyOffset(0x08), DestinyField(FieldType.TablePointer)]
+	public List<D2Class_22808080> Unk08;
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x18)]
+public struct D2Class_22808080 //Patrol table related
+{
+	[DestinyField(FieldType.TagHash)] //??
+	public Tag Unk00;
+    [DestinyOffset(0x08), DestinyField(FieldType.RelativePointer)]
+    public string PatrolDevString;
 }
 
 [StructLayout(LayoutKind.Sequential, Size = 0x18)]

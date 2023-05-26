@@ -274,6 +274,15 @@ public struct D2Class_B5678080
 }
 
 /// <summary>
+/// Unk data resource.
+/// </summary>
+[StructLayout(LayoutKind.Sequential, Size = 0x88)]
+public struct D2Class_A16D8080
+{
+
+}
+
+/// <summary>
 /// Audio data resource.
 /// </summary>
 [StructLayout(LayoutKind.Sequential, Size = 0x30)]
@@ -310,6 +319,25 @@ public struct D2Class_B58C8080
 {
     [DestinyOffset(0x10), DestinyField(FieldType.TagHash)]
     public Tag Unk10;  // B78C8080
+}
+
+/// <summary>
+/// Unk data resource.
+/// </summary>
+[StructLayout(LayoutKind.Sequential, Size = 0x18)]
+public struct D2Class_B78C8080
+{
+    [DestinyOffset(0x08), DestinyField(FieldType.TablePointer)]
+    public List<D2Class_B98C8080> Unk08;
+}
+
+/// <summary>
+/// Unk data resource.
+/// </summary>
+[StructLayout(LayoutKind.Sequential, Size = 0x30)]
+public struct D2Class_B98C8080
+{
+
 }
 
 /// <summary>
@@ -410,8 +438,16 @@ public struct D2Class_C26A8080
 [StructLayout(LayoutKind.Sequential, Size = 0x28)]
 public struct D2Class_C46A8080
 {
+    [DestinyOffset(0x08), DestinyField(FieldType.TagHash)]
+    public Tag Unk08;
     [DestinyOffset(0x10), DestinyField(FieldType.TablePointer)]
     public List<D2Class_D86E8080> Unk10;
+    //[DestinyField(FieldType.TablePointer)]
+    //public List<D2Class_94008080> Unk11;
+    //[DestinyField(FieldType.TablePointer)]
+    //public List<D2Class_DD6E8080> Unk12;
+    //[DestinyField(FieldType.TablePointer)]
+    //public List<D2Class_94008080> Unk13;
 }
 
 /// <summary>
@@ -420,7 +456,17 @@ public struct D2Class_C46A8080
 [StructLayout(LayoutKind.Sequential, Size = 0xF0)]
 public struct D2Class_D86E8080
 {
-    
+    //Vector4s maybe?
+}
+
+/// <summary>
+/// Unk data resource.
+/// </summary>
+[StructLayout(LayoutKind.Sequential, Size = 0x18)]
+public struct D2Class_DD6E8080
+{
+    public long FileSize; //maybe?
+    public dynamic? Unk08;
 }
 
 /// <summary>

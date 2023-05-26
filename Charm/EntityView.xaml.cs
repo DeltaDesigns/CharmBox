@@ -132,7 +132,7 @@ public partial class EntityView : UserControl
             animation.traXYZ = new [] { TraXX.Text, TraYY.Text, TraZZ.Text };
             animation.rotXYZ = new [] { RotXX.Text, RotYY.Text, RotZZ.Text };
         }
-        fbxHandler.AddEntityToScene(entity, dynamicParts, detailLevel);
+        fbxHandler.AddEntityToScene(entity, dynamicParts, detailLevel, animation);
     }
 
     private bool LoadUI(FbxHandler fbxHandler)

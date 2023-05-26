@@ -19,6 +19,7 @@ using Field.Models;
 using System.IO;
 using System.Xml.Linq;
 using Internal.Fbx;
+using Field.Strings;
 
 namespace Charm;
 
@@ -44,6 +45,30 @@ public partial class ActivityMapView : UserControl
     private ObservableCollection<DisplayBubble> GetMapList(Activity activity)
     {
         var maps = new ObservableCollection<DisplayBubble>();
+        Console.WriteLine($"Activity {activity.Hash} Unk18 {((D2Class_6A988080)activity.Header.Unk18).Music?.Header.MusicTemplateName}");
+
+        //var tag = PackageHandler.GetAllTagsWithReference(0x80809720); //20978080
+        //foreach (var a in tag)
+        //{
+        //    Console.WriteLine(a.ToString());
+        //}
+
+        var tag2 = PackageHandler.GetTag<D2Class_8B8E8080>(activity.Header.Unk20.Hash);
+        Console.WriteLine($"D2Class_8B8E8080 {activity.Header.Unk20.Hash.ToString()} {tag2.Header.DestinationName}");
+        Console.WriteLine($"{tag2.Header.Patrols?.Hash} Patrols: Unk18 {tag2.Header.Patrols?.Header.Unk18?.Hash} PatrolTableString {tag2.Header.Patrols?.Header.PatrolTableString}");
+        
+        foreach (var a in tag2.Header.Patrols?.Header.PatrolTable.Header.Unk08)
+        {
+            Console.WriteLine($"{a.Unk00} {a.PatrolDevString}");
+        }
+
+        Console.WriteLine($"Events {tag2.Header.Events?.Hash}");
+        if(tag2.Header.Events?.Header.Unk08 is not null)
+            foreach (var a in tag2.Header.Events?.Header.Unk08)
+            {
+                Console.WriteLine($"{a.Unk00}");
+            }
+
         foreach (var mapEntry in activity.Header.Unk50)
         {
             foreach (var mapReferences in mapEntry.MapReferences)
@@ -101,25 +126,12 @@ public partial class ActivityMapView : UserControl
 
     private void PopulateStaticList(Tag<D2Class_01878080> bubbleMaps)
     {
-        //var eVals = PackageHandler.GetAllTagsWithReference(0x80809883); //map data table
+        //var eVals = PackageHandler.GetAllTagsWithReference(0x808093ad); //AD938080
         //foreach (var val in eVals)
         //{
-        //    if (val.Hash == new TagHash("89FEFE80"))
-        //    {
-        //        var a = PackageHandler.GetTag<D2Class_83988080>(new TagHash("89FEFE80"));
-        //        Console.WriteLine($"Rot X {a.Header.DataEntries[0].Rotation.X}");
-        //        Console.WriteLine($"Rot Y {a.Header.DataEntries[0].Rotation.Y}");
-        //        Console.WriteLine($"Rot Z {a.Header.DataEntries[0].Rotation.Z}");
-        //        Console.WriteLine($"Rot W {a.Header.DataEntries[0].Rotation.W}");
-
-        //        Console.WriteLine($"Trans X {a.Header.DataEntries[0].Translation.X}");
-        //        Console.WriteLine($"Trans Y {a.Header.DataEntries[0].Translation.Y}");
-        //        Console.WriteLine($"Trans Z {a.Header.DataEntries[0].Translation.Z}");
-        //        Console.WriteLine($"Trans W {a.Header.DataEntries[0].Translation.W}");
-
-        //        Console.WriteLine($"{a.Header.DataEntries[0].Entity.Hash.Hash}");
-        //    }
+        //    Console.WriteLine(val.ToString());
         //}
+
         //Console.WriteLine($"{bubbleMaps.Header.MapResources.Count}");
 
         //FbxHandler dynamicHandler = new FbxHandler();
@@ -138,26 +150,37 @@ public partial class ActivityMapView : UserControl
                 int i1 = 0;
                 foreach (var entry2 in val.DataTable.Header.DataEntries)
                 {
-                    Console.WriteLine($"Data Entry {i1} : {entry2}");
+                    Console.WriteLine($"Data Entry {i1}");
 
-                    if(entry2.DataResource is not null)
+                    if (entry2.DataResource is not null)
                         Console.WriteLine($"{i1} DataResource {entry2.DataResource}");
 
-                    if(entry2.DataResource is D2Class_C96C8080 f)
-                        Console.WriteLine($"{i1} StaticMapParent Statics: {f.StaticMapParent.Header.StaticMap.Header.Statics.Count}");
+                    //if (entry2.DataResource is D2Class_C96C8080 f)
+                    //    Console.WriteLine($"{i1} StaticMapParent Statics: {f.StaticMapParent.Header.StaticMap.Header.Statics.Count}");
 
-                    if (entry2.DataResource is D2Class_C26A8080 g)
-                        Console.WriteLine($"{i1} D2Class_C26A8080: {g.Unk10.Hash} {g.Unk10.Header.Unk10.Count}");
+                    //if (entry2.DataResource is D2Class_C26A8080 g)
+                    //{
+                    //    Console.WriteLine($"{i1} D2Class_C26A8080 - D2Class_C46A8080 Unk10: {g.Unk10.Header.Unk10.Count}");
+                    //}  
+
+                    //if (entry2.DataResource is D2Class_B5678080 h)
+                    //    Console.WriteLine($"{i1} D2Class_B5678080: {h.Unk10.Hash}");
+
+                    //if (entry2.DataResource is D2Class_C0858080 j)
+                    //    Console.WriteLine($"{i1} D2Class_C0858080: {j.Unk10.Hash}");
+
 
                     //if (entry2 is D2Class_85988080 dynamicResource)
                     //{
-                    //    dynamicHandler.AddDynamicToScene(dynamicResource, dynamicResource.Entity.Hash, savePath, ConfigHandler.GetUnrealInteropEnabled() || ConfigHandler.GetS2ShaderExportEnabled(), ConfigHandler.GetSaveCBuffersEnabled());     
+                    //    //dynamicHandler.AddDynamicToScene(dynamicResource, dynamicResource.Entity.Hash, savePath, ConfigHandler.GetUnrealInteropEnabled() || ConfigHandler.GetS2ShaderExportEnabled(), ConfigHandler.GetSaveCBuffersEnabled());
+                    //    //dynamicHandler.AddDynamicPointsToScene(dynamicResource, dynamicResource.Entity.Hash, dynamicHandler);
                     //}
 
                     if (entry2.Entity.HasGeometry())
                         Console.WriteLine($"{entry2.Entity.Hash} | {entry2.Translation.X} {entry2.Translation.Y} {entry2.Translation.Z} {entry2.Translation.W}");
+                    
                     i1++;
-                } 
+                }
                 i0++;
                 Console.WriteLine("");
             }

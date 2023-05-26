@@ -1594,36 +1594,33 @@ public partial class TagListView : UserControl
 
             Parallel.ForEach(bubbleMaps.Header.MapResources, m => //This is a mess..
             {
-                if (m.MapResource.Header.DataTables.Count > 1)
+                if (m.MapResource.Header.DataTables.Count > 0)
                 {
-                    if (m.MapResource.Header.DataTables[1].DataTable.Header.DataEntries.Count > 0)
+                    foreach (var data in m.MapResource.Header.DataTables)
                     {
-                        foreach (var data in m.MapResource.Header.DataTables)
+                        data.DataTable.Header.DataEntries.ForEach(entry =>
                         {
-                            data.DataTable.Header.DataEntries.ForEach(entry =>
+                            if (entry.DataResource is D2Class_6F668080 a) //map ambient sounds
                             {
-                                if (entry.DataResource is D2Class_6F668080 a) //map ambient sounds
+                                if (a.AudioContainer is not null)
                                 {
-                                    if (a.AudioContainer is not null)
+                                    var b = PackageHandler.GetTag<D2Class_38978080>(a.AudioContainer.Hash);
+                                    foreach (var wem in b.Header.Unk20)
                                     {
-                                        var b = PackageHandler.GetTag<D2Class_38978080>(a.AudioContainer.Hash);
-                                        foreach (var wem in b.Header.Unk20)
-                                        {
-                                            if (wem.GetData().Length == 1)
-                                                continue;
+                                        if (wem.GetData().Length == 1)
+                                            continue;
 
-                                            _allTagItems.Add(new TagItem
-                                            {
-                                                Name = PackageHandler.GetEntryReference(wem.Hash),
-                                                Hash = wem.Hash,
-                                                Subname = wem.Duration,
-                                                TagType = ETagListType.Sound
-                                            });
-                                        }
+                                        _allTagItems.Add(new TagItem
+                                        {
+                                            Name = PackageHandler.GetEntryReference(wem.Hash),
+                                            Hash = wem.Hash,
+                                            Subname = wem.Duration,
+                                            TagType = ETagListType.Sound
+                                        });
                                     }
                                 }
-                            });
-                        }
+                            }
+                        });
                     }
                 }
             });
