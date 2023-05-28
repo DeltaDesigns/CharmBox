@@ -1,6 +1,6 @@
 # Charm - the Destiny tool that does everything
 
-## Experimental Branch. Dont expect support, things can and will break
+## Experimental Branch. Where I test new things and learn stuff. Dont expect support, things can and will break
 
 ## What is this?
 
