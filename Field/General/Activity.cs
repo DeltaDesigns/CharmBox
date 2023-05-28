@@ -2,6 +2,7 @@
 using Field.Entities;
 using Field.General;
 using Field.Strings;
+using Field.Investment;
 
 namespace Field;
 
@@ -448,7 +449,7 @@ public struct D2Class_0C008080
 	public DestinyHash Unk04;
 }
 
-#region Patrol Table?
+#region Patrol Table
 
 [StructLayout(LayoutKind.Sequential, Size = 0x48)]
 public struct D2Class_75988080
@@ -590,35 +591,11 @@ public struct D2Class_BA3E8080
 public struct D2Class_BE3E8080
 {
 	public DestinyHash Unk00;
-	public Tag<D2Class_CF3E8080> Unk04;
+    [DestinyField(FieldType.TagHash)]
+    public Tag<D2Class_CF3E8080> Unk04;
 }
 
-[StructLayout(LayoutKind.Sequential, Size = 0x18)]
-public struct D2Class_CF3E8080
-{
-    [DestinyField(FieldType.TablePointer)]
-    public List<D2Class_CB3E8080> Unk00;
-}
 
-[StructLayout(LayoutKind.Sequential, Size = 0x20)]
-public struct D2Class_CB3E8080
-{
-    [DestinyField(FieldType.TablePointer)]
-    public List<D2Class_D03E8080> Unk00;
-}
-
-[StructLayout(LayoutKind.Sequential, Size = 0x10)]
-public struct D2Class_D03E8080
-{
-    [DestinyField(FieldType.TablePointer)]
-    public List<D2Class_D43E8080> Unk00;
-}
-
-[StructLayout(LayoutKind.Sequential, Size = 0x4)]
-public struct D2Class_D43E8080
-{
-	public Tag<D2Class_TextureHeader> PatrolIcon;
-}
 
 #endregion
 

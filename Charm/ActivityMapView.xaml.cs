@@ -74,7 +74,7 @@ public partial class ActivityMapView : UserControl
         Console.WriteLine($"D2Class_B4418080 {tag2.Header.Patrols?.Header.Unk18.Header.Unk28.Count}");
         foreach (var a in tag2.Header.Patrols?.Header.Unk18.Header.Unk28)
         {
-            Console.WriteLine($"-D2Class_B4418080 {a.UnkA8.Count} {a.Unk00} {a.Unk30} {a.Unk60}");
+            Console.WriteLine($"-D2Class_B4418080 {a.UnkA8.Count}");
             foreach (var b in a.UnkA8)
             {
                 Console.WriteLine($"--D2Class_B7418080 {b.Unk08.Count}");
@@ -88,6 +88,30 @@ public partial class ActivityMapView : UserControl
             foreach (var b in a.UnkB8)
             {
                 
+            }
+        }
+
+        foreach(var a in tag2.Header.Patrols?.Header.Unk18.Header.Unk28)
+        {
+            foreach(var b in a.Unk50.Header.UnkC.Header.Unk08)
+            {
+                if(b.Unk04.Header.Unk10 is D2Class_CD3E8080 a1)
+                {
+                    foreach(var c in a1.Unk00)
+                    {
+                        foreach (var d in c.TextureList)
+                            Console.WriteLine(d.IconTexture.Hash.ToString());
+                    }
+                }
+                if (b.Unk04.Header.Unk10 is D2Class_CB3E8080 a2)
+                {
+                    foreach (var c in a2.Unk00)
+                    {
+                        foreach (var d in c.TextureList)
+                            Console.WriteLine(d.IconTexture.Hash.ToString());
+                    }
+                }
+
             }
         }
 
