@@ -91,7 +91,7 @@ public struct D2Class_E1998080
 public struct D2Class_E3998080
 {
     [DestinyField(FieldType.RelativePointer)]
-    public string Unk00; //Event schedule string
+    public string Unk00; //Event schedule string thing
 }
 
 [StructLayout(LayoutKind.Sequential, Size = 0x28)]
@@ -100,35 +100,6 @@ public struct D2Class_E7998080
 
 }
 
-[StructLayout(LayoutKind.Sequential, Size = 0x48)]
-public struct D2Class_75988080 //Patrol related
-{
-	public ulong Unk00;
-    [DestinyField(FieldType.TagHash)]
-	public Tag<D2Class_20808080> PatrolTable;
-    [DestinyOffset(0x10), DestinyField(FieldType.RelativePointer)]
-    public string PatrolTableString;
-    [DestinyOffset(0x18), DestinyField(FieldType.TagHash)]
-	public Tag Unk18; //A8418080
-	//[DestinyOffset(0x28), DestinyField(FieldType.TagHash64)] //always FFFFFFFF?
-	//public Tag Unk28;
-}
-
-[StructLayout(LayoutKind.Sequential, Size = 0x18)]
-public struct D2Class_20808080 //Patrol table
-{
-	[DestinyOffset(0x08), DestinyField(FieldType.TablePointer)]
-	public List<D2Class_22808080> Unk08;
-}
-
-[StructLayout(LayoutKind.Sequential, Size = 0x18)]
-public struct D2Class_22808080 //Patrol table related
-{
-	[DestinyField(FieldType.TagHash)] //??
-	public Tag Unk00;
-    [DestinyOffset(0x08), DestinyField(FieldType.RelativePointer)]
-    public string PatrolDevString;
-}
 
 [StructLayout(LayoutKind.Sequential, Size = 0x18)]
 public struct D2Class_2E898080
@@ -476,6 +447,180 @@ public struct D2Class_0C008080
 	public DestinyHash Unk00;
 	public DestinyHash Unk04;
 }
+
+#region Patrol Table?
+
+[StructLayout(LayoutKind.Sequential, Size = 0x48)]
+public struct D2Class_75988080
+{
+    public ulong Unk00;
+    [DestinyField(FieldType.TagHash)]
+    public Tag<D2Class_20808080> PatrolTable;
+    [DestinyOffset(0x10), DestinyField(FieldType.RelativePointer)]
+    public string PatrolTableString;
+    [DestinyOffset(0x18), DestinyField(FieldType.TagHash)]
+    public Tag<D2Class_A8418080> Unk18; //A8418080 this might be the actual patrol table?
+    [DestinyOffset(0x28), DestinyField(FieldType.TagHash64)]
+    public StringContainer StringContainer; //?
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x18)]
+public struct D2Class_20808080
+{
+    [DestinyOffset(0x08), DestinyField(FieldType.TablePointer)]
+    public List<D2Class_22808080> Unk08;
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x18)]
+public struct D2Class_22808080
+{
+    public DestinyHash Unk00; //??
+    [DestinyOffset(0x08), DestinyField(FieldType.RelativePointer)]
+    public string PatrolDevString;
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x48)]
+public struct D2Class_A8418080 //Patrol table (TABLES IN TABLES IN TABLES IN TABLES MAKE IT STOP PLEASEEEE)
+{
+    [DestinyOffset(0x08), DestinyField(FieldType.TablePointer)]
+    public List<D2Class_AD418080> Unk08;
+    [DestinyOffset(0x18), DestinyField(FieldType.TablePointer)]
+    public List<D2Class_B0418080> Unk18;
+    [DestinyOffset(0x28), DestinyField(FieldType.TablePointer)]
+    public List<D2Class_B4418080> Unk28;
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x30)]
+public struct D2Class_AD418080
+{
+    [DestinyOffset(0x20), DestinyField(FieldType.TablePointer)]
+    public List<D2Class_AF418080> Unk20;
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x8)]
+public struct D2Class_AF418080 
+{
+	public byte Index; //index maybe?
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x20)]
+public struct D2Class_B0418080 
+{
+	public DestinyHash Unk00;
+	[DestinyOffset(0x08), DestinyField(FieldType.TablePointer)]
+	public List<D2Class_B3418080> Unk08;
+    //[DestinyOffset(0x18), DestinyField(FieldType.TagHash64)]
+    //public StringContainer Unk18;
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x8)]
+public struct D2Class_B3418080 
+{
+
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x160)]
+public struct D2Class_B4418080 
+{
+	public DestinyHash Unk00;
+    [DestinyOffset(0x30)]
+    public DestinyHash Unk30;
+    [DestinyOffset(0x50), DestinyField(FieldType.TagHash)]
+    public Tag<D2Class_A53E8080> Unk50; //Patrol type?
+    [DestinyOffset(0x60)]
+    public DestinyHash Unk60;
+    [DestinyOffset(0xA8), DestinyField(FieldType.TablePointer)]
+    public List<D2Class_B7418080> UnkA8;
+    [DestinyOffset(0xB8), DestinyField(FieldType.TablePointer)]
+    public List<D2Class_BB418080> UnkB8;
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x30)]
+public struct D2Class_B7418080
+{
+    [DestinyOffset(0x08), DestinyField(FieldType.TablePointer)]
+    public List<D2Class_70008080> Unk08; //or B9418080?
+    [DestinyOffset(0x20), DestinyField(FieldType.TablePointer)]
+    public List<D2Class_B9418080> Unk20;
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x8)]
+public struct D2Class_B9418080 
+{
+
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x4)]
+public struct D2Class_BB418080 
+{
+
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x28)]
+public struct D2Class_BC418080 
+{
+
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x70)]
+public struct D2Class_A53E8080
+{
+	[DestinyOffset(0x8)]
+	public DestinyHash Unk08;
+	[DestinyField(FieldType.TagHash)]
+	public Tag<D2Class_BA3E8080> UnkC;
+	[DestinyOffset(0x20), DestinyField(FieldType.TablePointer)]
+	public List<D2Class_B73B8080> Unk20;
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x20)]
+public struct D2Class_B73B8080
+{
+
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x20)]
+public struct D2Class_BA3E8080
+{
+    [DestinyOffset(0x8), DestinyField(FieldType.TablePointer)]
+    public List<D2Class_BE3E8080> Unk08;
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x70)]
+public struct D2Class_BE3E8080
+{
+	public DestinyHash Unk00;
+	public Tag<D2Class_CF3E8080> Unk04;
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x18)]
+public struct D2Class_CF3E8080
+{
+    [DestinyField(FieldType.TablePointer)]
+    public List<D2Class_CB3E8080> Unk00;
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x20)]
+public struct D2Class_CB3E8080
+{
+    [DestinyField(FieldType.TablePointer)]
+    public List<D2Class_D03E8080> Unk00;
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x10)]
+public struct D2Class_D03E8080
+{
+    [DestinyField(FieldType.TablePointer)]
+    public List<D2Class_D43E8080> Unk00;
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x4)]
+public struct D2Class_D43E8080
+{
+	public Tag<D2Class_TextureHeader> PatrolIcon;
+}
+
+#endregion
 
 #region Audio
 

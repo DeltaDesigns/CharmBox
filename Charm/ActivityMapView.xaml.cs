@@ -45,29 +45,73 @@ public partial class ActivityMapView : UserControl
     private ObservableCollection<DisplayBubble> GetMapList(Activity activity)
     {
         var maps = new ObservableCollection<DisplayBubble>();
-        Console.WriteLine($"Activity {activity.Hash} Unk18 {((D2Class_6A988080)activity.Header.Unk18).Music?.Header.MusicTemplateName}");
-
-        //var tag = PackageHandler.GetAllTagsWithReference(0x80809720); //20978080
-        //foreach (var a in tag)
-        //{
-        //    Console.WriteLine(a.ToString());
-        //}
+        Console.WriteLine($"Activity {activity.Hash}");
 
         var tag2 = PackageHandler.GetTag<D2Class_8B8E8080>(activity.Header.Unk20.Hash);
         Console.WriteLine($"D2Class_8B8E8080 {activity.Header.Unk20.Hash.ToString()} {tag2.Header.DestinationName}");
-        Console.WriteLine($"{tag2.Header.Patrols?.Hash} Patrols: Unk18 {tag2.Header.Patrols?.Header.Unk18?.Hash} PatrolTableString {tag2.Header.Patrols?.Header.PatrolTableString}");
-        
-        foreach (var a in tag2.Header.Patrols?.Header.PatrolTable.Header.Unk08)
+        Console.WriteLine($"{tag2.Header.Patrols?.Hash} Patrols: Unk18 {tag2.Header.Patrols?.Header.Unk18.Hash} PatrolTableString {tag2.Header.Patrols?.Header.PatrolTableString}");
+
+        Console.WriteLine($"D2Class_AD418080 {tag2.Header.Patrols?.Header.Unk18.Header.Unk08.Count}");
+        foreach(var a in tag2.Header.Patrols?.Header.Unk18.Header.Unk08)
         {
-            Console.WriteLine($"{a.Unk00} {a.PatrolDevString}");
+            Console.WriteLine($"-D2Class_AF418080 {a.Unk20.Count}");
+            foreach (var b in a.Unk20)
+            {
+                //Console.WriteLine($"D2Class_AF418080 {a.Unk20.Count}");
+            }
         }
 
-        Console.WriteLine($"Events {tag2.Header.Events?.Hash}");
-        if(tag2.Header.Events?.Header.Unk08 is not null)
-            foreach (var a in tag2.Header.Events?.Header.Unk08)
+        Console.WriteLine($"D2Class_B0418080 {tag2.Header.Patrols?.Header.Unk18.Header.Unk18.Count}");
+        foreach (var a in tag2.Header.Patrols?.Header.Unk18.Header.Unk18)
+        {
+            Console.WriteLine($"-D2Class_B0418080 {a.Unk08.Count} {a.Unk00}");
+            foreach (var b in a.Unk08)
             {
-                Console.WriteLine($"{a.Unk00}");
+                //Console.WriteLine($"D2Class_AF418080 {a.Unk20.Count}");
             }
+        }
+
+        Console.WriteLine($"D2Class_B4418080 {tag2.Header.Patrols?.Header.Unk18.Header.Unk28.Count}");
+        foreach (var a in tag2.Header.Patrols?.Header.Unk18.Header.Unk28)
+        {
+            Console.WriteLine($"-D2Class_B4418080 {a.UnkA8.Count} {a.Unk00} {a.Unk30} {a.Unk60}");
+            foreach (var b in a.UnkA8)
+            {
+                Console.WriteLine($"--D2Class_B7418080 {b.Unk08.Count}");
+                foreach (var c in b.Unk08)
+                {
+                    Console.WriteLine($"---D2Class_70008080");
+                }
+            }
+
+            Console.WriteLine($"-D2Class_BB418080 {a.UnkB8.Count}");
+            foreach (var b in a.UnkB8)
+            {
+                
+            }
+        }
+
+        //foreach (var a in tag2.Header.Patrols?.Header.Unk18.Header.Unk08)
+        //{
+        //    Console.WriteLine($"D2Class_AF418080 {a.Unk20.Count}");
+        //    Console.WriteLine($"D2Class_AF418080 {a.Unk20.Count}");
+        //    Console.WriteLine($"D2Class_AF418080 {a.Unk20.Count}");
+        //}
+
+
+        //if (tag2.Header.Patrols?.Header.PatrolTable.Header.Unk08 is not null)
+        //    foreach (var a in tag2.Header.Patrols?.Header.PatrolTable.Header.Unk08)
+        //    {
+        //        Console.WriteLine($"{a.Unk00} {a.PatrolDevString}");
+        //    }
+
+        //Console.WriteLine($"Events {tag2.Header.Events?.Hash}");
+        //if(tag2.Header.Events?.Header.Unk08 is not null)
+        //    foreach (var a in tag2.Header.Events?.Header.Unk08)
+        //    {
+        //        Console.WriteLine($"{a.Unk00}");
+        //    }
+
 
         foreach (var mapEntry in activity.Header.Unk50)
         {
