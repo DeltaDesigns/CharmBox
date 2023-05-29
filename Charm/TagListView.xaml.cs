@@ -118,6 +118,11 @@ public enum ETagListType
     CinematicAnimationList,
     [Description("Cinematic Animation [Final]")]
     CinematicAnimation,
+
+    [Description("Patrol List")]
+    PatrolList,
+    [Description("Patrol [Final]")]
+    Patrol,
 }
 
 /// <summary>
@@ -320,6 +325,12 @@ public partial class TagListView : UserControl
                     break;
                 case ETagListType.CinematicAnimation:
                     LoadCinematicAnimation(contentValue);
+                    break;
+                case ETagListType.PatrolList:
+                    LoadPatrolList(contentValue);
+                    break;
+                case ETagListType.Patrol:
+                    LoadPatrol(contentValue);
                     break;
                 default:
 					MessageBox.Show("Not Implemented");
@@ -2084,6 +2095,36 @@ public partial class TagListView : UserControl
         });
         MainWindow.Progress.CompleteStage();
         MessageBox.Show("Successfully exported activity cinematic");
+    }
+
+    #endregion
+
+    #region Patrols
+
+    private void LoadPatrolList(TagHash tagHash)
+    {
+        Field.Activity activity = PackageHandler.GetTag(typeof(Field.Activity), tagHash);
+        _allTagItems = new ConcurrentBag<TagItem>();
+
+        var tag = PackageHandler.GetTag<D2Class_8B8E8080>(activity.Header.Unk20.Hash);
+
+        if(tag.Header.Patrols?.Header.PatrolTable is not null)
+        {
+            _allTagItems.Add(new TagItem
+            {
+                Hash = tag.Header.Patrols.Header.PatrolTable.Hash,
+                Name = tag.Header.LocationName,
+                TagType = ETagListType.Patrol
+            });  
+        }
+    }
+
+    // TODO replace with taglist control
+    private void LoadPatrol(TagHash tagHash)
+    {
+        SetViewer(TagView.EViewerType.Patrol);
+        var viewer = GetViewer();
+        viewer.PatrolControl.Load(tagHash);
     }
 
     #endregion

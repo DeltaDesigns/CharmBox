@@ -29,6 +29,7 @@ public partial class ActivityView : UserControl
             "loading directive ui",
             "loading music ui",
             "loading sounds ui",
+            "loading patrols ui",
         });
         MapControl.Visibility = Visibility.Hidden;
         _activity = null;
@@ -62,6 +63,11 @@ public partial class ActivityView : UserControl
             Dispatcher.Invoke(() =>
             {
                 SoundControl.LoadUI(_activity.Hash);
+            });
+            MainWindow.Progress.CompleteStage();
+            Dispatcher.Invoke(() =>
+            {
+                PatrolControl.LoadUI(_activity.Hash);
             });
             MainWindow.Progress.CompleteStage();
         });

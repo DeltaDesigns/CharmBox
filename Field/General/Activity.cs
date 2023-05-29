@@ -39,7 +39,7 @@ public struct D2Class_8E8E8080
 	[DestinyField(FieldType.ResourcePointer)]
 	public dynamic? Unk18;  // 6A988080 + 20978080
 	[DestinyField(FieldType.TagHash64)]
-	public Tag Unk20;  // some weird kind of parent thing with names, contains the string container for this tag
+	public Tag<D2Class_8B8E8080> Unk20;  // some weird kind of parent thing with names, contains the string container for this tag
 	[DestinyOffset(0x40), DestinyField(FieldType.TablePointer)]
 	public List<D2Class_26898080> Unk40;
 	[DestinyField(FieldType.TablePointer)]
@@ -456,11 +456,11 @@ public struct D2Class_75988080
 {
     public ulong Unk00;
     [DestinyField(FieldType.TagHash)]
-    public Tag<D2Class_20808080> PatrolTable;
+    public Tag<D2Class_20808080> Unk08;
     [DestinyOffset(0x10), DestinyField(FieldType.RelativePointer)]
-    public string PatrolTableString;
+    public string PatrolTablePath;
     [DestinyOffset(0x18), DestinyField(FieldType.TagHash)]
-    public Tag<D2Class_A8418080> Unk18; //A8418080 this might be the actual patrol table?
+    public Tag<D2Class_A8418080> PatrolTable; //A8418080 this might be the actual patrol table?
     [DestinyOffset(0x28), DestinyField(FieldType.TagHash64)]
     public StringContainer StringContainer; //?
 }
@@ -494,6 +494,11 @@ public struct D2Class_A8418080 //Patrol table (TABLES IN TABLES IN TABLES IN TAB
 [StructLayout(LayoutKind.Sequential, Size = 0x30)]
 public struct D2Class_AD418080
 {
+    public DestinyHash Unk00;
+    [DestinyOffset(0x08)]
+    public DestinyHash Unk08;
+    [DestinyOffset(0x18)]
+	public byte Unk18; //index?
     [DestinyOffset(0x20), DestinyField(FieldType.TablePointer)]
     public List<D2Class_AF418080> Unk20;
 }
@@ -521,9 +526,18 @@ public struct D2Class_B3418080
 }
 
 [StructLayout(LayoutKind.Sequential, Size = 0x160)]
-public struct D2Class_B4418080 
+public struct D2Class_B4418080 //Theres a lot of things here
 {
-	public DestinyHash Unk00;
+	public DestinyHash PatrolHash;
+	[DestinyOffset(0x8), DestinyField(FieldType.String64)]
+	public string PatrolNameString;
+    [DestinyOffset(0x20), DestinyField(FieldType.String64)]
+    public string PatrolDescriptionString;
+    [DestinyOffset(0x38), DestinyField(FieldType.String64)]
+    public string PatrolObjectiveString;
+
+    [DestinyOffset(0x18)]
+    public DestinyHash Unk18;
     [DestinyOffset(0x30)]
     public DestinyHash Unk30;
     [DestinyOffset(0x50), DestinyField(FieldType.TagHash)]
@@ -533,14 +547,16 @@ public struct D2Class_B4418080
     [DestinyOffset(0xA8), DestinyField(FieldType.TablePointer)]
     public List<D2Class_B7418080> UnkA8;
     [DestinyOffset(0xB8), DestinyField(FieldType.TablePointer)]
-    public List<D2Class_BB418080> UnkB8;
+    public List<D2Class_B7418080> UnkB8;
 }
 
 [StructLayout(LayoutKind.Sequential, Size = 0x30)]
 public struct D2Class_B7418080
 {
     [DestinyOffset(0x08), DestinyField(FieldType.TablePointer)]
-    public List<D2Class_70008080> Unk08; //or B9418080?
+    public List<D2Class_70008080> Unk08;
+    [DestinyOffset(0x18), DestinyField(FieldType.ResourcePointer)]
+    public dynamic? Unk18; //D2Class_B8838080, E5838080 or 03658080
     [DestinyOffset(0x20), DestinyField(FieldType.TablePointer)]
     public List<D2Class_B9418080> Unk20;
 }
@@ -548,17 +564,37 @@ public struct D2Class_B7418080
 [StructLayout(LayoutKind.Sequential, Size = 0x8)]
 public struct D2Class_B9418080 
 {
-
+    [DestinyField(FieldType.ResourcePointer)]
+    public dynamic? Unk00; //BB418080 or BC418080 
 }
 
 [StructLayout(LayoutKind.Sequential, Size = 0x4)]
 public struct D2Class_BB418080 
 {
-
+	public byte Unk00; //always 1?
 }
 
 [StructLayout(LayoutKind.Sequential, Size = 0x28)]
 public struct D2Class_BC418080 
+{
+	[DestinyField(FieldType.TagHash64)]
+	public Tag Unk00; //Entity?
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x28)]
+public struct D2Class_B8838080
+{
+   
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x30)]
+public struct D2Class_E5838080
+{
+	public DestinyHash Unk00; 
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x320)] //??
+public struct D2Class_03658080
 {
 
 }

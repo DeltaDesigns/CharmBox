@@ -25,6 +25,9 @@
             <TabItem x:Name="SoundsTab" Header="SOUNDS">
                 <local:ActivitySoundView x:Name="SoundControl" />
             </TabItem>
+            <TabItem x:Name="PatrolsTab" Header="PATROLS">
+                <local:ActivityPatrolView x:Name="PatrolControl" />
+            </TabItem>
         </TabControl>
     </Grid>
 </UserControl>

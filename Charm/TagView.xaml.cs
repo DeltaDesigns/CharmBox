@@ -29,6 +29,8 @@ public partial class TagView : UserControl
         Music,
         [Description("TagList")]
         TagList,
+        [Description("Patrol")]
+        Patrol,
     }
 
     public void SetViewer(EViewerType eViewerType)
@@ -39,6 +41,7 @@ public partial class TagView : UserControl
         TextureControl.Visibility = eViewerType == EViewerType.Texture1D ? Visibility.Visible : Visibility.Hidden;
         CubemapControl.Visibility = eViewerType == EViewerType.Texture2D ? Visibility.Visible : Visibility.Hidden;
         DialogueControl.Visibility = eViewerType == EViewerType.Dialogue ? Visibility.Visible : Visibility.Hidden;
+        PatrolControl.Visibility = eViewerType == EViewerType.Patrol ? Visibility.Visible : Visibility.Hidden;
         DirectiveControl.Visibility = eViewerType == EViewerType.Directive ? Visibility.Visible : Visibility.Hidden;
         MusicControl.Visibility = eViewerType == EViewerType.Music ? Visibility.Visible : Visibility.Hidden;
         TagListControl.Visibility = eViewerType == EViewerType.TagList ? Visibility.Visible : Visibility.Hidden;
