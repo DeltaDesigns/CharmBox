@@ -12,6 +12,7 @@ public class Activity : Tag
 
 	public Activity(TagHash hash) : base(hash)
 	{
+		Console.WriteLine(hash.ToString());
 	}
 
 	protected override void ParseStructs()
@@ -46,9 +47,9 @@ public struct D2Class_8E8E8080
 	public List<D2Class_24898080> Unk50;
 	public DestinyHash Unk60;
 	[DestinyField(FieldType.TagHash)]
-	public Tag Unk64;  // an entity thing
+	public Tag<D2Class_8C978080> Unk64;  // an entity thing
 	[DestinyField(FieldType.TagHash64)]
-	public Tag UnkActivity68;
+	public Tag UnkActivity68; //Tag for the ambient activity?
 }
 
 [StructLayout(LayoutKind.Sequential, Size = 0x78)]
@@ -83,7 +84,7 @@ public struct D2Class_DE448080
 [StructLayout(LayoutKind.Sequential, Size = 0x18)]
 public struct D2Class_E1998080
 {
-    public ulong Unk00;
+    public ulong FileSize;
     [DestinyField(FieldType.TablePointer)]
     public List<D2Class_E3998080> Unk08;
 }
@@ -93,12 +94,16 @@ public struct D2Class_E3998080
 {
     [DestinyField(FieldType.RelativePointer)]
     public string Unk00; //Event schedule string thing
+    [DestinyOffset(0x20), DestinyField(FieldType.TablePointer)]
+    public List<D2Class_E7998080> Unk20;
 }
 
 [StructLayout(LayoutKind.Sequential, Size = 0x28)]
 public struct D2Class_E7998080
 {
-
+    public DestinyHash Unk00;
+    //[DestinyOffset(0x18), DestinyField(FieldType.String)]
+    //public string Unk18;
 }
 
 
@@ -375,6 +380,10 @@ public struct D2Class_6A988080
 	public DestinyHash Unk24;
 	[DestinyOffset(0x2C), DestinyField(FieldType.TagHash)]
 	public Tag<D2Class_EB458080> Music;
+    [DestinyOffset(0x60), DestinyField(FieldType.RelativePointer)]
+    public string Unk60; //A path for some music? Mentions descent, loading in from orbit perhaps?
+	[DestinyOffset(0x68), DestinyField(FieldType.TagHash64)]
+	public Tag Unk68;
 
 }
 
@@ -522,7 +531,7 @@ public struct D2Class_B0418080
 [StructLayout(LayoutKind.Sequential, Size = 0x8)]
 public struct D2Class_B3418080 
 {
-
+    public byte Index; //index maybe?
 }
 
 [StructLayout(LayoutKind.Sequential, Size = 0x160)]
@@ -535,16 +544,16 @@ public struct D2Class_B4418080 //Theres a lot of things here
     public string PatrolDescriptionString;
     [DestinyOffset(0x38), DestinyField(FieldType.String64)]
     public string PatrolObjectiveString;
-
-    [DestinyOffset(0x18)]
-    public DestinyHash Unk18;
-    [DestinyOffset(0x30)]
-    public DestinyHash Unk30;
+   
     [DestinyOffset(0x50), DestinyField(FieldType.TagHash)]
     public Tag<D2Class_A53E8080> Unk50; //Patrol type?
     [DestinyOffset(0x60)]
     public DestinyHash Unk60;
-    [DestinyOffset(0xA8), DestinyField(FieldType.TablePointer)]
+	[DestinyOffset(0x80), DestinyField(FieldType.TagHash64)]
+	public Tag DialogueTable; //cant load them currently, causes Symmetry error
+    [DestinyOffset(0x98), DestinyField(FieldType.TagHash64)]
+	public Tag DialogueTable2;
+	[DestinyOffset(0xA8), DestinyField(FieldType.TablePointer)]
     public List<D2Class_B7418080> UnkA8;
     [DestinyOffset(0xB8), DestinyField(FieldType.TablePointer)]
     public List<D2Class_B7418080> UnkB8;
@@ -553,7 +562,9 @@ public struct D2Class_B4418080 //Theres a lot of things here
 [StructLayout(LayoutKind.Sequential, Size = 0x30)]
 public struct D2Class_B7418080
 {
-    [DestinyOffset(0x08), DestinyField(FieldType.TablePointer)]
+    [DestinyOffset(0x04)]
+    public DestinyHash Unk04;
+    [DestinyField(FieldType.TablePointer)]
     public List<D2Class_70008080> Unk08;
     [DestinyOffset(0x18), DestinyField(FieldType.ResourcePointer)]
     public dynamic? Unk18; //D2Class_B8838080, E5838080 or 03658080
@@ -578,13 +589,18 @@ public struct D2Class_BB418080
 public struct D2Class_BC418080 
 {
 	[DestinyField(FieldType.TagHash64)]
-	public Tag Unk00; //Entity?
+	public Tag Unk00; //Entity? seems to always be a cluster of engram meshes
+    public DestinyHash Unk10; 
 }
 
 [StructLayout(LayoutKind.Sequential, Size = 0x28)]
 public struct D2Class_B8838080
 {
-   
+	public DestinyHash Unk00;
+    public DestinyHash Unk04;
+    public DestinyHash Unk08;
+    public DestinyHash Unk0C;
+    public DestinyHash Unk10;
 }
 
 [StructLayout(LayoutKind.Sequential, Size = 0x30)]

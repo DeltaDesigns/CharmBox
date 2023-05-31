@@ -4,6 +4,7 @@ using Field.Entities;
 using Field.General;
 using Field.Models;
 using Field.Statics;
+using static Field.General.PackageHandler;
 
 namespace Field;
 
@@ -128,7 +129,55 @@ public struct D2Class_1E898080
     [DestinyOffset(0x40), DestinyField(FieldType.TablePointer)]
     public List<D2Class_C9968080> Unk40;
     [DestinyField(FieldType.TagHash64)] 
-    public Tag Unk50;  // some kind of parent thing, very strange weird idk
+    public Tag Unk50;  // 0B878080 some kind of parent thing, very strange weird idk
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x38)]
+public struct D2Class_0B878080
+{
+    public ulong FileSize;
+    [DestinyField(FieldType.TagHash)]
+    public Tag Unk08; //BF968080
+    [DestinyField(FieldType.TagHash)]
+    public Tag Unk0C; //8C978080
+    [DestinyOffset(0x18), DestinyField(FieldType.TablePointer)]
+    public List<D2Class_1D898080> Unk18;
+    [DestinyOffset(0x28), DestinyField(FieldType.TablePointer)]
+    public List<D2Class_1D898080> Unk28;
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x40)]
+public struct D2Class_BF968080
+{
+    public ulong FileSize;
+    [DestinyField(FieldType.RelativePointer)]
+    public string Unk08;
+    [DestinyOffset(0x10), DestinyField(FieldType.TablePointer)]
+    public List<D2Class_CE968080> Unk10;
+    [DestinyField(FieldType.TablePointer)]
+    public List<D2Class_C3968080> Unk20;
+    [DestinyField(FieldType.TablePointer)]
+    public List<D2Class_35748080> Unk30;
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x20)]
+public struct D2Class_CE968080
+{
+    public DestinyHash Unk00;
+    public DestinyHash Unk04;
+    public DestinyHash Unk08;
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x60)]
+public struct D2Class_C3968080
+{
+
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x30)]
+public struct D2Class_35748080
+{
+
 }
 
 /// <summary>

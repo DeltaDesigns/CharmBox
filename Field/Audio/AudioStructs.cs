@@ -24,7 +24,7 @@ public struct D2Class_29978080
 {
     public DestinyHash Unk00;
     [DestinyOffset(0x8), DestinyField(FieldType.ResourcePointer)]
-    public dynamic? Unk08;
+    public dynamic? Unk08; //2A978080, 33978080
 }
 
 /// <summary>

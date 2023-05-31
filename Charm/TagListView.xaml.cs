@@ -2,11 +2,9 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Remoting;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -19,12 +17,8 @@ using Field.Entities;
 using Field.General;
 using Field.Models;
 using Field.Strings;
-using Field;
-using Microsoft.Toolkit.Mvvm.Input;
 using Serilog;
 using System.Text;
-using SharpDX.Direct3D9;
-using System.Security.Policy;
 
 namespace Charm;
 
@@ -2114,6 +2108,7 @@ public partial class TagListView : UserControl
             {
                 Hash = tag.Header.Patrols.Header.PatrolTable.Hash,
                 Name = tag.Header.LocationName,
+                Subname = tag.Header.Patrols.Header.PatrolTablePath,
                 TagType = ETagListType.Patrol
             });  
         }
