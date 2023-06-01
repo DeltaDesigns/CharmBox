@@ -42,10 +42,6 @@
             x:Name="DirectiveControl"
             Grid.ColumnSpan="2"
             Visibility="Hidden" />
-        <local:PatrolView
-            x:Name="PatrolControl"
-            Grid.ColumnSpan="2"
-            Visibility="Hidden" />
         <local:MusicView
             x:Name="MusicControl"
             Grid.ColumnSpan="2"

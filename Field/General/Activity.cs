@@ -12,7 +12,6 @@ public class Activity : Tag
 
 	public Activity(TagHash hash) : base(hash)
 	{
-		Console.WriteLine(hash.ToString());
 	}
 
 	protected override void ParseStructs()
@@ -372,11 +371,11 @@ public struct D2Class_DD978080
 [StructLayout(LayoutKind.Sequential, Size = 0x84)]
 public struct D2Class_6A988080
 {
-	[DestinyField(FieldType.TablePointer)]
-	public List<D2Class_28898080> DirectiveTables;
-	[DestinyField(FieldType.TagHash64)]
-	public Tag<D2Class_B8978080> DialogueTable;
-	public DestinyHash StartingBubbleName;
+    [DestinyField(FieldType.TablePointer)]
+    public List<D2Class_28898080> DirectiveTables;
+    [DestinyField(FieldType.TablePointer)]
+    public List<D2Class_B7978080> DialogueTables;
+    public DestinyHash StartingBubbleName;
 	public DestinyHash Unk24;
 	[DestinyOffset(0x2C), DestinyField(FieldType.TagHash)]
 	public Tag<D2Class_EB458080> Music;
@@ -460,7 +459,7 @@ public struct D2Class_0C008080
 
 #region Patrol Table
 
-[StructLayout(LayoutKind.Sequential, Size = 0x48)]
+[StructLayout(LayoutKind.Sequential, Size = 0x38)]
 public struct D2Class_75988080
 {
     public ulong Unk00;
@@ -469,9 +468,9 @@ public struct D2Class_75988080
     [DestinyOffset(0x10), DestinyField(FieldType.RelativePointer)]
     public string PatrolTablePath;
     [DestinyOffset(0x18), DestinyField(FieldType.TagHash)]
-    public Tag<D2Class_A8418080> PatrolTable; //A8418080 this might be the actual patrol table?
-    [DestinyOffset(0x28), DestinyField(FieldType.TagHash64)]
-    public StringContainer StringContainer; //?
+    public Tag<D2Class_A8418080> PatrolTable; //The actual patrol table
+    //[DestinyOffset(0x28), DestinyField(FieldType.TagHash64)]
+    //public StringContainer StringContainer; //?
 }
 
 [StructLayout(LayoutKind.Sequential, Size = 0x18)]
@@ -550,9 +549,9 @@ public struct D2Class_B4418080 //Theres a lot of things here
     [DestinyOffset(0x60)]
     public DestinyHash Unk60;
 	[DestinyOffset(0x80), DestinyField(FieldType.TagHash64)]
-	public Tag DialogueTable; //cant load them currently, causes Symmetry error
-    [DestinyOffset(0x98), DestinyField(FieldType.TagHash64)]
-	public Tag DialogueTable2;
+    public Tag<D2Class_B8978080> DialogueTable;
+	//[DestinyOffset(0x98), DestinyField(FieldType.TagHash64)]
+	//public Tag<D2Class_B8978080> DialogueTable2; //Same as the first?
 	[DestinyOffset(0xA8), DestinyField(FieldType.TablePointer)]
     public List<D2Class_B7418080> UnkA8;
     [DestinyOffset(0xB8), DestinyField(FieldType.TablePointer)]
@@ -590,7 +589,8 @@ public struct D2Class_BC418080
 {
 	[DestinyField(FieldType.TagHash64)]
 	public Tag Unk00; //Entity? seems to always be a cluster of engram meshes
-    public DestinyHash Unk10; 
+    public DestinyHash Unk10;
+    public DestinyHash Unk14;
 }
 
 [StructLayout(LayoutKind.Sequential, Size = 0x28)]
@@ -622,7 +622,9 @@ public struct D2Class_A53E8080
 	public DestinyHash Unk08;
 	[DestinyField(FieldType.TagHash)]
 	public Tag<D2Class_BA3E8080> UnkC;
-	[DestinyOffset(0x20), DestinyField(FieldType.TablePointer)]
+    [DestinyField(FieldType.TagHash64)]
+    public Tag<D2Class_EF998080> Unk10;
+    [DestinyOffset(0x20), DestinyField(FieldType.TablePointer)]
 	public List<D2Class_B73B8080> Unk20;
 }
 

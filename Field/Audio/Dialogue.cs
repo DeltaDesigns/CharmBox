@@ -26,7 +26,6 @@ public class Dialogue : Tag
         List<dynamic?> result = new List<dynamic?>();
         foreach (var entry in Header.Unk18)
         {
-            
             switch (entry.Unk08)
             {
                 case D2Class_2D978080:

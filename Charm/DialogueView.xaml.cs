@@ -55,7 +55,7 @@ public partial class DialogueView : UserControl
                 result.Add(new VoicelineItem
                     { 
                         Narrator = a.NarratorString,
-                        Voiceline = a.Unk28,
+                        Voiceline = a.DialogueString,
                         Wem = a.Sound1.Header.Unk20[0],
                         RecursionDepth = recursionDepth,
                         Duration = a.Sound1.Header.Unk20[0].Duration

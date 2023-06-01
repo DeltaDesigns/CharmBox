@@ -67,7 +67,7 @@ public partial class ActivityView : UserControl
             MainWindow.Progress.CompleteStage();
             Dispatcher.Invoke(() =>
             {
-                PatrolControl.LoadUI(_activity.Hash);
+                PatrolControl.LoadUI(_activity);
             });
             MainWindow.Progress.CompleteStage();
         });

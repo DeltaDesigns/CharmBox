@@ -36,19 +36,20 @@ public partial class ActivityMapView : UserControl
     }
 
     private ObservableCollection<DisplayBubble> GetMapList(Activity activity)
-    {
+    { 
         var maps = new ObservableCollection<DisplayBubble>();
+
         Console.WriteLine($"Activity {activity.Hash}");
         if (activity.Header.UnkActivity68 is not null)
             Console.WriteLine($"UnkActivity68 {activity.Header.UnkActivity68.Hash}");
 
         var tag2 = PackageHandler.GetTag<D2Class_8B8E8080>(activity.Header.Unk20.Hash);
-        Console.WriteLine($"D2Class_8B8E8080 {activity.Header.Unk20.Hash.ToString()} {tag2.Header.DestinationName} {activity.Header.Unk20.Header.StringContainer.Header.StringHashTable.Count}");
+        Console.WriteLine($"D2Class_8B8E8080 {activity.Header.Unk20.Hash.ToString()} {tag2.Header.DestinationName} StringHashTable.Count {activity.Header.Unk20.Header.StringContainer.Header.StringHashTable.Count}");
         
         //foreach (var aa in activity.Header.Unk20.Header.StringContainer.Header.StringHashTable)
         //    Console.WriteLine($"{activity.Header.Unk20.Header.StringContainer.GetStringFromHash(ELanguage.English, aa)}");
 
-        Console.WriteLine($"{tag2.Header.Patrols?.Hash} Patrols: Unk18 {tag2.Header.Patrols?.Header.PatrolTable?.Hash} PatrolTableString {tag2.Header.Patrols?.Header.PatrolTablePath}");
+        //Console.WriteLine($"{tag2.Header.Patrols?.Hash} Patrols: Unk18 {tag2.Header.Patrols?.Header.PatrolTable?.Hash} PatrolTableString {tag2.Header.Patrols?.Header.PatrolTablePath}");
 
         //foreach (var a in activity.Header.Unk20.Header.StringContainer.Header.StringHashTable)
         //{
@@ -70,65 +71,106 @@ public partial class ActivityMapView : UserControl
         //}
             
        
-        if (tag2.Header.Patrols?.Header.PatrolTable?.Header.Unk28 is not null)
-        {
-            Console.WriteLine($"D2Class_B4418080 {tag2.Header.Patrols?.Header.PatrolTable.Header.Unk28.Count}");
-            foreach (var a in tag2.Header.Patrols?.Header.PatrolTable?.Header.Unk28)
-            {
-                Console.WriteLine($"------------------");
-                Console.WriteLine($"{a.PatrolNameString}");
-                Console.WriteLine($"------------");
-                Console.WriteLine($"{a.PatrolDescriptionString}");
-                Console.WriteLine($"------------");
-                Console.WriteLine($"{a.PatrolObjectiveString}");
-                Console.WriteLine($"------------------");
+        //if (tag2.Header.Patrols?.Header.PatrolTable?.Header.Unk28 is not null)
+        //{
+        //    Console.WriteLine($"D2Class_B4418080 {tag2.Header.Patrols?.Header.PatrolTable.Header.Unk28.Count}");
+        //    foreach (var a in tag2.Header.Patrols?.Header.PatrolTable?.Header.Unk28)
+        //    {
+        //        Console.WriteLine($"------------------");
+        //        Console.WriteLine($"{a.PatrolNameString}");
+        //        Console.WriteLine($"------------");
+        //        Console.WriteLine($"{a.PatrolDescriptionString}");
+        //        Console.WriteLine($"------------");
+        //        Console.WriteLine($"{a.PatrolObjectiveString}");
+        //        Console.WriteLine($"------------------");
 
-                var dialoguetable = PackageHandler.GetTag<D2Class_B8978080>(a.DialogueTable.Hash);
-                Console.WriteLine($"{a.DialogueTable.Hash}");
+        //        if(a.DialogueTable is not null)
+        //        {
+        //            var dialoguetable = PackageHandler.GetTag<D2Class_B8978080>(a.DialogueTable.Hash);
+        //            Console.WriteLine(dialoguetable.Hash.ToString());
+        //            foreach (var a1 in dialoguetable.Header.Unk18)
+        //            {
+        //                if (a1.Unk08 is D2Class_2A978080 a2)
+        //                {
+        //                    foreach (var a3 in a2.Unk28)
+        //                    {
+        //                        if (a3.Unk40 is D2Class_2D978080 a3_1)
+        //                        {
+        //                            foreach (var a4 in a3_1.Unk20)
+        //                            {
+        //                                Console.WriteLine($"{((D2Class_33978080)a4.Unk20).Sound1.Header.Unk20[0].Hash} NarratorString {((D2Class_33978080)a4.Unk20).NarratorString} DialogueString {((D2Class_33978080)a4.Unk20).DialogueString}");
+        //                            }
+        //                        }
+        //                        if (a3.Unk40 is D2Class_2A978080 a3_2)
+        //                        {
+        //                            foreach (var a5 in a3_2.Unk28)
+        //                            {
+        //                                if (a5.Unk40 is D2Class_2D978080 a3_3)
+        //                                {
+        //                                    foreach (var a6 in a3_3.Unk20)
+        //                                    {
+        //                                        Console.WriteLine($"{((D2Class_33978080)a6.Unk20).Sound1.Header.Unk20[0].Hash} NarratorString {((D2Class_33978080)a6.Unk20).NarratorString} DialogueString {((D2Class_33978080)a6.Unk20).DialogueString}");
+        //                                    }
+        //                                }
+        //                            }
+        //                        }
+        //                        if (a3.Unk40 is D2Class_33978080 a3_4)
+        //                        {
+        //                            Console.WriteLine($"{a3_4.Sound1.Header.Unk20[0].Hash} NarratorString {a3_4.NarratorString} DialogueString {a3_4.DialogueString}");
+        //                        }
+        //                    }
+        //                }
+        //                if (a1.Unk08 is D2Class_33978080 a2_1)
+        //                {
+        //                    Console.WriteLine($"{a2_1.Sound1.Header.Unk20[0].Hash} NarratorString {a2_1.NarratorString} DialogueString {a2_1.DialogueString}");
+        //                }
+        //            }
 
-                Console.WriteLine($"-D2Class_B4418080 UnkA8 {a.UnkA8.Count}");
-                foreach (var b in a.UnkA8)
-                {
-                    Console.WriteLine($"--D2Class_B7418080 Unk08 {b.Unk08.Count} Unk18 {b.Unk18}");
-                    if (b.Unk18 is D2Class_E5838080 b1)
-                        Console.WriteLine($"---D2Class_E5838080 Unk00 {b1.Unk00.ToString()}");
+        //        }
 
-                    foreach (var c in b.Unk08)
-                    {
-                        Console.WriteLine($"---D2Class_70008080 {c.StringHash.ToString()}");
-                    }
-                    foreach (var c in b.Unk20)
-                    {
-                        Console.WriteLine($"---D2Class_B9418080 {c.Unk00}");
-                        if (c.Unk00 is D2Class_BC418080 d)
-                        {
-                            Console.WriteLine($"----D2Class_BC418080 Unk00 {d.Unk00.Hash} Unk10 {d.Unk10.ToString()}");
-                        }
-                    }
-                }
+        //        Console.WriteLine($"-D2Class_B4418080 UnkA8 {a.UnkA8.Count}");
+        //        foreach (var b in a.UnkA8)
+        //        {
+        //            Console.WriteLine($"--D2Class_B7418080 Unk08 {b.Unk08.Count} Unk18 {b.Unk18}");
+        //            if (b.Unk18 is D2Class_E5838080 b1)
+        //                Console.WriteLine($"---D2Class_E5838080 Unk00 {b1.Unk00.ToString()}");
 
-                Console.WriteLine($"-D2Class_B4418080 UnkB8 {a.UnkB8.Count}");
-                foreach (var b in a.UnkB8)
-                {
-                    Console.WriteLine($"--D2Class_B7418080 Unk08 {b.Unk08.Count} Unk18 {b.Unk18}");
-                    if (b.Unk18 is D2Class_E5838080 b1)
-                        Console.WriteLine($"---D2Class_E5838080 Unk00 {b1.Unk00.ToString()}");
+        //            foreach (var c in b.Unk08)
+        //            {
+        //                Console.WriteLine($"---D2Class_70008080 {c.StringHash.ToString()}");
+        //            }
+        //            foreach (var c in b.Unk20)
+        //            {
+        //                Console.WriteLine($"---D2Class_B9418080 {c.Unk00}");
+        //                if (c.Unk00 is D2Class_BC418080 d)
+        //                {
+        //                    Console.WriteLine($"----D2Class_BC418080 Unk00 {d.Unk00.Hash} Unk10 {d.Unk10.ToString()}");
+        //                }
+        //            }
+        //        }
 
-                    foreach (var c in b.Unk08)
-                    {
-                        Console.WriteLine($"---D2Class_70008080 {c.StringHash.ToString()}");
-                    }
-                    foreach (var c in b.Unk20)
-                    {
-                        Console.WriteLine($"---D2Class_B9418080 {c.Unk00}");
-                        if (c.Unk00 is D2Class_BC418080 d)
-                        {
-                            Console.WriteLine($"----D2Class_BC418080 Unk00 {d.Unk00.Hash} Unk10 {d.Unk10.ToString()}");
-                        }
-                    }
-                }
-            }
-        }
+        //        Console.WriteLine($"-D2Class_B4418080 UnkB8 {a.UnkB8.Count}");
+        //        foreach (var b in a.UnkB8)
+        //        {
+        //            Console.WriteLine($"--D2Class_B7418080 Unk08 {b.Unk08.Count} Unk18 {b.Unk18}");
+        //            if (b.Unk18 is D2Class_E5838080 b1)
+        //                Console.WriteLine($"---D2Class_E5838080 Unk00 {b1.Unk00.ToString()}");
+
+        //            foreach (var c in b.Unk08)
+        //            {
+        //                Console.WriteLine($"---D2Class_70008080 {c.StringHash.ToString()}");
+        //            }
+        //            foreach (var c in b.Unk20)
+        //            {
+        //                Console.WriteLine($"---D2Class_B9418080 {c.Unk00}");
+        //                if (c.Unk00 is D2Class_BC418080 d)
+        //                {
+        //                    Console.WriteLine($"----D2Class_BC418080 Unk00 {d.Unk00.Hash} Unk10 {d.Unk10.ToString()}");
+        //                }
+        //            }
+        //        }
+        //    }
+        //}
 
         //foreach (var a in tag2.Header.Patrols?.Header.Unk18.Header.Unk08)
         //{
@@ -455,7 +497,7 @@ public partial class ActivityMapView : UserControl
         else
         {
             var tagHash = new TagHash(dc.Hash);
-            MainWindow.Progress.SetProgressStages(new List<string> {tagHash });
+            MainWindow.Progress.SetProgressStages(new List<string> {tagHash});
             // cant do this rn bc of lod problems with dupes
             // MapControl.ModelView.SetModelFunction(() => MapControl.LoadMap(tagHash, MapControl.ModelView.GetSelectedLod()));
             await Task.Run(() =>

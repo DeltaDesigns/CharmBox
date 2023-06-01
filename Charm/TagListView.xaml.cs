@@ -320,12 +320,12 @@ public partial class TagListView : UserControl
                 case ETagListType.CinematicAnimation:
                     LoadCinematicAnimation(contentValue);
                     break;
-                case ETagListType.PatrolList:
-                    LoadPatrolList(contentValue);
-                    break;
-                case ETagListType.Patrol:
-                    LoadPatrol(contentValue);
-                    break;
+                //case ETagListType.PatrolList:
+                //    LoadPatrolList(contentValue);
+                //    break;
+                //case ETagListType.Patrol:
+                //    LoadPatrol(contentValue);
+                //    break;
                 default:
 					MessageBox.Show("Not Implemented");
                     break;
@@ -1242,7 +1242,7 @@ public partial class TagListView : UserControl
     {
         TextureView.ExportTexture(new TagHash(info.Hash));
     }
-    
+
     #endregion
 
     #region Dialogue
@@ -1254,15 +1254,18 @@ public partial class TagListView : UserControl
     {
         Field.Activity activity = PackageHandler.GetTag(typeof(Field.Activity), tagHash);
         _allTagItems = new ConcurrentBag<TagItem>();
-  
+
         // Dialogue tables can be in the 0x80808948 entries
         ConcurrentBag<TagHash> dialogueTables = new ConcurrentBag<TagHash>();
         if (activity.Header.Unk18 is D2Class_6A988080)
         {
-            var entry = (D2Class_6A988080) activity.Header.Unk18;
-			if (entry.DialogueTable != null)
-				dialogueTables.Add(entry.DialogueTable.Hash);
-		}
+            var entry = (D2Class_6A988080)activity.Header.Unk18;
+            foreach (var dirtable in entry.DialogueTables)
+            {
+                if (dirtable.DialogueTable != null)
+                    dialogueTables.Add(dirtable.DialogueTable.Hash);
+            }
+        }
         Parallel.ForEach(activity.Header.Unk50, val =>
         {
             foreach (var d2Class48898080 in val.Unk18)
@@ -1279,8 +1282,8 @@ public partial class TagListView : UserControl
 
         Parallel.ForEach(dialogueTables, hash =>
         {
-            _allTagItems.Add(new TagItem 
-            { 
+            _allTagItems.Add(new TagItem
+            {
                 Hash = hash,
                 Name = hash,
                 TagType = ETagListType.Dialogue
@@ -2095,32 +2098,31 @@ public partial class TagListView : UserControl
 
     #region Patrols
 
-    private void LoadPatrolList(TagHash tagHash)
-    {
-        Field.Activity activity = PackageHandler.GetTag(typeof(Field.Activity), tagHash);
-        _allTagItems = new ConcurrentBag<TagItem>();
+    //private void LoadPatrolList(TagHash tagHash)
+    //{
+    //    Field.Activity activity = PackageHandler.GetTag(typeof(Field.Activity), tagHash);
+    //    _allTagItems = new ConcurrentBag<TagItem>();
 
-        var tag = PackageHandler.GetTag<D2Class_8B8E8080>(activity.Header.Unk20.Hash);
+    //    var tag = PackageHandler.GetTag<D2Class_8B8E8080>(activity.Header.Unk20.Hash);
 
-        if(tag.Header.Patrols?.Header.PatrolTable is not null)
-        {
-            _allTagItems.Add(new TagItem
-            {
-                Hash = tag.Header.Patrols.Header.PatrolTable.Hash,
-                Name = tag.Header.LocationName,
-                Subname = tag.Header.Patrols.Header.PatrolTablePath,
-                TagType = ETagListType.Patrol
-            });  
-        }
-    }
+    //    if(tag.Header.Patrols?.Header.PatrolTable is not null)
+    //    {
+    //        _allTagItems.Add(new TagItem
+    //        {
+    //            Hash = tag.Header.Patrols.Header.PatrolTable.Hash,
+    //            Name = tag.Header.LocationName,
+    //            Subname = tag.Header.Patrols.Header.PatrolTablePath,
+    //            TagType = ETagListType.Patrol
+    //        });  
+    //    }
+    //}
 
-    // TODO replace with taglist control
-    private void LoadPatrol(TagHash tagHash)
-    {
-        SetViewer(TagView.EViewerType.Patrol);
-        var viewer = GetViewer();
-        viewer.PatrolControl.Load(tagHash);
-    }
+    //private void LoadPatrol(TagHash tagHash)
+    //{
+    //    SetViewer(TagView.EViewerType.Patrol);
+    //    var viewer = GetViewer();
+    //    viewer.PatrolControl.Load(tagHash);
+    //}
 
     #endregion
 }

@@ -5,10 +5,130 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:Charm"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    d:DesignHeight="300"
-    d:DesignWidth="300"
+    d:DesignHeight="1000"
+    d:DesignWidth="1900"
     mc:Ignorable="d">
+    <UserControl.Resources>
+        <ControlTemplate x:Key="DirectiveTemplate">
+            <Button Click="LoadPatrolDialogue">
+                <Grid Height="100" Margin="0,5,0,5">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="40*" />
+                        <RowDefinition Height="30*" />
+                        <RowDefinition Height="30*" />
+                    </Grid.RowDefinitions>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="10*" />
+                        <ColumnDefinition Width="80*" />
+                    </Grid.ColumnDefinitions>
+                    <Border
+                        Grid.RowSpan="3"
+                        Grid.ColumnSpan="2"
+                        Panel.ZIndex="1"
+                        BorderBrush="{StaticResource BackgroundColour30}"
+                        BorderThickness="1" />
+                    <Image
+                        x:Name="PatrolIcon"
+                        Grid.RowSpan="3"
+                        Grid.Column="0"
+                        Width="80"
+                        Height="80"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Source="{Binding Icon}" />
+                    <TextBlock
+                        Grid.Row="0"
+                        Grid.Column="1"
+                        Margin="5,0,0,0"
+                        HorizontalAlignment="Left"
+                        FontFamily="{DynamicResource Neue Haas Grotesk Display Pro 75 Bold}"
+                        FontSize="26"
+                        Text="{Binding Name}" />
+                    <TextBlock
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        Margin="5,0,0,0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Top"
+                        FontFamily="{DynamicResource Neue Haas Grotesk Text Pro 65 Medium}"
+                        FontSize="19"
+                        Foreground="{StaticResource ForegroundColour75}"
+                        Text="{Binding Description}" />
+                    <TextBlock
+                        Grid.Row="2"
+                        Grid.Column="1"
+                        Margin="5,0,0,5"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Bottom"
+                        FontFamily="{DynamicResource Neue Haas Grotesk Text Pro 65 Medium}"
+                        FontSize="16"
+                        Foreground="{StaticResource ForegroundColour75}"
+                        Text="{Binding Objective}" />
+                    <TextBlock
+                        Grid.Row="0"
+                        Grid.Column="1"
+                        Margin="0,0,5,15"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Bottom"
+                        FontFamily="{DynamicResource Neue Haas Grotesk Text Pro 56 Italic}"
+                        FontSize="16"
+                        Foreground="{StaticResource ForegroundColour75}"
+                        Text="{Binding Hash}" />
+                    <TextBlock
+                        Grid.Row="2"
+                        Grid.Column="1"
+                        Margin="0,0,5,5"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Bottom"
+                        FontFamily="{DynamicResource Neue Haas Grotesk Text Pro 56 Italic}"
+                        FontSize="16"
+                        Foreground="{StaticResource ForegroundColour75}"
+                        Text="{Binding DialogueHash}" />
+                </Grid>
+            </Button>
+        </ControlTemplate>
+    </UserControl.Resources>
+
     <Grid>
-        <local:TagListViewerView x:Name="TagList" />
+        <Grid.RowDefinitions>
+            <RowDefinition Height="5*" />
+            <RowDefinition Height="100*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="100*" />
+            <ColumnDefinition Width="100*" />
+        </Grid.ColumnDefinitions>
+        <Grid Grid.Row="1" Grid.Column="0">
+            <ListView x:Name="ListView" Grid.Row="0">
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="OverridesDefaultStyle" Value="True" />
+                        <Setter Property="Template" Value="{StaticResource DirectiveTemplate}" />
+                    </Style>
+                </ListView.ItemContainerStyle>
+                <ListView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Vertical" />
+                    </ItemsPanelTemplate>
+                </ListView.ItemsPanel>
+            </ListView>
+        </Grid>
+        <Grid Grid.Row="0" Grid.Column="0">
+            <TextBlock
+                Name="PatrolTablePath"
+                Margin="0,0,0,0"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                FontFamily="{DynamicResource Neue Haas Grotesk Display Pro 75 Bold}"
+                FontSize="16"
+                Text="" />
+        </Grid>
+
+        <local:DialogueView
+            x:Name="DialogueControl"
+            Grid.RowSpan="2"
+            Grid.Column="1" />
     </Grid>
+
 </UserControl>

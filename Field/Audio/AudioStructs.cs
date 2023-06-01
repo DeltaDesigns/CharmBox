@@ -24,7 +24,7 @@ public struct D2Class_29978080
 {
     public DestinyHash Unk00;
     [DestinyOffset(0x8), DestinyField(FieldType.ResourcePointer)]
-    public dynamic? Unk08; //2A978080, 33978080
+    public dynamic? Unk08; //2A978080, 33978080, 2D978080
 }
 
 /// <summary>
@@ -43,7 +43,7 @@ public struct D2Class_2F978080
     [DestinyOffset(0x38)]
     public float Unk38;
     [DestinyOffset(0x40), DestinyField(FieldType.ResourcePointer)]
-    public dynamic? Unk40; // 2A978080, 2D978080
+    public dynamic? Unk40; // 2A978080, 2D978080, 33978080
 }
 
 [StructLayout(LayoutKind.Sequential, Size = 0x38)]
@@ -70,7 +70,7 @@ public struct D2Class_33978080
     [DestinyOffset(0x18), DestinyField(FieldType.TagHash64)]
     public WwiseSound Sound1;
     [DestinyField(FieldType.String64)]
-    public string Unk28;
+    public string DialogueString;
     [DestinyOffset(0x40)] 
     public float Unk40;
     [DestinyField(FieldType.TagHash)]
@@ -78,7 +78,7 @@ public struct D2Class_33978080
     [DestinyOffset(0x48), DestinyField(FieldType.TagHash64)]
     public WwiseSound Sound2;
     [DestinyField(FieldType.String64)]
-    public string Unk58;
+    public string DialogueString2;
     [DestinyOffset(0x70)] 
     public float Unk70;
     [DestinyField(FieldType.TagHash)]
