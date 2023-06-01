@@ -548,7 +548,7 @@ public struct D2Class_B4418080 //Theres a lot of things here
     public Tag<D2Class_A53E8080> Unk50; //Patrol type?
     [DestinyOffset(0x60)]
     public DestinyHash Unk60;
-	[DestinyOffset(0x80), DestinyField(FieldType.TagHash64)]
+	[DestinyOffset(0x68), DestinyField(FieldType.TagHash64)]
     public Tag<D2Class_B8978080> DialogueTable;
 	//[DestinyOffset(0x98), DestinyField(FieldType.TagHash64)]
 	//public Tag<D2Class_B8978080> DialogueTable2; //Same as the first?

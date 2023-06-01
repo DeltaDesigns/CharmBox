@@ -49,7 +49,7 @@ public partial class ActivityMapView : UserControl
         //foreach (var aa in activity.Header.Unk20.Header.StringContainer.Header.StringHashTable)
         //    Console.WriteLine($"{activity.Header.Unk20.Header.StringContainer.GetStringFromHash(ELanguage.English, aa)}");
 
-        //Console.WriteLine($"{tag2.Header.Patrols?.Hash} Patrols: Unk18 {tag2.Header.Patrols?.Header.PatrolTable?.Hash} PatrolTableString {tag2.Header.Patrols?.Header.PatrolTablePath}");
+        Console.WriteLine($"{tag2.Header.Patrols?.Hash} Patrols: Unk18 {tag2.Header.Patrols?.Header.PatrolTable?.Hash} PatrolTableString {tag2.Header.Patrols?.Header.PatrolTablePath}");
 
         //foreach (var a in activity.Header.Unk20.Header.StringContainer.Header.StringHashTable)
         //{
