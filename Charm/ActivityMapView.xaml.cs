@@ -44,8 +44,8 @@ public partial class ActivityMapView : UserControl
             Console.WriteLine($"UnkActivity68 {activity.Header.UnkActivity68.Hash}");
 
         var tag2 = PackageHandler.GetTag<D2Class_8B8E8080>(activity.Header.Unk20.Hash);
-        Console.WriteLine($"D2Class_8B8E8080 {activity.Header.Unk20.Hash.ToString()} {tag2.Header.DestinationName} StringHashTable.Count {activity.Header.Unk20.Header.StringContainer.Header.StringHashTable.Count}");
-        
+        Console.WriteLine($"D2Class_8B8E8080 {activity.Header.Unk20.Hash.ToString()} {tag2.Header.DestinationName} StringHashTable.Count {activity.Header.Unk20.Header.StringContainer?.Header.StringHashTable?.Count}");
+       
         //foreach (var aa in activity.Header.Unk20.Header.StringContainer.Header.StringHashTable)
         //    Console.WriteLine($"{activity.Header.Unk20.Header.StringContainer.GetStringFromHash(ELanguage.English, aa)}");
 
@@ -63,14 +63,14 @@ public partial class ActivityMapView : UserControl
         //    {
         //        Console.WriteLine($"Unk60 {a1.Unk60} Unk68 {a1.Unk68.Hash}");
         //        Console.WriteLine($"{activity.Header.Unk18} {a1.Music?.Header.MusicTemplateName}");
-                
+
         //        if(a1.Music?.Header.Unk28 is not null)
         //            foreach (var a in a1.Music?.Header.Unk28)
         //                Console.WriteLine($"{a.Unk00}");
         //    }  
         //}
-            
-       
+
+
         //if (tag2.Header.Patrols?.Header.PatrolTable?.Header.Unk28 is not null)
         //{
         //    Console.WriteLine($"D2Class_B4418080 {tag2.Header.Patrols?.Header.PatrolTable.Header.Unk28.Count}");

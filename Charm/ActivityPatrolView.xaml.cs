@@ -48,7 +48,7 @@ public partial class ActivityPatrolView : UserControl
             {
                 Name = patrol.PatrolNameString,
                 Description = patrol.PatrolDescriptionString,
-                Objective = $"{patrol.PatrolObjectiveString}",
+                Objective = $"{patrol.PatrolObjectiveString} 0/{patrol.Unk148}",
                 Hash = patrol.PatrolHash,
                 DialogueHash = (patrol.DialogueTable is null ? "No Dialogue" : patrol.DialogueTable.Hash),
                 Icon = LoadTexture(PatrolIcon)
@@ -72,8 +72,8 @@ public partial class ActivityPatrolView : UserControl
                 Dispatcher.Invoke(() =>
                 {
                     DialogueControl.Load(tagHash);
+                    MainWindow.Progress.CompleteStage();
                 });
-                MainWindow.Progress.CompleteStage();
             });
         }
     }
@@ -100,17 +100,10 @@ public partial class ActivityPatrolView : UserControl
 
 public class PatrolItem
 {
-    private string _objective;
-
     public string Name { get; set; }
     public string Description { get; set; }
+    public string Objective { get; set; }
 
-    public string Objective
-    {
-        get => _objective.Contains("0/0") ? "" : _objective;
-        set => _objective = value;
-    }
-    //public string Unknown { get; set; }
     public string Hash { get; set; }
     public string DialogueHash { get; set; }
 

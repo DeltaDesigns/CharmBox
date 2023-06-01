@@ -111,6 +111,7 @@ public class PackageHandler
         }
 
         dynamic tag;
+        //Console.WriteLine($"{type.FullName} {hash.ToString()}");
         if (disableLoad)
             tag = Activator.CreateInstance(type, hash, disableLoad);
         else

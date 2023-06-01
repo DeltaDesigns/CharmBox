@@ -1628,6 +1628,35 @@ public partial class TagListView : UserControl
                                     }
                                 }
                             }
+                            if (entry.DataResource is D2Class_F16C8080 a_1)
+                            {
+                                if (a_1.Unk10.Header.UnkA8 is not null)
+                                {
+                                    foreach (var b_1 in a_1.Unk10.Header.UnkA8.Header.Unk38)
+                                    {
+                                        foreach (var c_1 in b_1.Unk00.Header.Unk0C.Header.Unk18)
+                                        {
+                                            if (c_1.AudioContainer is not null)
+                                            {
+                                                var tag = PackageHandler.GetTag<D2Class_38978080>(c_1.AudioContainer.Hash);
+                                                foreach (var wem in tag.Header.Unk20)
+                                                {
+                                                    if (wem.GetData().Length == 1)
+                                                        continue;
+
+                                                    _allTagItems.Add(new TagItem
+                                                    {
+                                                        Name = PackageHandler.GetEntryReference(wem.Hash),
+                                                        Hash = wem.Hash,
+                                                        Subname = wem.Duration,
+                                                        TagType = ETagListType.Sound
+                                                    });
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         });
                     }
                 }

@@ -547,5 +547,154 @@ public struct D2Class_716C8080
     
 }
 
+/// <summary>
+/// Unk data resource.
+/// </summary>
+[StructLayout(LayoutKind.Sequential, Size = 0xF0)]
+public struct D2Class_6B6E8080
+{
+    public long FileSize;
+    //[DestinyField(FieldType.TagHash)] //Not worth loading
+    //public Tag Unk08; //FFFFFFFF
+    //[DestinyField(FieldType.TagHash)]
+    //public Tag Unk0C; //FFFFFFFF
+    //[DestinyField(FieldType.TagHash)]
+    //public Tag Unk10; //FFFFFFFF
+    [DestinyOffset(0x14)]
+    public DestinyHash Unk14;
+    public DestinyHash Unk18;
+    [DestinyOffset(0x20), DestinyField(FieldType.TablePointer)]
+    public List<D2Class_896E8080> Unk20;
+    [DestinyOffset(0x30), DestinyField(FieldType.TablePointer)]
+    public List<D2Class_07008080> Unk30;
+    [DestinyOffset(0x40), DestinyField(FieldType.TablePointer)]
+    public List<D2Class_0C008080> Unk40;
+    [DestinyOffset(0x60)]
+    public Vector4 Unk60; //??
+    public Vector4 Unk70;
+    public Vector4 Unk80;
+    [DestinyField(FieldType.TablePointer)]
+    public List<D2Class_209F8080> Unk90;
+    [DestinyOffset(0xA0), DestinyField(FieldType.TagHash)]
+    public Tag UnkA0; //6E6E8080
+    [DestinyField(FieldType.TagHash)]
+    public Tag UnkA4; //67958080
+    [DestinyField(FieldType.TagHash)]
+    public Tag<D2Class_67958080> UnkA8; //67958080
+}
+
+/// <summary>
+/// Unk data resource.
+/// </summary>
+[StructLayout(LayoutKind.Sequential, Size = 0x10)]
+public struct D2Class_77968080
+{
+    public long FileSize;
+    [DestinyOffset(0xC), DestinyField(FieldType.TagHash)]
+    public Tag<D2Class_338A8080> Unk0C; //338A8080
+}
+
+/// <summary>
+/// Unk data resource.
+/// </summary>
+[StructLayout(LayoutKind.Sequential, Size = 0x4)]
+public struct D2Class_84958080
+{
+
+}
+
+/// <summary>
+/// Unk data resource.
+/// </summary>
+[StructLayout(LayoutKind.Sequential, Size = 0x18)]
+public struct D2Class_85958080
+{
+    [DestinyField(FieldType.TagHash)]
+    public Tag<D2Class_77968080> Unk00; //77968080
+}
+
+/// <summary>
+/// Unk data resource.
+/// </summary>
+[StructLayout(LayoutKind.Sequential, Size = 0x30)]
+public struct D2Class_87958080
+{
+    [DestinyOffset(0x24), DestinyField(FieldType.TagHash)]
+    public Tag Unk24; //77968080
+}
+
+/// <summary>
+/// Unk data resource.
+/// </summary>
+[StructLayout(LayoutKind.Sequential, Size = 0x28)]
+public struct D2Class_88958080
+{
+    public long Unk00;
+    public DestinyHash Unk08;
+    public DestinyHash Unk0C;
+    [DestinyOffset(0x18)]
+    public DestinyHash Unk18;
+    public DestinyHash Unk1C;
+}
+
+/// <summary>
+/// Unk data resource.
+/// </summary>
+[StructLayout(LayoutKind.Sequential, Size = 0x10)]
+public struct D2Class_896E8080
+{
+
+}
+
+/// <summary>
+/// Unk data resource.
+/// </summary>
+[StructLayout(LayoutKind.Sequential, Size = 0x14)]
+public struct D2Class_89958080
+{
+
+}
+
+/// <summary>
+/// Unk data resource.
+/// </summary>
+[StructLayout(LayoutKind.Sequential, Size = 0x20)]
+public struct D2Class_209F8080
+{
+    public Vector4 Unk00;
+    public Vector4 Unk10;
+}
+
+/// <summary>
+/// Unk data resource.
+/// </summary>
+[StructLayout(LayoutKind.Sequential, Size = 0x88)]
+public struct D2Class_67958080
+{
+    public long FileSize;
+    [DestinyOffset(0x18), DestinyField(FieldType.TablePointer)]
+    public List<D2Class_89958080> Unk18;
+    [DestinyOffset(0x28), DestinyField(FieldType.TablePointer)]
+    public List<D2Class_88958080> Unk28;
+    [DestinyOffset(0x38), DestinyField(FieldType.TablePointer)]
+    public List<D2Class_85958080> Unk38;
+    [DestinyOffset(0x48), DestinyField(FieldType.TablePointer)]
+    public List<D2Class_84958080> Unk48;
+
+    [DestinyOffset(0x78), DestinyField(FieldType.TagHash)]
+    public Tag Unk78; //7B958080
+    [DestinyField(FieldType.TagHash)]
+    public Tag Unk7C; //81958080
+}
+
+/// <summary>
+/// Unk data resource.
+/// </summary>
+[StructLayout(LayoutKind.Sequential, Size = 0x18)]
+public struct D2Class_F16C8080
+{
+    [DestinyOffset(0x10), DestinyField(FieldType.TagHash)]
+    public Tag<D2Class_6B6E8080> Unk10;
+}
 
 #endregion

@@ -26,12 +26,10 @@ public partial class MusicView : UserControl
 
         if (music == null)
             return;
-        if (music.Header.Unk28.Count != 1)
-        {
-            throw new NotImplementedException();
-        }
 
-        var resource = music.Header.Unk28[0].Unk00;
+        //if 2, use second entry as first is some type of ambient music?
+        var resource = (music.Header.Unk28.Count > 1 ? music.Header.Unk28[1].Unk00 : music.Header.Unk28[0].Unk00); 
+        
         if (resource is D2Class_F5458080)
         {
             var res = (D2Class_F5458080) resource;

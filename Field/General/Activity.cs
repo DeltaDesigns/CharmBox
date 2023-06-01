@@ -48,7 +48,7 @@ public struct D2Class_8E8E8080
 	[DestinyField(FieldType.TagHash)]
 	public Tag<D2Class_8C978080> Unk64;  // an entity thing
 	[DestinyField(FieldType.TagHash64)]
-	public Tag UnkActivity68; //Tag for the ambient activity?
+	public Tag UnkActivity68; //8E8E8080, Tag for the ambient activity?
 }
 
 [StructLayout(LayoutKind.Sequential, Size = 0x78)]
@@ -556,6 +556,10 @@ public struct D2Class_B4418080 //Theres a lot of things here
     public List<D2Class_B7418080> UnkA8;
     [DestinyOffset(0xB8), DestinyField(FieldType.TablePointer)]
     public List<D2Class_B7418080> UnkB8;
+	//Bunch of DestinyHash's from C8 to 148?
+
+    [DestinyOffset(0x148)]
+    public int Unk148; //Objective target count? Some numbers dont seem right though
 }
 
 [StructLayout(LayoutKind.Sequential, Size = 0x30)]
