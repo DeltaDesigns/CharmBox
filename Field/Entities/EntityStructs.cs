@@ -86,9 +86,11 @@ public struct D2Class_069B8080  // Entity resource, sometimes has a path string 
     [DestinyField(FieldType.ResourcePointer)]
     public dynamic? Unk08;
     [DestinyField(FieldType.ResourcePointer)]
-    public dynamic? Unk10; //FA988080
+    public dynamic? Unk10; //FA988080, F9988080, 068D8080
     [DestinyField(FieldType.ResourcePointer)]
-    public dynamic? Unk18; //F9988080
+    public dynamic? Unk18; //F9988080, FA988080, D8928080
+    //[DestinyOffset(0x30), DestinyField(FieldType.TablePointer)]
+    //public List<D2Class_72908080> ResourceTable30;
     [DestinyOffset(0x40), DestinyField(FieldType.TablePointer)]
     public List<D2Class_7C908080> ResourceTable40;
     [DestinyOffset(0x60), DestinyField(FieldType.TablePointer)]
@@ -114,6 +116,13 @@ public struct D2Class_7C908080
     public short Unk0E;
 }
 
+[StructLayout(LayoutKind.Sequential, Size = 0x190)]
+public struct D2Class_D8928080
+{
+    [DestinyOffset(0x84), DestinyField(FieldType.TagHash)]
+    public Tag Unk84;
+}
+
 [StructLayout(LayoutKind.Sequential, Size = 0x20)]
 public struct D2Class_6B908080
 {
@@ -132,7 +141,10 @@ public struct D2Class_6E908080
 [StructLayout(LayoutKind.Sequential, Size = 0x10)]
 public struct D2Class_029D8080
 {
-
+    [DestinyField(FieldType.ResourcePointer)]
+    public dynamic? Unk00; //4D898080
+    [DestinyOffset(0x08), DestinyField(FieldType.ResourcePointer)]
+    public dynamic? Unk08; //4C898080
 }
 
 /*

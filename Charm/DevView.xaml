@@ -29,6 +29,31 @@
             VerticalAlignment="Center"
             Click="ExportDevMapButton_OnClick"
             Content="Export Dev Map" />
+        <Button
+            Grid.Row="1"
+            Grid.Column="0"
+            Width="296"
+            Height="50"
+            HorizontalAlignment="Center"
+            Click="SearchReferences_OnClick">
+            <TextBlock
+                FontSize="20"
+                Text="Find All References"
+                TextAlignment="Center" />
+        </Button>
+
+        <Button
+            Grid.Row="0"
+            Grid.Column="0"
+            Width="296"
+            Height="50"
+            HorizontalAlignment="Center"
+            Click="SearchReferences64_OnClick">
+            <TextBlock
+                FontSize="20"
+                Text="Find All References (Hash64)"
+                TextAlignment="Center" />
+        </Button>
 
         <TextBlock
             x:Name="HashLocation"

@@ -3,6 +3,7 @@ using Field.Entities;
 using Field.General;
 using Field.Strings;
 using Field.Investment;
+using Field.Models;
 
 namespace Field;
 
@@ -635,7 +636,9 @@ public struct D2Class_A53E8080
 [StructLayout(LayoutKind.Sequential, Size = 0x20)]
 public struct D2Class_B73B8080
 {
-
+	public DestinyHash Unk00;
+	[DestinyOffset(0x10)]
+	public Vector4 Unk10; //??
 }
 
 [StructLayout(LayoutKind.Sequential, Size = 0x20)]

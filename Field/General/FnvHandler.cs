@@ -65,6 +65,13 @@ public class FnvHandler
 		"right_shoulder",
 		"left_clavicle",
 		"right_clavicle",
+		//NPCs
+		"osiris",
+		"eramis",
+		"mithrax",
+		"mara sov",
+		"ana bray",
+		"rasputin"
 	};
 
 	public static void Initialise()

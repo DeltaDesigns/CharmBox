@@ -14,6 +14,10 @@ using Field.General;
 using Field.Models;
 using Field.Statics;
 using System.Linq;
+using System.Security.Policy;
+using System.Threading.Tasks;
+using System.Collections;
+using SharpDX.Direct3D11;
 
 namespace Charm;
 
@@ -21,6 +25,8 @@ public partial class DevView : UserControl
 {
     private static MainWindow _mainWindow = null;
     private FbxHandler _fbxHandler = null;
+    static object lockObject = new object();
+    private List<TagHash> _cachedTags = new List<TagHash>();
 
     public DevView()
     {
@@ -36,12 +42,21 @@ public partial class DevView : UserControl
     
     private void TagHashBoxKeydown(object sender, KeyEventArgs e)
     {
-        if (e.Key != Key.Return && e.Key != Key.H && e.Key != Key.R && e.Key != Key.E && e.Key != Key.L)
+        if (e.Key != Key.Return && e.Key != Key.H && e.Key != Key.R && e.Key != Key.E && e.Key != Key.L && e.Key != Key.S)
         {
             return;
         }
+        
         string strHash = TagHashBox.Text.Replace(" ", "");
         strHash = Regex.Replace(strHash, @"(\s+|r|h)", "");
+
+        if (strHash.Length >= 16 && e.Key == Key.S)
+        {
+            //985934379080548352
+            SearchBins64(UInt64.Parse(strHash, NumberStyles.Number));
+            return;
+        }
+
         if (strHash.Length == 16)
         {
             strHash = TagHash64Handler.GetTagHash64String(strHash);
@@ -51,7 +66,7 @@ public partial class DevView : UserControl
             TagHashBox.Text = "INVALID HASH";
             return;
         }
-
+        
         TagHash hash;
         if (strHash.Contains("-"))
         {
@@ -65,7 +80,7 @@ public partial class DevView : UserControl
             hash = new TagHash(strHash);
         }
         
-        if (!hash.IsValid())
+        if (!hash.IsValid() && strHash.Length != 4)
         {
             TagHashBox.Text = "INVALID HASH";
             return;
@@ -109,6 +124,20 @@ public partial class DevView : UserControl
                 else
                 {
                     TagHashBox.Text = $"NO MODEL";
+                }
+                break;
+            case Key.S:
+                if (strHash.Length == 4)
+                {
+                    var pkgid = Int32.Parse(strHash, NumberStyles.HexNumber);
+                    //PackageHandler.GetAllTagsWithTypes
+                    var tags = PackageHandler.GetTagsWithTypes(pkgid, 8, 0);
+                    Console.WriteLine($"Tags from {strHash} - {tags.Count}");
+                    Parallel.ForEach(tags, tag =>
+                    {
+                        SaveBin(tag);
+                    });
+                    TagHashBox.Text = $"Extracted .bins";
                 }
                 break;
         }
@@ -238,6 +267,160 @@ public partial class DevView : UserControl
         }.Start();
     }
 
+    private void SaveBin(TagHash hash)
+    {
+        lock (lockObject)
+        {
+            string savePath = ConfigHandler.GetExportSavePath() + "/temp";
+            if (!Directory.Exists(savePath))
+            {
+                Directory.CreateDirectory(savePath);
+            }
+            string path = $"{savePath}/{hash.GetPkgId().ToString("x4")}_{PackageHandler.GetEntryReference(hash)}_{hash.GetHashString()}.bin";
+            using (var fileStream = new FileStream(path, FileMode.Create))
+            {
+                using (var writer = new BinaryWriter(fileStream))
+                {
+                    byte[] data = new DestinyFile(hash).GetData();
+                    writer.Write(data);
+                }
+            }
+        }
+    }
+
+    public static void SearchRawData(TagHash tag, UInt32 searchValue) //Search for uint32 value from a provided taghash
+    {
+        byte[] byteArray = new DestinyFile(tag).GetData();
+        int bufferSize = sizeof(UInt32);
+        int bytesToProcess = byteArray.Length - bufferSize + 1;
+
+        for (int i = 0; i < bytesToProcess; i++)
+        {
+            UInt32 value = BitConverter.ToUInt32(byteArray, i);
+            if (value == searchValue)
+            {
+                Console.WriteLine($"{PackageHandler.GetEntryReference(tag)}_{tag.GetHashString()}: Match found at offset: 0x" + i.ToString("X"));
+            }
+        }
+        // Clear the byte array to free up memory
+        byteArray = null;
+    }
+
+    public static void SearchRawData64(TagHash tag, UInt64 searchValue)
+    {
+        byte[] byteArray = new DestinyFile(tag).GetData();
+        int bufferSize = sizeof(UInt64);
+        int bytesToProcess = byteArray.Length - bufferSize + 1;
+
+        for (int i = 0; i < bytesToProcess; i++)
+        {
+            UInt64 value = BitConverter.ToUInt64(byteArray, i);
+            if (value == searchValue)
+            {
+                Console.WriteLine($"{PackageHandler.GetEntryReference(tag)}_{tag.GetHashString()}: Match found at offset: 0x{i:X}");
+            }
+        }
+        // Clear the byte array to free up memory
+        byteArray = null;
+    }
+
+    public static void SearchBins64(UInt64 searchValue) //totally not from chatgpt
+    {
+        if(searchValue == 0)
+        {
+            Console.WriteLine("Search Value is 0");
+            return;
+        }
+        string savePath = ConfigHandler.GetExportSavePath() + "/temp";
+
+        string[] binFiles = Directory.GetFiles(savePath, "*.bin");
+        Console.WriteLine($"Searching for h64 in {savePath}");
+
+        foreach (string filePath in binFiles)
+        {
+
+            // Convert the search value to a byte array
+            byte[] searchBytes = BitConverter.GetBytes(searchValue);
+
+            // Read the binary file
+            using (FileStream fs = File.OpenRead(filePath))
+            {
+                byte[] buffer = new byte[searchBytes.Length];
+                int bytesRead;
+
+                while ((bytesRead = fs.Read(buffer, 0, buffer.Length)) > 0)
+                {
+                    // Compare the read bytes with the search bytes
+                    for (int i = 0; i < bytesRead - searchBytes.Length + 1; i++)
+                    {
+                        if (ByteArrayEquals(buffer, i, searchBytes))
+                        {
+                            // Match found, do something with the position or handle the match
+                            long position = fs.Position - buffer.Length + i;
+                            Console.WriteLine($"{filePath}");
+                            Console.WriteLine("Match found at position: " + position.ToString("X"));
+                        }
+                    }
+                }
+            }
+        }
+        Console.WriteLine("Search complete.");
+    }
+
+    public static void SearchBins32(UInt32 searchValue) //Search for uint32 values in .bins in the /temp/ folder
+    {
+        string savePath = ConfigHandler.GetExportSavePath() + "/temp";
+        int found = 0;
+        string[] binFiles = Directory.GetFiles(savePath, "*.bin");
+        Console.WriteLine($"Searching for {searchValue} in {savePath}");
+
+        foreach (string filePath in binFiles)
+        {
+            //Console.WriteLine("Searching in: " + filePath);
+            // Read the binary file
+            using (FileStream fs = File.OpenRead(filePath))
+            {
+                byte[] buffer = new byte[sizeof(Int32)];
+                int bytesRead;
+
+                long positionOffset = 0;
+
+                while ((bytesRead = fs.Read(buffer, 0, buffer.Length)) > 0)
+                {
+                    for (int i = 0; i < bytesRead - sizeof(UInt32) + 1; i++)
+                    {
+                        Int32 value = BitConverter.ToInt32(buffer, i);
+                        if (value == searchValue)
+                        {
+                            long position = positionOffset + fs.Position - buffer.Length + i;
+                            Console.WriteLine($"{filePath}");
+                            Console.WriteLine("Match found at offset: 0x" + position.ToString("X"));
+                            found++;
+                        }
+                    }
+                    positionOffset += bytesRead;
+                }
+            }
+        }
+        if(found == 0)
+        {
+            Console.WriteLine("Found 0 matches, trying h64...");
+            SearchBins64(TagHash64Handler.Get64From32(searchValue));
+        }    
+
+        Console.WriteLine("Search complete.");
+    }
+
+    public static bool ByteArrayEquals(byte[] array1, int startIndex, byte[] array2)
+    {
+        for (int i = 0; i < array2.Length; i++)
+        {
+            if (array1[startIndex + i] != array2[i])
+                return false;
+        }
+        return true;
+    }
+
     private void ExportDevMapButton_OnClick(object sender, RoutedEventArgs e)
     {
         // Not actually a map, but a list of assets that are good for testing
@@ -260,5 +443,110 @@ public partial class DevView : UserControl
         {
             StaticView.ExportStatic(new TagHash(asset), asset, EExportTypeFlag.Full, "devmap");
         }
+    }
+
+    private void SearchReferences_OnClick(object sender, RoutedEventArgs e)
+    {
+        string strHash = TagHashBox.Text.Replace(" ", "");
+        strHash = Regex.Replace(strHash, @"(\s+|r|h)", "");
+
+        if (strHash.Length == 16)
+        {
+            strHash = TagHash64Handler.GetTagHash64String(strHash);
+        }
+        if (strHash == "")
+        {
+            TagHashBox.Text = "INVALID HASH";
+            return;
+        }
+
+        TagHash hash;
+        if (strHash.Contains("-"))
+        {
+            var s = strHash.Split("-");
+            var pkgid = Int32.Parse(s[0], NumberStyles.HexNumber);
+            var entryindex = Int32.Parse(s[1], NumberStyles.HexNumber);
+            hash = new TagHash(PackageHandler.MakeHash(pkgid, entryindex));
+        }
+        else
+        {
+            hash = new TagHash(strHash);
+        }
+
+        if (!hash.IsValid() && strHash.Length != 4)
+        {
+            TagHashBox.Text = "INVALID HASH";
+            return;
+        }
+
+        Console.WriteLine($"Searching for {strHash}. This may take AWHILE...");
+
+        if (_cachedTags == null || _cachedTags.Count == 0)
+        {
+            _cachedTags = PackageHandler.GetAllTagsWithTypes(8, 0);
+            Console.WriteLine("Caching Tags");
+            PackageHandler.CacheHashDataList(_cachedTags.Select(x => x.Hash).ToArray());
+        }
+        Parallel.ForEach(_cachedTags, tag =>
+        {
+            SearchRawData(tag, hash.Hash);
+        });
+       
+        Console.WriteLine("Search Complete");
+    }
+
+    private void SearchReferences64_OnClick(object sender, RoutedEventArgs e)
+    {
+        string strHash = TagHashBox.Text.Replace(" ", "");
+        strHash = Regex.Replace(strHash, @"(\s+|r|h)", "");
+
+        if (strHash.Length == 16)
+        {
+            strHash = TagHash64Handler.GetTagHash64String(strHash);
+        }
+        if (strHash == "")
+        {
+            TagHashBox.Text = "INVALID HASH";
+            return;
+        }
+
+        TagHash hash;
+        if (strHash.Contains("-"))
+        {
+            var s = strHash.Split("-");
+            var pkgid = Int32.Parse(s[0], NumberStyles.HexNumber);
+            var entryindex = Int32.Parse(s[1], NumberStyles.HexNumber);
+            hash = new TagHash(PackageHandler.MakeHash(pkgid, entryindex));
+        }
+        else
+        {
+            hash = new TagHash(strHash);
+        }
+
+        if (!hash.IsValid() && strHash.Length != 4)
+        {
+            TagHashBox.Text = "INVALID HASH";
+            return;
+        }
+
+        var hash64 = TagHash64Handler.Get64From32(hash.Hash);
+        Console.WriteLine($"Searching for {strHash}. This may take AWHILE...");
+        if (hash64 == 0)
+        {
+            Console.WriteLine($"h64 is 0, not searching");
+            return;
+        }
+        if (_cachedTags == null || _cachedTags.Count == 0)
+        {
+            _cachedTags = PackageHandler.GetAllTagsWithTypes(8, 0);
+            Console.WriteLine("Caching Tags");
+            PackageHandler.CacheHashDataList(_cachedTags.Select(x => x.Hash).ToArray());
+        }
+        Parallel.ForEach(_cachedTags, tag =>
+        {
+            SearchRawData64(tag, hash64);
+        });
+       
+        Console.WriteLine("Search Complete");
     }
 }

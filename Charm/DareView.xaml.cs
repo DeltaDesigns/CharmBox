@@ -112,6 +112,7 @@ public partial class DareView : UserControl
                             ItemName = name,
                             ItemType = type,
                             ItemFlavorText = flavorText,
+                            ItemHash = kvp.Value.Hash.ToString(),
                             ImageSource = dw,
                             ImageHeight = 96,
                             ImageWidth = 96,
@@ -209,6 +210,7 @@ public class ApiItem
     public string ItemName { get; set; }
     public string ItemType { get; set; }
     public string ItemFlavorText { get; set; }
+    public string ItemHash { get; set; }
 	public double ImageWidth { get; set; }
     public double ImageHeight { get; set; }
     public System.Windows.Media.ImageSource ImageSource { get; set; }

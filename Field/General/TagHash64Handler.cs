@@ -59,6 +59,16 @@ public class TagHash64Handler
         return true;
     }
 
+    public static ulong Get64From32(uint hash)
+    {
+        foreach(var val in tagHash64Dict)
+        {
+            if(val.Value.Equals(hash))
+                return val.Key;
+        }
+        return 0;
+    }
+
     public static void Initialise()
     {
         DestinyFile.UnmanagedDictionary unmanagedDictionary = DllInitialiseTH64H(PackageHandler.GetExecutionDirectoryPtr());
