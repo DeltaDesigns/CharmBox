@@ -261,13 +261,13 @@ public partial class ActivityEntityView : UserControl
 
         Parallel.ForEach(maps, map =>
         {
-            string savePath = ConfigHandler.GetExportSavePath() + $"/Maps/{activity.Header.LocationName}/{PackageHandler.GetActivityName(activity.Hash)}/";
+            string savePath = ConfigHandler.GetExportSavePath() + $"/Maps/{activity.Header.LocationName}/{PackageHandler.GetActivityName(activity.Hash).Replace(".", "_")}/";
             if (!Directory.Exists(savePath))
                 Directory.CreateDirectory(savePath);
 
             FbxHandler dynamicHandler = new FbxHandler();
             dynamicHandler.InfoHandler.SetMeshName($"{activity.Hash}_{map.Hash}_ActivityEntities");
-            dynamicHandler.InfoHandler.AddType("Entities");
+            dynamicHandler.InfoHandler.AddType("ActivityEntities");
 
             foreach (var entry in map.Header.DataEntries)
             {
