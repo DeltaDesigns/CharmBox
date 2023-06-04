@@ -49,7 +49,7 @@ public struct D2Class_8E8E8080
 	[DestinyField(FieldType.TagHash)]
 	public Tag<D2Class_8C978080> Unk64;  // an entity thing
 	[DestinyField(FieldType.TagHash64)]
-	public Tag UnkActivity68; //8E8E8080, Tag for the ambient activity?
+	public Tag<D2Class_8E8E8080> UnkActivity68; //8E8E8080, Tag for the ambient activity?
 }
 
 [StructLayout(LayoutKind.Sequential, Size = 0x78)]
@@ -167,7 +167,7 @@ public struct D2Class_898E8080
     public long Unk08;
     [DestinyField(FieldType.ResourcePointer)]
     public dynamic? Unk10;  // 46938080 has dialogue table, 45938080 unk, 19978080 unk
-    [DestinyField(FieldType.TagHash)]
+    [DestinyOffset(0x18), DestinyField(FieldType.TagHash)]
     public Tag<D2Class_BE8E8080> Unk18;  // D2Class_898E8080 entity script stuff
 }
 

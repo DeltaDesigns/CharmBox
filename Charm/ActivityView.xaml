@@ -28,6 +28,9 @@
             <TabItem x:Name="PatrolsTab" Header="PATROLS">
                 <local:ActivityPatrolView x:Name="PatrolControl" />
             </TabItem>
+            <TabItem x:Name="EntitiesTab" Header="ACTIVITY ENTITIES">
+                <local:ActivityEntityView x:Name="ActivityEntityControl" />
+            </TabItem>
         </TabControl>
     </Grid>
 </UserControl>

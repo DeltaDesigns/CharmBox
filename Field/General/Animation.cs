@@ -558,6 +558,12 @@ public struct D2Class_E08B8080
 
 #region General
 
+[StructLayout(LayoutKind.Sequential, Size = 0x50)]
+public struct D2Class_478B8080
+{
+
+}
+
 [StructLayout(LayoutKind.Sequential, Size = 2)]
 public struct D2Class_0A008080
 {

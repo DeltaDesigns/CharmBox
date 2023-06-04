@@ -113,7 +113,8 @@ public class Source2Handler
 			//Use just the first texture for the diffuse
 			if (materialHeader.PSTextures.Count > 0)
 			{
-				vmat.AppendLine($"  TextureColor \"materials/Textures/{materialHeader.PSTextures[0].Texture.Hash}.png\"");
+				if(materialHeader.PSTextures[0].Texture is not null)
+					vmat.AppendLine($"  TextureColor \"materials/Textures/{materialHeader.PSTextures[0].Texture.Hash}.png\"");
 			}
 		}
 		else

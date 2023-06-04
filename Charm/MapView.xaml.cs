@@ -16,6 +16,7 @@ using Field.Statics;
 using Serilog;
 using HelixToolkit.SharpDX.Core.Model.Scene;
 using SharpDX.Direct3D9;
+using System.Security.Policy;
 
 namespace Charm;
 
@@ -42,13 +43,25 @@ public partial class MapView : UserControl
         InitializeComponent();
     }
 
-    public void LoadMap(TagHash tagHash, ELOD detailLevel)
+    public void LoadMap(TagHash tagHash, ELOD detailLevel, bool isActivityEntities = false)
     {
-        GetStaticMapData(tagHash, detailLevel);
-        // _mainWindow.SetNewestTabSelected();
+        if(isActivityEntities)
+        {
+            GetActivityEntityData(tagHash, detailLevel);
+        }
+        else
+        {
+            GetStaticMapData(tagHash, detailLevel);
+        }
     }
 
-	private void GetStaticMapData(TagHash tagHash, ELOD detailLevel)
+    private void GetActivityEntityData(TagHash tagHash, ELOD detailLevel)
+    {
+        Tag<D2Class_83988080> dataentry = PackageHandler.GetTag<D2Class_83988080>(tagHash);
+        SetEntityMapUI(dataentry, detailLevel);
+    }
+
+    private void GetStaticMapData(TagHash tagHash, ELOD detailLevel)
     {
         Tag<D2Class_07878080> tag = PackageHandler.GetTag<D2Class_07878080>(tagHash);
         StaticMapData staticMapData = ((D2Class_C96C8080)tag.Header.DataTables[1].DataTable.Header.DataEntries[0].DataResource).StaticMapParent.Header.StaticMap;
@@ -66,7 +79,18 @@ public partial class MapView : UserControl
         displayParts.Clear();
     }
 
-	public void LoadEntity(Entity entity, FbxHandler fbxHandler)
+    private void SetEntityMapUI(Tag<D2Class_83988080> dataentry, ELOD detailLevel)
+    {
+        var displayParts = MakeEntityDisplayParts(dataentry, detailLevel);
+        Dispatcher.Invoke(() =>
+        {
+            MainViewModel MVM = (MainViewModel)ModelView.UCModelView.Resources["MVM"];
+            MVM.SetChildren(displayParts);
+        });
+        displayParts.Clear();
+    }
+
+    public void LoadEntity(Entity entity, FbxHandler fbxHandler)
 	{
 		fbxHandler.Clear();
 		AddEntity(entity, ELOD.MostDetail, fbxHandler);
@@ -402,6 +426,30 @@ public partial class MapView : UserControl
                     displayParts.Add(displayPart);
                 }
 
+            }
+        });
+        return displayParts.ToList();
+    }
+
+    private List<MainViewModel.DisplayPart> MakeEntityDisplayParts(Tag<D2Class_83988080> dataentry, ELOD detailLevel)
+    {
+        ConcurrentBag<MainViewModel.DisplayPart> displayParts = new ConcurrentBag<MainViewModel.DisplayPart>();
+        Parallel.ForEach(dataentry.Header.DataEntries, c =>
+        {
+            if(c.Entity.HasGeometry())
+            {
+                var model = c.Entity;
+                var parts = model.Load(ELOD.MostDetail, true);
+
+                foreach (var part in parts)
+                {
+                    MainViewModel.DisplayPart displayPart = new MainViewModel.DisplayPart();
+                    displayPart.BasePart = part;
+                    displayPart.Translations.Add(c.Translation.ToVec3());
+                    displayPart.Rotations.Add(c.Rotation);
+                    displayPart.Scales.Add(new Vector3(c.Translation.W, c.Translation.W, c.Translation.W));
+                    displayParts.Add(displayPart);
+                }
             }
         });
         return displayParts.ToList();

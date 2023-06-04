@@ -14,10 +14,8 @@ using Field.General;
 using Field.Models;
 using Field.Statics;
 using System.Linq;
-using System.Security.Policy;
 using System.Threading.Tasks;
-using System.Collections;
-using SharpDX.Direct3D11;
+
 
 namespace Charm;
 
@@ -89,10 +87,14 @@ public partial class DevView : UserControl
         switch (e.Key)
         {
             case Key.L:
+                int type;
+                int subtype;
+                PackageHandler.GetEntryTypes(hash.Hash, out type, out subtype);
+
                 StringBuilder data = new StringBuilder();
                 data.AppendLine($"PKG: {PackageHandler.GetPackageName(hash.GetPkgId())}");
                 data.AppendLine($"PKG ID: {hash.GetPkgId()}");
-                data.AppendLine($"Entry Index: {hash.GetEntryIndex() }");
+                data.AppendLine($"Type/Subtype: {type}, {subtype}");
                 data.AppendLine($"Reference Hash: {hash.Hash}");
                 data.AppendLine($"Entry Reference: {PackageHandler.GetEntryReference(hash)}");
 
@@ -138,6 +140,20 @@ public partial class DevView : UserControl
                         SaveBin(tag);
                     });
                     TagHashBox.Text = $"Extracted .bins";
+                }
+                else
+                {
+                    if (_cachedTags == null || _cachedTags.Count == 0)
+                    {
+                        _cachedTags = PackageHandler.GetAllTagsWithTypes(16, 0);
+                        Console.WriteLine("Caching Tags");
+                        PackageHandler.CacheHashDataList(_cachedTags.Select(x => x.Hash).ToArray());
+                    }
+                    Parallel.ForEach(_cachedTags, tag =>
+                    {
+                        SearchRawData(tag, hash.Hash);
+                    });
+                    Console.WriteLine("Search Complete");
                 }
                 break;
         }
@@ -299,7 +315,10 @@ public partial class DevView : UserControl
             UInt32 value = BitConverter.ToUInt32(byteArray, i);
             if (value == searchValue)
             {
-                Console.WriteLine($"{PackageHandler.GetEntryReference(tag)}_{tag.GetHashString()}: Match found at offset: 0x" + i.ToString("X"));
+                int type;
+                int subtype;
+                PackageHandler.GetEntryTypes(tag.Hash, out type, out subtype);
+                Console.WriteLine($"{PackageHandler.GetEntryReference(tag)}_{tag.GetHashString()}: Match found at offset: 0x{i.ToString("X")} | Type {type}, Subtype {subtype}");
             }
         }
         // Clear the byte array to free up memory

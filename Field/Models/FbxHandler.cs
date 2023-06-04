@@ -734,9 +734,9 @@ public class FbxHandler
         }
     }
 
-    public void AddDynamicToScene(D2Class_85988080 points, string meshName, string savePath, bool bSaveShaders = false, bool bSaveCBuffers = false)
+    public void AddDynamicToScene(D2Class_85988080 points, TagHash entityHash, string savePath, bool bSaveShaders = false, bool bSaveCBuffers = false)
     {
-        Entity entity = PackageHandler.GetTag(typeof(Entity), points.Entity.Hash);
+        Entity entity = PackageHandler.GetTag(typeof(Entity), entityHash);
 
         if (!entity.HasGeometry())
         {

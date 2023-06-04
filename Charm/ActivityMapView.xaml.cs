@@ -56,24 +56,117 @@ public partial class ActivityMapView : UserControl
         //    Console.WriteLine(activity.Header.Unk20.Header.StringContainer.GetStringFromHash(ELanguage.English, a));
         //}
 
-        foreach(var a in activity.Header.Unk50)
-        {
-            foreach (var b in a.Unk18)
-            {
-                foreach (var c in b.UnkEntityReference.Header.Unk18.Header.EntityResources)
-                {
-                    Console.WriteLine($"{b.UnkEntityReference.Header.Unk18.Hash}");
-                    Console.WriteLine($"Unk08 {c.EntityResourceParent.Header.EntityResource.Header.Unk08}");
-                    Console.WriteLine($"Unk10 {c.EntityResourceParent.Header.EntityResource.Header.Unk10}");
-                    Console.WriteLine($"Unk18 {c.EntityResourceParent.Header.EntityResource.Header.Unk18}");
-                    if (c.EntityResourceParent.Header.EntityResource.Header.Unk18 is D2Class_D8928080 d)
-                    {
-                        Console.WriteLine($"{d.Unk84.Hash}");
-                    }
-                }
-            }
-        }
-        
+        //string savePath = ConfigHandler.GetExportSavePath() + $"/Maps/{activity.Header.LocationName}/";
+        //FbxHandler dynamicHandler = new FbxHandler();
+        //dynamicHandler.InfoHandler.SetMeshName($"{activity.Hash}_Dynamics");
+        //dynamicHandler.InfoHandler.AddType("Dynamics");
+       
+        //foreach(var a in activity.Header.Unk50)
+        //{
+        //    foreach (var b in a.Unk18)
+        //    {
+        //        foreach (var c in b.UnkEntityReference.Header.Unk18.Header.EntityResources)
+        //        {
+        //            if (c.EntityResourceParent.Header.EntityResource.Header.Unk18 is D2Class_EF8C8080 tag)
+        //            {
+        //                if (tag.Unk58 is null)
+        //                    continue;
+        //                foreach (var d in tag.Unk58.Header.DataEntries)
+        //                {
+        //                    if (d.Entity.HasGeometry())
+        //                    {
+        //                        Entity ent = new Entity(d.Entity.Hash, false);
+        //                        Console.WriteLine($"{d.Entity.Hash}");
+        //                        if (ent.Header.EntityResources is null)
+        //                            continue;
+        //                        foreach (var e in ent.Header.EntityResources)
+        //                        {
+        //                            if (e.ResourceHash.Header.Unk18 is D2Class_0E848080 f)
+        //                            {
+        //                                foreach (var g in f.Unk88)
+        //                                {
+        //                                    foreach (var h in g.Unk08)
+        //                                    {
+        //                                        Console.WriteLine($"-{h.Unk08.Hash}");
+        //                                        Entity ent2 = new Entity(h.Unk08.Hash, false);
+        //                                        if (ent2.Header.EntityResources is null)
+        //                                            continue;
+                                                        
+        //                                        foreach (var e2 in ent2.Header.EntityResources)
+        //                                        {
+        //                                            if (e2.ResourceHash.Header.Unk18 is D2Class_0E848080 f2)
+        //                                            {
+        //                                                foreach (var g2 in f2.Unk88)
+        //                                                {
+        //                                                    foreach (var h2 in g2.Unk08)
+        //                                                    {
+        //                                                        Console.WriteLine($"--{h2.Unk08.Hash}");
+        //                                                    }
+        //                                                }
+        //                                            }
+        //                                        } 
+        //                                    }
+        //                                }
+        //                            }    
+        //                        }
+        //                        //dynamicHandler.AddDynamicToScene(d, d.Entity.Hash, savePath, ConfigHandler.GetUnrealInteropEnabled() || ConfigHandler.GetS2ShaderExportEnabled(), ConfigHandler.GetSaveCBuffersEnabled());
+        //                    }
+        //                }
+        //            }
+        //            if (c.EntityResourceParent.Header.EntityResource.Header.Unk18 is D2Class_D8928080 tag_2)
+        //            {
+        //                if (tag_2.Unk84 is not null)
+        //                {
+        //                    foreach (var d in tag_2.Unk84.Header.DataEntries)
+        //                    {
+        //                        if (d.Entity.HasGeometry())
+        //                        {
+        //                            Entity ent = new Entity(d.Entity.Hash, false);
+        //                            Console.WriteLine($"{d.Entity.Hash}");
+        //                            if (ent.Header.EntityResources is null)
+        //                                continue;
+        //                            foreach (var e in ent.Header.EntityResources)
+        //                            {
+        //                                if (e.ResourceHash.Header.Unk18 is D2Class_0E848080 f)
+        //                                {
+        //                                    foreach (var g in f.Unk88)
+        //                                    {
+        //                                        foreach (var h in g.Unk08)
+        //                                        {
+        //                                            Console.WriteLine($"-{h.Unk08.Hash}");
+        //                                            Entity ent2 = new Entity(h.Unk08.Hash, false);
+        //                                            if (ent2.Header.EntityResources is null)
+        //                                                continue;
+
+        //                                            foreach (var e2 in ent2.Header.EntityResources)
+        //                                            {
+        //                                                if (e2.ResourceHash.Header.Unk18 is D2Class_0E848080 f2)
+        //                                                {
+        //                                                    foreach (var g2 in f2.Unk88)
+        //                                                    {
+        //                                                        foreach (var h2 in g2.Unk08)
+        //                                                        {
+        //                                                            Console.WriteLine($"--{h2.Unk08.Hash}");
+        //                                                        }
+        //                                                    }
+        //                                                }
+        //                                            }
+        //                                        }
+        //                                    }
+        //                                }
+        //                            }
+        //                            //dynamicHandler.AddDynamicToScene(d, d.Entity.Hash, savePath, ConfigHandler.GetUnrealInteropEnabled() || ConfigHandler.GetS2ShaderExportEnabled(), ConfigHandler.GetSaveCBuffersEnabled());
+        //                        }
+        //                    }
+        //                }
+        //            }
+        //        }
+        //    }
+        //} 
+
+        //dynamicHandler.ExportScene($"{savePath}/{activity.Hash}_Dynamics.fbx");
+        //dynamicHandler.Dispose();
+
         //Console.WriteLine($"Events {tag2.Header.Events?.Hash}");
         //if (tag2.Header.Events?.Header.Unk08 is not null)
         //    foreach (var a in tag2.Header.Events?.Header.Unk08)
