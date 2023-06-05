@@ -20,7 +20,7 @@ namespace Charm;
 public partial class ActivityEntityView : UserControl
 {
     private readonly ILogger _activityLog = Log.ForContext<ActivityEntityView>();
-    private string _activeBubble = "";
+    private Activity _activeActivity;
 	private FbxHandler _globalFbxHandler = null;
 
 	public ActivityEntityView()
@@ -60,7 +60,7 @@ public partial class ActivityEntityView : UserControl
     {
         string tag = (sender as Button).Tag as string;
         Activity activity = PackageHandler.GetTag(typeof(Activity), new TagHash(tag));
-
+        _activeActivity = activity;
         ConcurrentBag<DisplayResource> items = new ConcurrentBag<DisplayResource>();
 
         Parallel.ForEach(activity.Header.Unk50, a =>
@@ -80,7 +80,7 @@ public partial class ActivityEntityView : UserControl
                                     {
                                         items.Add(new DisplayResource
                                         {
-                                            Name = $"{tag.Unk84.Hash}: {tag.Unk84.Header.DataEntries.Count}",
+                                            Name = $"DataTable {tag.Unk84.Hash}: {tag.Unk84.Header.DataEntries.Count} Entry",
                                             Hash = tag.Unk84.Hash
                                         });
                                     }
@@ -88,7 +88,7 @@ public partial class ActivityEntityView : UserControl
                                     {
                                         items.Add(new DisplayResource
                                         {
-                                            Name = $"{tag.Unk84.Hash}: {tag.Unk84.Header.DataEntries.Count}",
+                                            Name = $"DataTable {tag.Unk84.Hash}: {tag.Unk84.Header.DataEntries.Count} Entries",
                                             Hash = tag.Unk84.Hash
                                         });
                                     } 
@@ -103,7 +103,7 @@ public partial class ActivityEntityView : UserControl
                                     {
                                         items.Add(new DisplayResource
                                         {
-                                            Name = $"{tag2.Unk58.Hash}: {tag2.Unk58.Header.DataEntries.Count}",
+                                            Name = $"DataTable {tag2.Unk58.Hash}: {tag2.Unk58.Header.DataEntries.Count} Entry",
                                             Hash = tag2.Unk58.Hash,
                                             Count = tag2.Unk58.Header.DataEntries.Count
                                         });
@@ -112,7 +112,7 @@ public partial class ActivityEntityView : UserControl
                                     {
                                         items.Add(new DisplayResource
                                         {
-                                            Name = $"{tag2.Unk58.Hash}: {tag2.Unk58.Header.DataEntries.Count}",
+                                            Name = $"DataTable {tag2.Unk58.Hash}: {tag2.Unk58.Header.DataEntries.Count} Entries",
                                             Hash = tag2.Unk58.Hash,
                                             Count = tag2.Unk58.Header.DataEntries.Count
                                         });
@@ -225,8 +225,8 @@ public partial class ActivityEntityView : UserControl
 
     public async void ExportFull(ExportInfo info)
     {
-        Activity activity = PackageHandler.GetTag(typeof(Activity), new TagHash(info.Hash));
-        _activityLog.Debug($"Exporting activity entity data name: {PackageHandler.GetActivityName(activity.Hash)}, hash: {activity.Hash}");
+        //Activity activity = PackageHandler.GetTag(typeof(Activity), new TagHash(_activeActivity.Hash));
+        _activityLog.Debug($"Exporting activity entity data name: {PackageHandler.GetActivityName(_activeActivity.Hash)}, hash: {_activeActivity.Hash}");
         Dispatcher.Invoke(() =>
         {
             MapControl.Visibility = Visibility.Hidden;
@@ -261,12 +261,12 @@ public partial class ActivityEntityView : UserControl
 
         Parallel.ForEach(maps, map =>
         {
-            string savePath = ConfigHandler.GetExportSavePath() + $"/Maps/{activity.Header.LocationName}/{PackageHandler.GetActivityName(activity.Hash).Replace(".", "_")}/";
+            string savePath = ConfigHandler.GetExportSavePath() + $"/Maps/{_activeActivity.Header.LocationName}/{PackageHandler.GetActivityName(_activeActivity.Hash).Replace(".", "_")}/";
             if (!Directory.Exists(savePath))
                 Directory.CreateDirectory(savePath);
 
             FbxHandler dynamicHandler = new FbxHandler();
-            dynamicHandler.InfoHandler.SetMeshName($"{activity.Hash}_{map.Hash}_ActivityEntities");
+            dynamicHandler.InfoHandler.SetMeshName($"{_activeActivity.Hash}_{map.Hash}_ActivityEntities");
             dynamicHandler.InfoHandler.AddType("ActivityEntities");
 
             foreach (var entry in map.Header.DataEntries)
@@ -310,7 +310,7 @@ public partial class ActivityEntityView : UserControl
                 }
             }
 
-            dynamicHandler.ExportScene($"{savePath}/{activity.Hash}_{map.Hash}_ActivityEntities.fbx");
+            dynamicHandler.ExportScene($"{savePath}/{_activeActivity.Hash}_{map.Hash}_ActivityEntities.fbx");
             dynamicHandler.Dispose();
             MainWindow.Progress.CompleteStage();
         });
@@ -319,7 +319,7 @@ public partial class ActivityEntityView : UserControl
         {
             MapControl.Visibility = Visibility.Visible;
         });
-        _activityLog.Information($"Exported activity data name: {PackageHandler.GetActivityName(activity.Hash)}, hash: {activity.Hash}");
+        _activityLog.Information($"Exported activity data name: {PackageHandler.GetActivityName(_activeActivity.Hash)}, hash: {_activeActivity.Hash}");
         MessageBox.Show("Activity map data exported completed.");
     }
 

@@ -60,8 +60,8 @@ public partial class ActivityMapView : UserControl
         //FbxHandler dynamicHandler = new FbxHandler();
         //dynamicHandler.InfoHandler.SetMeshName($"{activity.Hash}_Dynamics");
         //dynamicHandler.InfoHandler.AddType("Dynamics");
-       
-        //foreach(var a in activity.Header.Unk50)
+
+        //foreach (var a in activity.Header.Unk50)
         //{
         //    foreach (var b in a.Unk18)
         //    {
@@ -75,40 +75,40 @@ public partial class ActivityMapView : UserControl
         //                {
         //                    if (d.Entity.HasGeometry())
         //                    {
-        //                        Entity ent = new Entity(d.Entity.Hash, false);
-        //                        Console.WriteLine($"{d.Entity.Hash}");
-        //                        if (ent.Header.EntityResources is null)
-        //                            continue;
-        //                        foreach (var e in ent.Header.EntityResources)
-        //                        {
-        //                            if (e.ResourceHash.Header.Unk18 is D2Class_0E848080 f)
-        //                            {
-        //                                foreach (var g in f.Unk88)
-        //                                {
-        //                                    foreach (var h in g.Unk08)
-        //                                    {
-        //                                        Console.WriteLine($"-{h.Unk08.Hash}");
-        //                                        Entity ent2 = new Entity(h.Unk08.Hash, false);
-        //                                        if (ent2.Header.EntityResources is null)
-        //                                            continue;
-                                                        
-        //                                        foreach (var e2 in ent2.Header.EntityResources)
-        //                                        {
-        //                                            if (e2.ResourceHash.Header.Unk18 is D2Class_0E848080 f2)
-        //                                            {
-        //                                                foreach (var g2 in f2.Unk88)
-        //                                                {
-        //                                                    foreach (var h2 in g2.Unk08)
-        //                                                    {
-        //                                                        Console.WriteLine($"--{h2.Unk08.Hash}");
-        //                                                    }
-        //                                                }
-        //                                            }
-        //                                        } 
-        //                                    }
-        //                                }
-        //                            }    
-        //                        }
+        //                        //Entity ent = new Entity(d.Entity.Hash, false);
+        //                        //Console.WriteLine($"{d.Entity.Hash}");
+        //                        //if (ent.Header.EntityResources is null)
+        //                        //    continue;
+        //                        //foreach (var e in ent.Header.EntityResources)
+        //                        //{
+        //                        //    if (e.ResourceHash.Header.Unk18 is D2Class_0E848080 f)
+        //                        //    {
+        //                        //        foreach (var g in f.Unk88)
+        //                        //        {
+        //                        //            foreach (var h in g.Unk08)
+        //                        //            {
+        //                        //                Console.WriteLine($"-{h.Unk08.Hash}");
+        //                        //                Entity ent2 = new Entity(h.Unk08.Hash, false);
+        //                        //                if (ent2.Header.EntityResources is null)
+        //                        //                    continue;
+
+        //                        //                foreach (var e2 in ent2.Header.EntityResources)
+        //                        //                {
+        //                        //                    if (e2.ResourceHash.Header.Unk18 is D2Class_0E848080 f2)
+        //                        //                    {
+        //                        //                        foreach (var g2 in f2.Unk88)
+        //                        //                        {
+        //                        //                            foreach (var h2 in g2.Unk08)
+        //                        //                            {
+        //                        //                                Console.WriteLine($"--{h2.Unk08.Hash}");
+        //                        //                            }
+        //                        //                        }
+        //                        //                    }
+        //                        //                }
+        //                        //            }
+        //                        //        }
+        //                        //    }
+        //                        //}
         //                        //dynamicHandler.AddDynamicToScene(d, d.Entity.Hash, savePath, ConfigHandler.GetUnrealInteropEnabled() || ConfigHandler.GetS2ShaderExportEnabled(), ConfigHandler.GetSaveCBuffersEnabled());
         //                    }
         //                }
@@ -119,42 +119,47 @@ public partial class ActivityMapView : UserControl
         //                {
         //                    foreach (var d in tag_2.Unk84.Header.DataEntries)
         //                    {
+        //                        if (d.Entity.Hash.ToString() == "545DBC80")
+        //                        {
+        //                            Console.WriteLine("yes2");
+        //                            dynamicHandler.AddDynamicToScene(d, d.Entity.Hash, savePath, ConfigHandler.GetUnrealInteropEnabled() || ConfigHandler.GetS2ShaderExportEnabled(), ConfigHandler.GetSaveCBuffersEnabled());
+        //                        }
         //                        if (d.Entity.HasGeometry())
         //                        {
-        //                            Entity ent = new Entity(d.Entity.Hash, false);
-        //                            Console.WriteLine($"{d.Entity.Hash}");
-        //                            if (ent.Header.EntityResources is null)
-        //                                continue;
-        //                            foreach (var e in ent.Header.EntityResources)
-        //                            {
-        //                                if (e.ResourceHash.Header.Unk18 is D2Class_0E848080 f)
-        //                                {
-        //                                    foreach (var g in f.Unk88)
-        //                                    {
-        //                                        foreach (var h in g.Unk08)
-        //                                        {
-        //                                            Console.WriteLine($"-{h.Unk08.Hash}");
-        //                                            Entity ent2 = new Entity(h.Unk08.Hash, false);
-        //                                            if (ent2.Header.EntityResources is null)
-        //                                                continue;
+        //                            //Entity ent = new Entity(d.Entity.Hash, false);
+        //                            //Console.WriteLine($"{d.Entity.Hash}");
+        //                            //if (ent.Header.EntityResources is null)
+        //                            //    continue;
+        //                            //foreach (var e in ent.Header.EntityResources)
+        //                            //{
+        //                            //    if (e.ResourceHash.Header.Unk18 is D2Class_0E848080 f)
+        //                            //    {
+        //                            //        foreach (var g in f.Unk88)
+        //                            //        {
+        //                            //            foreach (var h in g.Unk08)
+        //                            //            {
+        //                            //                Console.WriteLine($"-{h.Unk08.Hash}");
+        //                            //                Entity ent2 = new Entity(h.Unk08.Hash, false);
+        //                            //                if (ent2.Header.EntityResources is null)
+        //                            //                    continue;
 
-        //                                            foreach (var e2 in ent2.Header.EntityResources)
-        //                                            {
-        //                                                if (e2.ResourceHash.Header.Unk18 is D2Class_0E848080 f2)
-        //                                                {
-        //                                                    foreach (var g2 in f2.Unk88)
-        //                                                    {
-        //                                                        foreach (var h2 in g2.Unk08)
-        //                                                        {
-        //                                                            Console.WriteLine($"--{h2.Unk08.Hash}");
-        //                                                        }
-        //                                                    }
-        //                                                }
-        //                                            }
-        //                                        }
-        //                                    }
-        //                                }
-        //                            }
+        //                            //                foreach (var e2 in ent2.Header.EntityResources)
+        //                            //                {
+        //                            //                    if (e2.ResourceHash.Header.Unk18 is D2Class_0E848080 f2)
+        //                            //                    {
+        //                            //                        foreach (var g2 in f2.Unk88)
+        //                            //                        {
+        //                            //                            foreach (var h2 in g2.Unk08)
+        //                            //                            {
+        //                            //                                Console.WriteLine($"--{h2.Unk08.Hash}");
+        //                            //                            }
+        //                            //                        }
+        //                            //                    }
+        //                            //                }
+        //                            //            }
+        //                            //        }
+        //                            //    }
+        //                            //}
         //                            //dynamicHandler.AddDynamicToScene(d, d.Entity.Hash, savePath, ConfigHandler.GetUnrealInteropEnabled() || ConfigHandler.GetS2ShaderExportEnabled(), ConfigHandler.GetSaveCBuffersEnabled());
         //                        }
         //                    }
@@ -162,7 +167,7 @@ public partial class ActivityMapView : UserControl
         //            }
         //        }
         //    }
-        //} 
+        //}
 
         //dynamicHandler.ExportScene($"{savePath}/{activity.Hash}_Dynamics.fbx");
         //dynamicHandler.Dispose();

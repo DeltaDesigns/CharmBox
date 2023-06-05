@@ -549,7 +549,7 @@ public partial class DevView : UserControl
         }
 
         var hash64 = TagHash64Handler.Get64From32(hash.Hash);
-        Console.WriteLine($"Searching for {strHash}. This may take AWHILE...");
+        Console.WriteLine($"Searching for {strHash} ({hash64}). This may take AWHILE...");
         if (hash64 == 0)
         {
             Console.WriteLine($"h64 is 0, not searching");

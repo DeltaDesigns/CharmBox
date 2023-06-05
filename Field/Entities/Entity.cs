@@ -125,33 +125,37 @@ public class Entity : Tag
     }
 
     public bool HasGeometry() //yoinked from LoadEntityList in TagListView
-    { 
+    {
+        Entity tempEnt = new Entity(Hash); //really bad for performance but screw it
+        return tempEnt.Model != null;
+
         // Check the entity has geometry
-        bool bHasGeometry = false;
-        using (var handle = GetHandle())//new Tag(PackageHandler.GetTag(typeof(Entity), ent.Hash)).GetHandle())
-        {
-            handle.BaseStream.Seek(8, SeekOrigin.Begin);
-            int resourceCount = handle.ReadInt32();
-            if (resourceCount > 2)
-            {
-                handle.BaseStream.Seek(0x10, SeekOrigin.Begin);
-                int resourcesOffset = handle.ReadInt32() + 0x20;
-                for (int i = 0; i < 2; i++)
-                {
-                    handle.BaseStream.Seek(resourcesOffset + i * 0xC, SeekOrigin.Begin);
-                    using (var handle2 = new Tag(new TagHash(handle.ReadUInt32())).GetHandle())
-                    {
-                        handle2.BaseStream.Seek(0x10, SeekOrigin.Begin);
-                        int checkOffset = handle2.ReadInt32() + 0x10 - 4;
-                        handle2.BaseStream.Seek(checkOffset, SeekOrigin.Begin);
-                        if (handle2.ReadUInt32() == 0x80806d8a)
-                        {
-                            bHasGeometry = true;
-                        }
-                    }
-                }
-            }
-        }
-        return bHasGeometry;
+        //bool bHasGeometry = false;
+        //using (var handle = GetHandle()) //This isnt actually accurate, misses a bunch
+        //{
+        //    handle.BaseStream.Seek(8, SeekOrigin.Begin);
+        //    int resourceCount = handle.ReadInt32();
+        //    if (resourceCount >= 2)
+        //    {
+        //        handle.BaseStream.Seek(0x10, SeekOrigin.Begin);
+        //        int resourcesOffset = handle.ReadInt32() + 0x20;
+        //        for (int i = 0; i < 2; i++)
+        //        {
+        //            handle.BaseStream.Seek(resourcesOffset + i * 0xC, SeekOrigin.Begin);
+        //            Console.WriteLine($"{Hash} {resourcesOffset + i * 0xC}");
+        //            using (var handle2 = new Tag(new TagHash(handle.ReadUInt32())).GetHandle())
+        //            {
+        //                handle2.BaseStream.Seek(0x10, SeekOrigin.Begin);
+        //                int checkOffset = handle2.ReadInt32() + 0x10 - 4;
+        //                handle2.BaseStream.Seek(checkOffset, SeekOrigin.Begin);
+        //                if (handle2.ReadUInt32() == 0x80806d8a)
+        //                {
+        //                    bHasGeometry = true;
+        //                }
+        //            }
+        //        }
+        //    }
+        //}
+        //return bHasGeometry;
     }
 }
