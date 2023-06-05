@@ -76,7 +76,7 @@ public partial class ActivityEntityView : UserControl
                             if (tag.Unk84 is not null)
                                 if (tag.Unk84.Header.DataEntries.Count > 0)
                                 {
-                                    if (tag.Unk84.Header.DataEntries.Count == 1 && tag.Unk84.Header.DataEntries[0].Entity.HasGeometry())
+                                    if (tag.Unk84.Header.DataEntries.Count == 1 && tag.Unk84.Header.DataEntries[0].Entity.HasGeometry()) //Todo combine everything with 1 entry into one main entry
                                     {
                                         items.Add(new DisplayResource
                                         {
