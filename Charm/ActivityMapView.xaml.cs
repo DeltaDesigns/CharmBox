@@ -13,6 +13,7 @@ using Serilog;
 using Field.Models;
 using System.IO;
 using Internal.Fbx;
+using System.Windows.Markup;
 
 namespace Charm;
 
@@ -243,7 +244,7 @@ public partial class ActivityMapView : UserControl
     {  
         ConcurrentBag<DisplayStaticMap> items = new ConcurrentBag<DisplayStaticMap>();
         Parallel.ForEach(bubbleMaps.Header.MapResources, m =>
-        {  
+        { 
             if (m.MapResource.Header.DataTables.Count > 1)
             {
                 if (m.MapResource.Header.DataTables[1].DataTable.Header.DataEntries.Count > 0)
@@ -254,7 +255,40 @@ public partial class ActivityMapView : UserControl
                         Hash = m.MapResource.Hash,
                         Name = $"{m.MapResource.Hash}: {tag.Header.Instances.Count} instances, {tag.Header.Statics.Count} uniques",
                         Instances = tag.Header.Instances.Count
-                    });     
+                    });
+                }
+            }
+        });
+        Parallel.ForEach(bubbleMaps.Header.MapResources, m => //Need to do this after the main static maps have been added so we can get the map ambient entities that arent in the static maps
+        {
+            if (m.MapResource.Header.DataTables.Count > 0)
+            {
+                foreach (var a in m.MapResource.Header.DataTables)
+                {
+                    foreach (var b in a.DataTable.Header.DataEntries)
+                    {
+                        if (b.DataResource is not null && b.DataResource is not D2Class_C96C8080)
+                        {
+                            if (!items.Contains(new DisplayStaticMap { Hash = m.MapResource.Hash }))
+                            {
+                                m.MapResource.Header.DataTables.ForEach(data => //Why do I gotta loop through again for it to work?
+                                {
+                                    data.DataTable.Header.DataEntries.ForEach(entry =>
+                                    {
+                                        if(entry.Entity.HasGeometry())
+                                        {
+                                            items.Add(new DisplayStaticMap
+                                            {
+                                                Hash = m.MapResource.Hash,
+                                                Name = $"{m.MapResource.Hash}: Misc Entities",
+                                                Instances = 0
+                                            });
+                                        }
+                                    });
+                                });
+                            }
+                        }
+                    }
                 }
             }
         });
@@ -273,15 +307,7 @@ public partial class ActivityMapView : UserControl
         Parallel.ForEach(map.Header.DataTables, data =>
         {
             data.DataTable.Header.DataEntries.ForEach(entry =>
-            {
-                //if(entry.DataResource is not null)
-                //{
-                //    if (entry.DataResource is D2Class_55698080 a)
-                //    {
-                //        Console.WriteLine($"{a.Unk10.Header.Unk7C}");
-                //    }
-                //}
-
+            {  
                 //if (entry.DataResource is D2Class_6D668080 a) //spatial audio
                 //{ 
                 //    if (a.AudioContainer is not null)
@@ -312,10 +338,11 @@ public partial class ActivityMapView : UserControl
             });
         });
         var sortedItems = new List<DisplayDynamicMap>(items);
-        sortedItems.Sort((a, b) => b.Models.CompareTo(a.Models));
+        sortedItems.Sort((a, b) => b.Hash.CompareTo(a.Hash));
         sortedItems.Insert(0, new DisplayDynamicMap
         {
-            Name = "Select all"
+            Name = "Select all",
+            Parent = map
         });
         DynamicsList.ItemsSource = sortedItems;
     }
@@ -398,7 +425,7 @@ public partial class ActivityMapView : UserControl
         var lod = MapControl.ModelView.GetSelectedLod();
         if (dc.Name == "Select all")
         {
-            var items = StaticList.Items.Cast<DisplayStaticMap>().Where(x => x.Name != "Select all");
+            var items = StaticList.Items.Cast<DisplayStaticMap>().Where(x => x.Name != "Select all").Where(x => !x.Name.Contains("Misc Entities"));
             List<string> mapStages = items.Select(x => $"loading to ui: {x.Hash}").ToList();
             if (mapStages.Count == 0)
             {
@@ -418,6 +445,9 @@ public partial class ActivityMapView : UserControl
         }
         else
         {
+            if (dc.Name.Contains("Misc Entities"))
+                return;
+
             var tagHash = new TagHash(dc.Hash);
             MainWindow.Progress.SetProgressStages(new List<string> {tagHash});
             // cant do this rn bc of lod problems with dupes
@@ -545,24 +575,24 @@ public partial class ActivityMapView : UserControl
 		var lod = MapControl.ModelView.GetSelectedLod();
 		if (dc.Name == "Select all")
 		{
-			//var items = StaticList.Items.Cast<DisplayStaticMap>().Where(x => x.Name != "Select all");
-			//List<string> mapStages = items.Select(x => $"loading to ui: {x.Hash}").ToList();
-			//if (mapStages.Count == 0)
-			//{
-			//	_activityLog.Error("No maps selected for export.");
-			//	MessageBox.Show("No maps selected for export.");
-			//	return;
-			//}
-			//MainWindow.Progress.SetProgressStages(mapStages);
-			//await Task.Run(() =>
-			//{
-			//	foreach (DisplayStaticMap item in items)
-			//	{
-			//		MapControl.LoadMap(new TagHash(item.Hash), lod);
-			//		MainWindow.Progress.CompleteStage();
-			//	}
-			//});
-		}
+            var items = dc.Parent.Header.DataTables;
+            List<string> mapStages = items.Select(x => $"loading to ui {x.DataTable.Hash}").ToList();
+            if (mapStages.Count == 0)
+            {
+                _activityLog.Error("No maps selected for export.");
+                MessageBox.Show("No maps selected for export.");
+                return;
+            }
+            MainWindow.Progress.SetProgressStages(mapStages);
+            await Task.Run(() =>
+            {
+                foreach (var datatable in dc.Parent.Header.DataTables)
+                {
+                    MapControl.LoadMap(new TagHash(datatable.DataTable.Hash), lod, true);
+                    MainWindow.Progress.CompleteStage();
+                }
+            });
+        }
 		else
 		{
 			var tagHash = new TagHash(dc.Hash);
@@ -598,13 +628,24 @@ public class DisplayStaticMap
     public int Instances { get; set; }
     
     public bool Selected { get; set; }
+
+    public override bool Equals(object obj)
+    {
+        var other = obj as DisplayStaticMap;
+        return other != null && Hash == other.Hash;
+    }
+
+    public override int GetHashCode()
+    {
+        return Hash?.GetHashCode() ?? 0;
+    }
 }
 
 public class DisplayDynamicMap
 {
     public string Name { get; set; }
     public string Hash { get; set; }
-    public int Models { get; set; }
+    public Tag<D2Class_07878080> Parent { get; set; }
     
     public bool Selected { get; set; }
 

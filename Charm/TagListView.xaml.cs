@@ -1983,6 +1983,9 @@ public partial class TagListView : UserControl
         Parallel.ForEach(((D2Class_F8258080)entity.AnimationGroup.Header.Unk18).AnimationGroup.Header.Animations, entry =>
         {
             Animation anim = entry.Animation;
+            if (anim is null)
+                return;
+
             anim.ParseTag();
 
             string typeName = anim.Header.AnimatedBoneData?.GetType().Name;

@@ -16,48 +16,142 @@
             <ColumnDefinition Width="100*" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="100*" />
-            <RowDefinition Height="30*" />
-            <RowDefinition Height="100*" />
+            <RowDefinition Height="302*" />
+            <RowDefinition Height="94*" />
+            <RowDefinition Height="94*" />
+            <RowDefinition Height="94*" />
+            <RowDefinition Height="102*" />
         </Grid.RowDefinitions>
         <!--  36FEA180 DEE9A180  -->
         <!-- <TextBox Grid.Row="1" Grid.Column="1" TextAlignment="Center" FontSize="96" Text="2A00AA80" KeyDown="TagHashBoxKeydown" x:Name="TagHashBox"/> -->
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="100*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="302*" />
+                <RowDefinition Height="302*" />
+                <RowDefinition Height="302*" />
+                <RowDefinition Height="302*" />
+            </Grid.RowDefinitions>
+
+            <Button
+                Grid.Row="0"
+                Width="296"
+                Margin="0,0,0,0"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Click="SearchReferences_OnClick">
+                <TextBlock
+                    FontSize="20"
+                    Text="Find All References"
+                    TextAlignment="Center" />
+            </Button>
+
+            <Button
+                Grid.Row="1"
+                Grid.Column="0"
+                Width="296"
+                Margin="0,0,0,0"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Click="SearchReferences64_OnClick">
+                <TextBlock
+                    FontSize="20"
+                    Text="Find All References (Hash64)"
+                    TextAlignment="Center" />
+            </Button>
+
+            <Button
+                Grid.Row="2"
+                Width="296"
+                Margin="0,0,0,0"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Click="SearchReferencesBins_OnClick">
+                <TextBlock
+                    FontSize="20"
+                    Text="Find References In .bins"
+                    TextAlignment="Center" />
+            </Button>
+
+            <Button
+                Grid.Row="3"
+                Grid.Column="0"
+                Width="296"
+                Margin="0,0,0,0"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Click="SearchReferences64Bins_OnClick">
+                <TextBlock
+                    FontSize="20"
+                    Text="Find References In .bins (Hash64)"
+                    TextAlignment="Center" />
+            </Button>
+
+        </Grid>
+
+        <Grid Grid.Row="1" Grid.Column="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="100*" />
+                <ColumnDefinition Width="100*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="49*" />
+                <RowDefinition Height="99*" />
+            </Grid.RowDefinitions>
+            <TextBlock
+                Width="52"
+                Height="33"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                FontSize="25"
+                Text="Type" />
+            <TextBox
+                x:Name="Type"
+                Grid.Row="1"
+                Height="50"
+                Margin="70,0,70,0"
+                VerticalAlignment="Top"
+                FontSize="32"
+                Text="8"
+                TextAlignment="Center" />
+
+            <TextBlock
+                Grid.Column="1"
+                Width="94"
+                Height="33"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                FontSize="25"
+                Text="SubType" />
+            <TextBox
+                x:Name="SubType"
+                Grid.Row="1"
+                Grid.Column="1"
+                Height="50"
+                Margin="70,0,70,0"
+                VerticalAlignment="Top"
+                FontSize="32"
+                Text="0"
+                TextAlignment="Center" />
+        </Grid>
+
+
+
         <Button
-            Grid.Row="0"
             Grid.Column="1"
+            Width="120"
+            Height="24"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
             Click="ExportDevMapButton_OnClick"
             Content="Export Dev Map" />
-        <Button
-            Grid.Row="1"
-            Grid.Column="0"
-            Width="296"
-            Height="50"
-            HorizontalAlignment="Center"
-            Click="SearchReferences_OnClick">
-            <TextBlock
-                FontSize="20"
-                Text="Find All References"
-                TextAlignment="Center" />
-        </Button>
-
-        <Button
-            Grid.Row="0"
-            Grid.Column="0"
-            Width="296"
-            Height="50"
-            HorizontalAlignment="Center"
-            Click="SearchReferences64_OnClick">
-            <TextBlock
-                FontSize="20"
-                Text="Find All References (Hash64)"
-                TextAlignment="Center" />
-        </Button>
 
         <TextBlock
             x:Name="HashLocation"
             Grid.Row="2"
+            Grid.RowSpan="3"
             Grid.Column="1"
             Width="950"
             Height="280"
@@ -70,9 +164,11 @@
             x:Name="TagHashBox"
             Grid.Row="1"
             Grid.Column="1"
+            Margin="0,0,0,0"
+            VerticalAlignment="Center"
             FontSize="96"
             KeyDown="TagHashBoxKeydown"
-            Text="1820DF80"
+            Text="1374F180"
             TextAlignment="Center" />
 
         <!--  AB8FA380 variks  -->

@@ -134,27 +134,30 @@ public partial class DevView : UserControl
                     var pkgid = Int32.Parse(strHash, NumberStyles.HexNumber);
                     //PackageHandler.GetAllTagsWithTypes
                     var tags = PackageHandler.GetTagsWithTypes(pkgid, 8, 0);
-                    Console.WriteLine($"Tags from {strHash} - {tags.Count}");
+                    var tags2 = PackageHandler.GetTagsWithTypes(pkgid, 16, 0);
+                    tags.AddRange(tags2);
+
+                    Console.WriteLine($"Tags from {strHash} - {tags.Count + tags2.Count}");
                     Parallel.ForEach(tags, tag =>
                     {
                         SaveBin(tag);
                     });
                     TagHashBox.Text = $"Extracted .bins";
                 }
-                else
-                {
-                    if (_cachedTags == null || _cachedTags.Count == 0)
-                    {
-                        _cachedTags = PackageHandler.GetAllTagsWithTypes(16, 0);
-                        Console.WriteLine("Caching Tags");
-                        PackageHandler.CacheHashDataList(_cachedTags.Select(x => x.Hash).ToArray());
-                    }
-                    Parallel.ForEach(_cachedTags, tag =>
-                    {
-                        SearchRawData(tag, hash.Hash);
-                    });
-                    Console.WriteLine("Search Complete");
-                }
+                //else
+                //{
+                //    if (_cachedTags == null || _cachedTags.Count == 0)
+                //    {
+                //        _cachedTags = PackageHandler.GetAllTagsWithTypes(16, 0);
+                //        Console.WriteLine("Caching Tags");
+                //        PackageHandler.CacheHashDataList(_cachedTags.Select(x => x.Hash).ToArray());
+                //    }
+                //    Parallel.ForEach(_cachedTags, tag =>
+                //    {
+                //        SearchRawData(tag, hash.Hash);
+                //    });
+                //    Console.WriteLine("Search Complete");
+                //}
                 break;
         }
     }
@@ -336,7 +339,10 @@ public partial class DevView : UserControl
             UInt64 value = BitConverter.ToUInt64(byteArray, i);
             if (value == searchValue)
             {
-                Console.WriteLine($"{PackageHandler.GetEntryReference(tag)}_{tag.GetHashString()}: Match found at offset: 0x{i:X}");
+                int type;
+                int subtype;
+                PackageHandler.GetEntryTypes(tag.Hash, out type, out subtype);
+                Console.WriteLine($"{PackageHandler.GetEntryReference(tag)}_{tag.GetHashString()}: Match found at offset: 0x{i.ToString("X")} | Type {type}, Subtype {subtype}");
             }
         }
         // Clear the byte array to free up memory
@@ -357,7 +363,6 @@ public partial class DevView : UserControl
 
         foreach (string filePath in binFiles)
         {
-
             // Convert the search value to a byte array
             byte[] searchBytes = BitConverter.GetBytes(searchValue);
 
@@ -377,7 +382,7 @@ public partial class DevView : UserControl
                             // Match found, do something with the position or handle the match
                             long position = fs.Position - buffer.Length + i;
                             Console.WriteLine($"{filePath}");
-                            Console.WriteLine("Match found at position: " + position.ToString("X"));
+                            Console.WriteLine("Match found at position: 0x" + position.ToString("X"));
                         }
                     }
                 }
@@ -464,33 +469,36 @@ public partial class DevView : UserControl
         }
     }
 
-    private void SearchReferences_OnClick(object sender, RoutedEventArgs e)
+    private void SearchReferencesBins_OnClick(object sender, RoutedEventArgs e)
     {
         string strHash = TagHashBox.Text.Replace(" ", "");
-        strHash = Regex.Replace(strHash, @"(\s+|r|h)", "");
+        var hash = GetTagHash(strHash);
 
-        if (strHash.Length == 16)
-        {
-            strHash = TagHash64Handler.GetTagHash64String(strHash);
-        }
-        if (strHash == "")
+        if (!hash.IsValid() && strHash.Length != 4)
         {
             TagHashBox.Text = "INVALID HASH";
             return;
         }
+        SearchBins32(hash.Hash);
+    }
 
-        TagHash hash;
-        if (strHash.Contains("-"))
+    private void SearchReferences64Bins_OnClick(object sender, RoutedEventArgs e)
+    {
+        string strHash = TagHashBox.Text.Replace(" ", "");
+        var hash = GetTagHash(strHash);
+
+        if (!hash.IsValid() && strHash.Length != 4)
         {
-            var s = strHash.Split("-");
-            var pkgid = Int32.Parse(s[0], NumberStyles.HexNumber);
-            var entryindex = Int32.Parse(s[1], NumberStyles.HexNumber);
-            hash = new TagHash(PackageHandler.MakeHash(pkgid, entryindex));
+            TagHashBox.Text = "INVALID HASH";
+            return;
         }
-        else
-        {
-            hash = new TagHash(strHash);
-        }
+        SearchBins64(TagHash64Handler.Get64From32(hash.Hash));
+    }
+
+    private void SearchReferences_OnClick(object sender, RoutedEventArgs e)
+    {
+        string strHash = TagHashBox.Text.Replace(" ", "");
+        var hash = GetTagHash(strHash);
 
         if (!hash.IsValid() && strHash.Length != 4)
         {
@@ -502,7 +510,7 @@ public partial class DevView : UserControl
 
         if (_cachedTags == null || _cachedTags.Count == 0)
         {
-            _cachedTags = PackageHandler.GetAllTagsWithTypes(8, 0);
+            _cachedTags = PackageHandler.GetAllTagsWithTypes(Int32.Parse(Type.Text), Int32.Parse(SubType.Text));
             Console.WriteLine("Caching Tags");
             PackageHandler.CacheHashDataList(_cachedTags.Select(x => x.Hash).ToArray());
         }
@@ -517,30 +525,7 @@ public partial class DevView : UserControl
     private void SearchReferences64_OnClick(object sender, RoutedEventArgs e)
     {
         string strHash = TagHashBox.Text.Replace(" ", "");
-        strHash = Regex.Replace(strHash, @"(\s+|r|h)", "");
-
-        if (strHash.Length == 16)
-        {
-            strHash = TagHash64Handler.GetTagHash64String(strHash);
-        }
-        if (strHash == "")
-        {
-            TagHashBox.Text = "INVALID HASH";
-            return;
-        }
-
-        TagHash hash;
-        if (strHash.Contains("-"))
-        {
-            var s = strHash.Split("-");
-            var pkgid = Int32.Parse(s[0], NumberStyles.HexNumber);
-            var entryindex = Int32.Parse(s[1], NumberStyles.HexNumber);
-            hash = new TagHash(PackageHandler.MakeHash(pkgid, entryindex));
-        }
-        else
-        {
-            hash = new TagHash(strHash);
-        }
+        var hash = GetTagHash(strHash);
 
         if (!hash.IsValid() && strHash.Length != 4)
         {
@@ -557,7 +542,7 @@ public partial class DevView : UserControl
         }
         if (_cachedTags == null || _cachedTags.Count == 0)
         {
-            _cachedTags = PackageHandler.GetAllTagsWithTypes(8, 0);
+            _cachedTags = PackageHandler.GetAllTagsWithTypes(Int32.Parse(Type.Text), Int32.Parse(SubType.Text));
             Console.WriteLine("Caching Tags");
             PackageHandler.CacheHashDataList(_cachedTags.Select(x => x.Hash).ToArray());
         }
@@ -567,5 +552,34 @@ public partial class DevView : UserControl
         });
        
         Console.WriteLine("Search Complete");
+    }
+
+    private TagHash GetTagHash(string strHash)
+    {
+        strHash = Regex.Replace(strHash, @"(\s+|r|h)", "");
+
+        if (strHash.Length == 16)
+        {
+            strHash = TagHash64Handler.GetTagHash64String(strHash);
+        }
+        if (strHash == "")
+        {
+            TagHashBox.Text = "INVALID HASH";
+            return null;
+        }
+
+        TagHash hash;
+        if (strHash.Contains("-"))
+        {
+            var s = strHash.Split("-");
+            var pkgid = Int32.Parse(s[0], NumberStyles.HexNumber);
+            var entryindex = Int32.Parse(s[1], NumberStyles.HexNumber);
+            hash = new TagHash(PackageHandler.MakeHash(pkgid, entryindex));
+        }
+        else
+        {
+            hash = new TagHash(strHash);
+        }
+        return hash;
     }
 }

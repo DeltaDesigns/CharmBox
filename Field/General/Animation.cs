@@ -102,15 +102,17 @@ public class Animation : Tag
                 throw new NotImplementedException();
             ParseAnimatedCompressedCodec1(comp);
         }
-        else
-        {
-            throw new NotImplementedException();
-        }
+        //else
+        //{
+        //    MessageBox.Show("Not Implemented");
+        //    //throw new NotImplementedException();
+        //}
     }
 
     private void ParseAnimatedCompressedCodec1(D2Class_438B8080 header)
     {
-        throw new NotImplementedException();
+        MessageBox.Show("Not Implemented");
+        //throw new NotImplementedException();
     }
 
     private void ParseAnimatedUncompressedCodec2(D2Class_428B8080 header)
