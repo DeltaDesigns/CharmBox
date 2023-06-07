@@ -76,20 +76,25 @@ public partial class ActivityEntityView : UserControl
                             if (tag.Unk84 is not null)
                                 if (tag.Unk84.Header.DataEntries.Count > 0)
                                 {
+                                    //Console.WriteLine($"{b.BubbleName} {b.ActivityName} {b.ActivityPhaseName} {b.ActivityPhaseName2}");
                                     if (tag.Unk84.Header.DataEntries.Count == 1 && tag.Unk84.Header.DataEntries[0].Entity.HasGeometry()) //Todo combine everything with 1 entry into one main entry
                                     {
                                         items.Add(new DisplayResource
                                         {
-                                            Name = $"DataTable {tag.Unk84.Hash}: {tag.Unk84.Header.DataEntries.Count} Entry",
-                                            Hash = tag.Unk84.Hash
+                                            Name = $"{b.BubbleName} {b.ActivityPhaseName2}: {tag.Unk84.Header.DataEntries.Count} Entry",
+                                            ActivityName = b.ActivityPhaseName2.GetHashString(),
+                                            Hash = tag.Unk84.Hash,
+                                            Count = tag.Unk84.Header.DataEntries.Count
                                         });
                                     }
                                     else if (tag.Unk84.Header.DataEntries.Count > 1)
                                     {
                                         items.Add(new DisplayResource
                                         {
-                                            Name = $"DataTable {tag.Unk84.Hash}: {tag.Unk84.Header.DataEntries.Count} Entries",
-                                            Hash = tag.Unk84.Hash
+                                            Name = $"{b.BubbleName} {b.ActivityPhaseName2}: {tag.Unk84.Header.DataEntries.Count} Entries",
+                                            ActivityName = b.ActivityPhaseName2.GetHashString(),
+                                            Hash = tag.Unk84.Hash,
+                                            Count = tag.Unk84.Header.DataEntries.Count
                                         });
                                     } 
                                 }     
@@ -103,7 +108,8 @@ public partial class ActivityEntityView : UserControl
                                     {
                                         items.Add(new DisplayResource
                                         {
-                                            Name = $"DataTable {tag2.Unk58.Hash}: {tag2.Unk58.Header.DataEntries.Count} Entry",
+                                            Name = $"{b.BubbleName} {b.ActivityPhaseName2}: {tag2.Unk58.Header.DataEntries.Count} Entry",
+                                            ActivityName = b.ActivityPhaseName2.GetHashString(),
                                             Hash = tag2.Unk58.Hash,
                                             Count = tag2.Unk58.Header.DataEntries.Count
                                         });
@@ -112,7 +118,8 @@ public partial class ActivityEntityView : UserControl
                                     {
                                         items.Add(new DisplayResource
                                         {
-                                            Name = $"DataTable {tag2.Unk58.Hash}: {tag2.Unk58.Header.DataEntries.Count} Entries",
+                                            Name = $"{b.BubbleName} {b.ActivityPhaseName2}: {tag2.Unk58.Header.DataEntries.Count} Entries",
+                                            ActivityName = b.ActivityPhaseName2.GetHashString(),
                                             Hash = tag2.Unk58.Hash,
                                             Count = tag2.Unk58.Header.DataEntries.Count
                                         });
@@ -124,7 +131,7 @@ public partial class ActivityEntityView : UserControl
             }
         });
         var sortedItems = new List<DisplayResource>(items);
-        sortedItems.Sort((a, b) => b.Count.CompareTo(a.Count));
+        sortedItems.Sort((a, b) => a.Name.CompareTo(b.Name));
         sortedItems.Insert(0, new DisplayResource
         {
             Name = "Select all"
@@ -231,7 +238,7 @@ public partial class ActivityEntityView : UserControl
         {
             MapControl.Visibility = Visibility.Hidden;
         });
-        var maps = new List<Tag<D2Class_83988080>>();
+        var maps = new List<DisplayResource>();
         bool bSelectAll = false;
         foreach (DisplayResource item in DataEntryList.Items)
         {
@@ -243,7 +250,7 @@ public partial class ActivityEntityView : UserControl
             {
                 if (item.Selected || bSelectAll)
                 {
-                    maps.Add(PackageHandler.GetTag<D2Class_83988080>(new TagHash(item.Hash)));
+                    maps.Add(item);
                 }
             }
         }
@@ -261,15 +268,17 @@ public partial class ActivityEntityView : UserControl
 
         Parallel.ForEach(maps, map =>
         {
-            string savePath = ConfigHandler.GetExportSavePath() + $"/Maps/{_activeActivity.Header.LocationName}/{PackageHandler.GetActivityName(_activeActivity.Hash).Replace(".", "_")}/";
+            var entries = PackageHandler.GetTag<D2Class_83988080>(new TagHash(map.Hash));
+
+            string savePath = ConfigHandler.GetExportSavePath() + $"/Maps/{_activeActivity.Header.LocationName}/{PackageHandler.GetActivityName(_activeActivity.Hash).Replace(".", "_")}/{map.Name.Split(" ")[0]}_{map.ActivityName}/";
             if (!Directory.Exists(savePath))
                 Directory.CreateDirectory(savePath);
 
             FbxHandler dynamicHandler = new FbxHandler();
-            dynamicHandler.InfoHandler.SetMeshName($"{_activeActivity.Hash}_{map.Hash}_ActivityEntities");
+            dynamicHandler.InfoHandler.SetMeshName($"{map.ActivityName}_{map.Hash}_ActivityEntities");
             dynamicHandler.InfoHandler.AddType("ActivityEntities");
 
-            foreach (var entry in map.Header.DataEntries)
+            foreach (var entry in entries.Header.DataEntries)
             {
                 if (entry.Entity.HasGeometry())
                 {
@@ -310,7 +319,7 @@ public partial class ActivityEntityView : UserControl
                 }
             }
 
-            dynamicHandler.ExportScene($"{savePath}/{_activeActivity.Hash}_{map.Hash}_ActivityEntities.fbx");
+            dynamicHandler.ExportScene($"{savePath}/{map.ActivityName}_{map.Hash}_ActivityEntities.fbx");
             dynamicHandler.Dispose();
             MainWindow.Progress.CompleteStage();
         });
@@ -467,6 +476,7 @@ public class DisplayResource
 {
     public string Name { get; set; }
     public string Hash { get; set; }
+    public string ActivityName { get; set; }
     public int Count { get; set; }
 
     public bool Selected { get; set; }
