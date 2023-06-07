@@ -3,8 +3,6 @@ using DirectXTexNet;
 using Field.Entities;
 using Field.General;
 using Field.Models;
-using Vector2 = System.Numerics.Vector2;
-using Vector4 = System.Numerics.Vector4;
 
 namespace Field;
 
@@ -1588,3 +1586,19 @@ public struct D2Class_B15F8080
 }
 
 #endregion
+
+[StructLayout(LayoutKind.Sequential, Size = 0x1E0)]
+public struct D2Class_95668080 //Dataresource for cubemaps
+{
+    [DestinyOffset(0x20)]
+    public Vector4 CubemapSize; //XYZ, no W
+    public Vector4 CubemapPosition; //Cubemap texture lines up with this one
+    [DestinyOffset(0xF0)]
+    public Vector4 UnkF0; //This might actually be position? Similar to other but in GDC image this one looked more correct
+    [DestinyOffset(0x1B0), DestinyField(FieldType.RelativePointer)]
+    public string CubemapName;
+    [DestinyOffset(0x1B8), DestinyField(FieldType.TagHash)]
+    public TextureHeader CubemapTexture;
+    [DestinyOffset(0x1C0), DestinyField(FieldType.TagHash)]
+    public TextureHeader Unk1C0; //Sometype of reflection tint texture idk
+}

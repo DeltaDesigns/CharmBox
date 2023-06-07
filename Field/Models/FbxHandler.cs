@@ -811,6 +811,26 @@ public class FbxHandler
         }
     }
 
+    public void AddCubemapPointsToScene(D2Class_95668080 points, string meshName, FbxHandler dynamicHandler)
+    {
+        FbxNode node;
+        lock (_fbxLock)
+        {
+            node = FbxNode.Create(_manager, $"{meshName}");
+        }
+        //Quaternion quatRot = new Quaternion(points.Rotation.X, points.Rotation.Y, points.Rotation.Z, points.Rotation.W);
+        //System.Numerics.Vector3 eulerRot = QuaternionToEulerAngles(quatRot);
+
+        node.LclTranslation.Set(new FbxDouble3(points.CubemapPosition.X * 100, points.CubemapPosition.Z * 100, -points.CubemapPosition.Y * 100));
+        //node.LclRotation.Set(new FbxDouble3(eulerRot.X, eulerRot.Y, eulerRot.Z));
+        node.LclScaling.Set(new FbxDouble3(100, 100, 100));
+
+        lock (_fbxLock)
+        {
+            _scene.GetRootNode().AddChild(node);
+        }
+    }
+
     // From https://github.com/OwlGamingCommunity/V/blob/492d0cb3e89a97112ac39bf88de39da57a3a1fbf/Source/owl_core/Server/MapLoader.cs
     private static System.Numerics.Vector3 QuaternionToEulerAngles(Quaternion q)
     {

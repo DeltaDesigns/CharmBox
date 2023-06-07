@@ -727,3 +727,26 @@ public struct D2Class_F16C8080
 }
 
 #endregion
+
+/// <summary>
+/// Unk data resource.
+/// </summary>
+[StructLayout(LayoutKind.Sequential, Size = 0x48)]
+public struct D2Class_9D6A8080
+{
+    public ulong FileSize;
+    [DestinyField(FieldType.TablePointer)]
+    public List<D2Class_9F6A8080> Unk08;
+    [DestinyOffset(0x18), DestinyField(FieldType.TablePointer)]
+    public List<D2Class_3F018080> Unk18;
+}
+
+/// <summary>
+/// Unk data resource.
+/// </summary>
+[StructLayout(LayoutKind.Sequential, Size = 0x10)]
+public struct D2Class_9F6A8080
+{
+    [DestinyField(FieldType.TablePointer)]
+    public List<D2Class_0B008080> Unk00;
+}

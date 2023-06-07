@@ -303,9 +303,12 @@ public partial class ActivityMapView : UserControl
 
     private void PopulateDynamicsList(Tag<D2Class_07878080> map)//(Tag<D2Class_01878080> bubbleMaps)
     {
+        FbxHandler dynamicPoints = new FbxHandler(false);
+
         ConcurrentBag<DisplayDynamicMap> items = new ConcurrentBag<DisplayDynamicMap>();   
         Parallel.ForEach(map.Header.DataTables, data =>
         {
+            Console.WriteLine($"{data.DataTable.Hash}");
             data.DataTable.Header.DataEntries.ForEach(entry =>
             {  
                 //if (entry.DataResource is D2Class_6D668080 a) //spatial audio
@@ -320,20 +323,22 @@ public partial class ActivityMapView : UserControl
                 //        }
                 //    }
                 //}
-
-                if (entry is D2Class_85988080 dynamicResource)
-                {      
-                    if (!items.Contains(new DisplayDynamicMap { Hash = dynamicResource.Entity.Hash }))
+                    
+                if (!items.Contains(new DisplayDynamicMap { Hash = entry.Entity.Hash }))
+                {  
+                    if (entry.Entity.HasGeometry())
                     {
-                        if (dynamicResource.Entity.HasGeometry())
+                        items.Add(new DisplayDynamicMap
                         {
-                            items.Add(new DisplayDynamicMap
-                            {
-                                Name = $"Entity {dynamicResource.Entity.Hash}",
-                                Hash = dynamicResource.Entity.Hash
-                            });
-                        }
+                            Name = $"Entity {entry.Entity.Hash}",
+                            Hash = entry.Entity.Hash
+                        });
                     }
+                }
+                if (entry.DataResource is D2Class_95668080 e)
+                {
+                    Console.WriteLine($"{entry.Entity.Hash} - yes");
+                    dynamicPoints.AddCubemapPointsToScene(e, e.CubemapName, dynamicPoints);
                 }
             });
         });
@@ -345,6 +350,8 @@ public partial class ActivityMapView : UserControl
             Parent = map
         });
         DynamicsList.ItemsSource = sortedItems;
+        dynamicPoints.ExportScene($"{ConfigHandler.GetExportSavePath()}/{map.Hash.GetHashString()}_DynamicPoints.fbx");
+        dynamicPoints.Dispose();
     }
 
     public async void ExportFull(ExportInfo info)

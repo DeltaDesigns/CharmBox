@@ -144,20 +144,23 @@ public partial class DevView : UserControl
                     });
                     TagHashBox.Text = $"Extracted .bins";
                 }
-                //else
-                //{
-                //    if (_cachedTags == null || _cachedTags.Count == 0)
-                //    {
-                //        _cachedTags = PackageHandler.GetAllTagsWithTypes(16, 0);
-                //        Console.WriteLine("Caching Tags");
-                //        PackageHandler.CacheHashDataList(_cachedTags.Select(x => x.Hash).ToArray());
-                //    }
-                //    Parallel.ForEach(_cachedTags, tag =>
-                //    {
-                //        SearchRawData(tag, hash.Hash);
-                //    });
-                //    Console.WriteLine("Search Complete");
-                //}
+                else
+                {
+                    //SearchFloatRangeInBins(7.32417f, 7.326f);
+                    SearchStringInFiles("map");
+                    
+                    //if (_cachedTags == null || _cachedTags.Count == 0)
+                    //{
+                    //    _cachedTags = PackageHandler.GetAllTagsWithTypes(8, 0);
+                    //    Console.WriteLine("Caching Tags");
+                    //    PackageHandler.CacheHashDataList(_cachedTags.Select(x => x.Hash).ToArray());
+                    //}
+                    //Parallel.ForEach(_cachedTags, tag =>
+                    //{
+                    //    SearchRawData(tag, hash.Hash); 
+                    //});
+                    //Console.WriteLine("Search Complete");
+                }
                 break;
         }
     }
@@ -305,6 +308,72 @@ public partial class DevView : UserControl
                 }
             }
         }
+    }
+
+    public static void SearchStringInFiles(string searchString)
+    {
+        string savePath = ConfigHandler.GetExportSavePath() + "/temp";
+        string[] binFiles = Directory.GetFiles(savePath, "*.bin");
+
+        StringComparison comparisonType = StringComparison.OrdinalIgnoreCase; // Case-insensitive comparison
+
+        foreach (string filePath in binFiles)
+        {
+            using (FileStream fs = File.OpenRead(filePath))
+            {
+                byte[] buffer = new byte[searchString.Length];
+                int bytesRead;
+                long positionOffset = 0;
+
+                while ((bytesRead = fs.Read(buffer, 0, buffer.Length)) > 0)
+                {
+                    string fileContent = Encoding.ASCII.GetString(buffer, 0, bytesRead);
+                    if (fileContent.Equals(searchString, comparisonType))
+                    {
+                        Console.WriteLine($"{filePath}: Match found at offset: 0x{positionOffset:X}");
+                    }
+
+                    positionOffset += bytesRead;
+                }
+            }
+        }
+
+        Console.WriteLine("Search complete.");
+    }
+
+    public static void SearchFloatRangeInBins(float minValue, float maxValue)
+    {
+        string savePath = ConfigHandler.GetExportSavePath() + "/temp";
+        string[] binFiles = Directory.GetFiles(savePath, "*.bin");
+
+        Console.WriteLine($"Searching for float values in the range [{minValue}, {maxValue}]");
+
+        foreach (string filePath in binFiles)
+        {
+            using (FileStream fs = File.OpenRead(filePath))
+            {
+                byte[] buffer = new byte[sizeof(float)];
+                int bytesRead;
+                long positionOffset = 0;
+
+                while ((bytesRead = fs.Read(buffer, 0, buffer.Length)) > 0)
+                {
+                    for (int i = 0; i < bytesRead - sizeof(float) + 1; i++)
+                    {
+                        float value = BitConverter.ToSingle(buffer, i);
+                        if (value >= minValue && value <= maxValue)
+                        {
+                            long position = positionOffset + fs.Position - buffer.Length + i;
+                            Console.WriteLine($"{filePath}: Match found: {value} at offset: 0x{position:X}");
+                        }
+                    }
+
+                    positionOffset += bytesRead;
+                }
+            }
+        }
+
+        Console.WriteLine("Search complete.");
     }
 
     public static void SearchRawData(TagHash tag, UInt32 searchValue) //Search for uint32 value from a provided taghash
