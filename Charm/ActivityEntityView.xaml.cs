@@ -13,7 +13,6 @@ using Serilog;
 using Field.Models;
 using System.IO;
 using Internal.Fbx;
-using System.Security.Policy;
 
 namespace Charm;
 
@@ -67,69 +66,20 @@ public partial class ActivityEntityView : UserControl
         {
             foreach (var b in a.Unk18)
             {
-                foreach (var c in b.UnkEntityReference.Header.Unk18.Header.EntityResources)
+                var resourceParent = CollapseResourceParent(b.UnkEntityReference.Hash);
+                if (resourceParent.Count > 0)
                 {
-                    switch (c.EntityResourceParent.Header.EntityResource.Header.Unk18)
+                    items.Add(new DisplayResource
                     {
-                        case D2Class_D8928080:
-                            var tag = (D2Class_D8928080)c.EntityResourceParent.Header.EntityResource.Header.Unk18;
-                            if (tag.Unk84 is not null)
-                                if (tag.Unk84.Header.DataEntries.Count > 0)
-                                {
-                                    //Console.WriteLine($"{b.BubbleName} {b.ActivityName} {b.ActivityPhaseName} {b.ActivityPhaseName2}");
-                                    if (tag.Unk84.Header.DataEntries.Count == 1 && tag.Unk84.Header.DataEntries[0].Entity.HasGeometry()) //Todo combine everything with 1 entry into one main entry
-                                    {
-                                        items.Add(new DisplayResource
-                                        {
-                                            Name = $"{b.BubbleName} {b.ActivityPhaseName2}: {tag.Unk84.Header.DataEntries.Count} Entry",
-                                            ActivityName = b.ActivityPhaseName2.GetHashString(),
-                                            Hash = tag.Unk84.Hash,
-                                            Count = tag.Unk84.Header.DataEntries.Count
-                                        });
-                                    }
-                                    else if (tag.Unk84.Header.DataEntries.Count > 1)
-                                    {
-                                        items.Add(new DisplayResource
-                                        {
-                                            Name = $"{b.BubbleName} {b.ActivityPhaseName2}: {tag.Unk84.Header.DataEntries.Count} Entries",
-                                            ActivityName = b.ActivityPhaseName2.GetHashString(),
-                                            Hash = tag.Unk84.Hash,
-                                            Count = tag.Unk84.Header.DataEntries.Count
-                                        });
-                                    } 
-                                }     
-                            break;
-                        case D2Class_EF8C8080:
-                            var tag2 = (D2Class_EF8C8080)c.EntityResourceParent.Header.EntityResource.Header.Unk18;
-                            if (tag2.Unk58 is not null)
-                                if (tag2.Unk58.Header.DataEntries.Count > 0)
-                                {
-                                    if (tag2.Unk58.Header.DataEntries.Count == 1 && tag2.Unk58.Header.DataEntries[0].Entity.HasGeometry())
-                                    {
-                                        items.Add(new DisplayResource
-                                        {
-                                            Name = $"{b.BubbleName} {b.ActivityPhaseName2}: {tag2.Unk58.Header.DataEntries.Count} Entry",
-                                            ActivityName = b.ActivityPhaseName2.GetHashString(),
-                                            Hash = tag2.Unk58.Hash,
-                                            Count = tag2.Unk58.Header.DataEntries.Count
-                                        });
-                                    }
-                                    else if(tag2.Unk58.Header.DataEntries.Count > 1)
-                                    {
-                                        items.Add(new DisplayResource
-                                        {
-                                            Name = $"{b.BubbleName} {b.ActivityPhaseName2}: {tag2.Unk58.Header.DataEntries.Count} Entries",
-                                            ActivityName = b.ActivityPhaseName2.GetHashString(),
-                                            Hash = tag2.Unk58.Hash,
-                                            Count = tag2.Unk58.Header.DataEntries.Count
-                                        });
-                                    }
-                                }
-                            break;
-                    }
-                }
+                        Name = $"{b.BubbleName} {b.ActivityPhaseName2}: {resourceParent.Count} Entries",
+                        ActivityName = b.ActivityPhaseName2.ToString(),
+                        Hash = b.UnkEntityReference.Hash,
+                        Count = resourceParent.Count
+                    });
+                } 
             }
         });
+
         var sortedItems = new List<DisplayResource>(items);
         sortedItems.Sort((a, b) => a.Name.CompareTo(b.Name));
         sortedItems.Insert(0, new DisplayResource
@@ -137,6 +87,53 @@ public partial class ActivityEntityView : UserControl
             Name = "Select all"
         });
         DataEntryList.ItemsSource = sortedItems;
+    }
+
+    private List<Tag<D2Class_83988080>> CollapseResourceParent(TagHash hash)
+    {
+        var entry = PackageHandler.GetTag<D2Class_898E8080>(hash);
+
+        ConcurrentBag<Tag<D2Class_83988080>> items = new ConcurrentBag<Tag<D2Class_83988080>>();
+
+        Parallel.ForEach(entry.Header.Unk18.Header.EntityResources, a =>
+        {
+            switch (a.EntityResourceParent.Header.EntityResource.Header.Unk18)
+            {
+                case D2Class_D8928080:
+                    var tag = (D2Class_D8928080)a.EntityResourceParent.Header.EntityResource.Header.Unk18;
+                    if (tag.Unk84 is not null)
+                        if (tag.Unk84.Header.DataEntries.Count > 0)
+                        {
+                            //Console.WriteLine($"{b.BubbleName} {b.ActivityName} {b.ActivityPhaseName} {b.ActivityPhaseName2}");
+                            if (tag.Unk84.Header.DataEntries.Count == 1 && tag.Unk84.Header.DataEntries[0].Entity.HasGeometry()) //Todo combine everything with 1 entry into one main entry
+                            {
+                                items.Add(tag.Unk84);
+                            }
+                            else if (tag.Unk84.Header.DataEntries.Count > 1)
+                            {
+                                items.Add(tag.Unk84);
+                            }
+                        }
+                    break;
+                case D2Class_EF8C8080:
+                    var tag2 = (D2Class_EF8C8080)a.EntityResourceParent.Header.EntityResource.Header.Unk18;
+                    if (tag2.Unk58 is not null)
+                        if (tag2.Unk58.Header.DataEntries.Count > 0)
+                        {
+                            if (tag2.Unk58.Header.DataEntries.Count == 1 && tag2.Unk58.Header.DataEntries[0].Entity.HasGeometry())
+                            {
+                                items.Add(tag2.Unk58);
+                            }
+                            else if (tag2.Unk58.Header.DataEntries.Count > 1)
+                            {
+                                items.Add(tag2.Unk58);
+                            }
+                        }
+                    break;
+            }
+        });
+
+        return items.ToList();
     }
 
     private async void ActivityDataEntry_OnClick(object sender, RoutedEventArgs e)
@@ -162,7 +159,10 @@ public partial class ActivityEntityView : UserControl
             {
                 foreach (DisplayResource item in items)
                 {
-                    MapControl.LoadMap(new TagHash(item.Hash), lod, true);
+                    foreach(var entry in CollapseResourceParent(new TagHash(item.Hash)))
+                    {
+                        MapControl.LoadMap(entry.Hash, lod, true);
+                    }
                     MainWindow.Progress.CompleteStage();
                 }
             });
@@ -175,7 +175,10 @@ public partial class ActivityEntityView : UserControl
             // MapControl.ModelView.SetModelFunction(() => MapControl.LoadMap(tagHash, MapControl.ModelView.GetSelectedLod()));
             await Task.Run(() =>
             {
-                MapControl.LoadMap(tagHash, lod, true);
+                foreach (var entry in CollapseResourceParent(tagHash))
+                {
+                    MapControl.LoadMap(entry.Hash, lod, true);
+                }
                 MainWindow.Progress.CompleteStage();
             });
         }
@@ -188,7 +191,7 @@ public partial class ActivityEntityView : UserControl
             return;
 
         TagHash hash = new TagHash((sender as CheckBox).Tag as string);
-        Tag<D2Class_83988080> dataentry = PackageHandler.GetTag<D2Class_83988080>(hash);
+        Tag<D2Class_898E8080> dataentry = PackageHandler.GetTag<D2Class_898E8080>(hash);
         foreach (DisplayResource item in DataEntryList.Items)
         {
             if (item.Name == "Select all")
@@ -204,20 +207,24 @@ public partial class ActivityEntityView : UserControl
         }
     }
 
-    private void PopulateEntitiesList(Tag<D2Class_83988080> dataentry)//(Tag<D2Class_01878080> bubbleMaps)
+    private void PopulateEntitiesList(Tag<D2Class_898E8080> dataentry)//(Tag<D2Class_01878080> bubbleMaps)
     {
         ConcurrentBag<DisplayEntity> items = new ConcurrentBag<DisplayEntity>();
-        Parallel.ForEach(dataentry.Header.DataEntries, data =>
+
+        Parallel.ForEach(CollapseResourceParent(dataentry.Hash), entry =>
         {
-            if (!items.Contains(new DisplayEntity { Hash = data.Entity.Hash }))
+            foreach(var data in entry.Header.DataEntries)
             {
-                if (data.Entity.HasGeometry())
+                if (!items.Contains(new DisplayEntity { Hash = data.Entity.Hash }))
                 {
-                    items.Add(new DisplayEntity
+                    if (data.Entity.HasGeometry())
                     {
-                        Name = $"Entity {data.Entity.Hash}",
-                        Hash = data.Entity.Hash
-                    });
+                        items.Add(new DisplayEntity
+                        {
+                            Name = $"Entity {data.Entity.Hash}",
+                            Hash = data.Entity.Hash
+                        });
+                    }
                 }
             }
         });
@@ -268,7 +275,7 @@ public partial class ActivityEntityView : UserControl
 
         Parallel.ForEach(maps, map =>
         {
-            var entries = PackageHandler.GetTag<D2Class_83988080>(new TagHash(map.Hash));
+            var entries = PackageHandler.GetTag<D2Class_898E8080>(new TagHash(map.Hash));
 
             string savePath = ConfigHandler.GetExportSavePath() + $"/Maps/{_activeActivity.Header.LocationName}/{PackageHandler.GetActivityName(_activeActivity.Hash).Replace(".", "_")}/{map.Name.Split(" ")[0]}_{map.ActivityName}/";
             if (!Directory.Exists(savePath))
@@ -278,36 +285,39 @@ public partial class ActivityEntityView : UserControl
             dynamicHandler.InfoHandler.SetMeshName($"{map.ActivityName}_{map.Hash}_ActivityEntities");
             dynamicHandler.InfoHandler.AddType("ActivityEntities");
 
-            foreach (var entry in entries.Header.DataEntries)
+            foreach (var data in CollapseResourceParent(entries.Hash))
             {
-                if (entry.Entity.HasGeometry())
+                foreach(var entry in data.Header.DataEntries)
                 {
-                    dynamicHandler.AddDynamicToScene(entry, entry.Entity.Hash, savePath, ConfigHandler.GetUnrealInteropEnabled() || ConfigHandler.GetS2ShaderExportEnabled(), ConfigHandler.GetSaveCBuffersEnabled());
-                    Entity ent = new Entity(entry.Entity.Hash, false);
-                    if (ent.Header.EntityResources is null)
-                        continue;
-                    foreach (var e in ent.Header.EntityResources)
+                    if (entry.Entity.HasGeometry())
                     {
-                        if (e.ResourceHash.Header.Unk18 is D2Class_0E848080 f)
+                        dynamicHandler.AddDynamicToScene(entry, entry.Entity.Hash, savePath, ConfigHandler.GetUnrealInteropEnabled() || ConfigHandler.GetS2ShaderExportEnabled(), ConfigHandler.GetSaveCBuffersEnabled());
+                        Entity ent = new Entity(entry.Entity.Hash, false);
+                        if (ent.Header.EntityResources is null)
+                            continue;
+                        foreach (var e in ent.Header.EntityResources)
                         {
-                            foreach (var g in f.Unk88)
+                            if (e.ResourceHash.Header.Unk18 is D2Class_0E848080 f)
                             {
-                                foreach (var h in g.Unk08)
+                                foreach (var g in f.Unk88)
                                 {
-                                    dynamicHandler.AddDynamicToScene(entry, h.Unk08.Hash, savePath, ConfigHandler.GetUnrealInteropEnabled() || ConfigHandler.GetS2ShaderExportEnabled(), ConfigHandler.GetSaveCBuffersEnabled());
-                                    Entity ent2 = new Entity(h.Unk08.Hash, false);
-                                    if (ent2.Header.EntityResources is null)
-                                        continue;
-
-                                    foreach (var e2 in ent2.Header.EntityResources)
+                                    foreach (var h in g.Unk08)
                                     {
-                                        if (e2.ResourceHash.Header.Unk18 is D2Class_0E848080 f2)
+                                        dynamicHandler.AddDynamicToScene(entry, h.Unk08.Hash, savePath, ConfigHandler.GetUnrealInteropEnabled() || ConfigHandler.GetS2ShaderExportEnabled(), ConfigHandler.GetSaveCBuffersEnabled());
+                                        Entity ent2 = new Entity(h.Unk08.Hash, false);
+                                        if (ent2.Header.EntityResources is null)
+                                            continue;
+
+                                        foreach (var e2 in ent2.Header.EntityResources)
                                         {
-                                            foreach (var g2 in f2.Unk88)
+                                            if (e2.ResourceHash.Header.Unk18 is D2Class_0E848080 f2)
                                             {
-                                                foreach (var h2 in g2.Unk08)
+                                                foreach (var g2 in f2.Unk88)
                                                 {
-                                                    dynamicHandler.AddDynamicToScene(entry, h2.Unk08.Hash, savePath, ConfigHandler.GetUnrealInteropEnabled() || ConfigHandler.GetS2ShaderExportEnabled(), ConfigHandler.GetSaveCBuffersEnabled());
+                                                    foreach (var h2 in g2.Unk08)
+                                                    {
+                                                        dynamicHandler.AddDynamicToScene(entry, h2.Unk08.Hash, savePath, ConfigHandler.GetUnrealInteropEnabled() || ConfigHandler.GetS2ShaderExportEnabled(), ConfigHandler.GetSaveCBuffersEnabled());
+                                                    }
                                                 }
                                             }
                                         }
