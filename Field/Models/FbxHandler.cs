@@ -753,7 +753,7 @@ public class FbxHandler
             List<FbxNode> skeletonNodes = new List<FbxNode>();
             List<DynamicPart> dynamicParts = entity.Load(ELOD.MostDetail, true);
             entity.SaveMaterialsFromParts(savePath, dynamicParts, bSaveShaders, bSaveCBuffers);
-            //Console.WriteLine($"{points.Entity.Hash} {points.Translation.X} {points.Translation.Y} {points.Translation.Z} {points.Translation.W}");
+            
             if (entity.Skeleton != null)
             {
                 skeletonNodes = AddSkeleton(entity.Skeleton.GetBoneNodes());
@@ -781,7 +781,6 @@ public class FbxHandler
                 }
             }
         }
-        //Console.WriteLine($"{entity.Hash} at {points.Translation.X * 100}, {points.Translation.Z * 100}, {-points.Translation.Y * 100}");
     }
 
     public void AddDynamicPointsToScene(D2Class_85988080 points, string meshName, FbxHandler dynamicHandler)
@@ -798,8 +797,8 @@ public class FbxHandler
         {
             node = FbxNode.Create(_manager, $"{meshName}");
         }
-        Quaternion quatRot = new Quaternion(points.Rotation.X, points.Rotation.Y, points.Rotation.Z, points.Rotation.W);
-        System.Numerics.Vector3 eulerRot = QuaternionToEulerAngles(quatRot);
+        Vector4 quatRot = new Vector4(points.Rotation.X, points.Rotation.Y, points.Rotation.Z, points.Rotation.W);
+        Vector3 eulerRot = quatRot.QuaternionToEulerAnglesZYX();
 
         node.LclTranslation.Set(new FbxDouble3(points.Translation.X * 100, points.Translation.Z * 100, -points.Translation.Y * 100));
         node.LclRotation.Set(new FbxDouble3(eulerRot.X, eulerRot.Y, eulerRot.Z));
@@ -818,11 +817,15 @@ public class FbxHandler
         {
             node = FbxNode.Create(_manager, $"{meshName}");
         }
-        //Quaternion quatRot = new Quaternion(points.Rotation.X, points.Rotation.Y, points.Rotation.Z, points.Rotation.W);
-        //System.Numerics.Vector3 eulerRot = QuaternionToEulerAngles(quatRot);
+
+        if (InfoHandler != null)
+            InfoHandler.AddCubemap(meshName, points.CubemapSize.ToVec3(), points.CubemapRotation, points.CubemapPosition.ToVec3());
+
+        Vector4 quatRot = new Vector4(points.CubemapRotation.X, points.CubemapRotation.Y, points.CubemapRotation.Z, points.CubemapRotation.W);
+        Vector3 eulerRot = quatRot.QuaternionToEulerAnglesZYX();
 
         node.LclTranslation.Set(new FbxDouble3(points.CubemapPosition.X * 100, points.CubemapPosition.Z * 100, -points.CubemapPosition.Y * 100));
-        //node.LclRotation.Set(new FbxDouble3(eulerRot.X, eulerRot.Y, eulerRot.Z));
+        node.LclRotation.Set(new FbxDouble3(eulerRot.X, eulerRot.Y, eulerRot.Z));
         node.LclScaling.Set(new FbxDouble3(100, 100, 100));
 
         lock (_fbxLock)

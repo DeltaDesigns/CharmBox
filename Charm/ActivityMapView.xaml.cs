@@ -303,12 +303,11 @@ public partial class ActivityMapView : UserControl
 
     private void PopulateDynamicsList(Tag<D2Class_07878080> map)//(Tag<D2Class_01878080> bubbleMaps)
     {
-        FbxHandler dynamicPoints = new FbxHandler(false);
+        //FbxHandler dynamicPoints = new FbxHandler(false);
 
         ConcurrentBag<DisplayDynamicMap> items = new ConcurrentBag<DisplayDynamicMap>();   
         Parallel.ForEach(map.Header.DataTables, data =>
         {
-            Console.WriteLine($"{data.DataTable.Hash}");
             data.DataTable.Header.DataEntries.ForEach(entry =>
             {  
                 //if (entry.DataResource is D2Class_6D668080 a) //spatial audio
@@ -335,11 +334,12 @@ public partial class ActivityMapView : UserControl
                         });
                     }
                 }
-                if (entry.DataResource is D2Class_95668080 e)
-                {
-                    Console.WriteLine($"{entry.Entity.Hash} - yes");
-                    dynamicPoints.AddCubemapPointsToScene(e, e.CubemapName, dynamicPoints);
-                }
+                //if (entry.DataResource is D2Class_95668080 cubemap)
+                //{
+                //    Console.WriteLine($"{map.Hash} - {data.DataTable.Hash}");
+                //    Console.WriteLine($"{entry.Entity.Hash} - yes");
+                //    dynamicPoints.AddCubemapPointsToScene(cubemap, cubemap.CubemapName, dynamicPoints);
+                //}
             });
         });
         var sortedItems = new List<DisplayDynamicMap>(items);
@@ -350,8 +350,8 @@ public partial class ActivityMapView : UserControl
             Parent = map
         });
         DynamicsList.ItemsSource = sortedItems;
-        dynamicPoints.ExportScene($"{ConfigHandler.GetExportSavePath()}/{map.Hash.GetHashString()}_DynamicPoints.fbx");
-        dynamicPoints.Dispose();
+        //dynamicPoints.ExportScene($"{ConfigHandler.GetExportSavePath()}/{map.Hash.GetHashString()}_DynamicPoints.fbx");
+        //dynamicPoints.Dispose();
     }
 
     public async void ExportFull(ExportInfo info)

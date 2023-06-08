@@ -23,8 +23,11 @@ public class InfoConfigHandler
         ConcurrentDictionary<string, ConcurrentBag<JsonInstance>> dynamics = new ConcurrentDictionary<string, ConcurrentBag<JsonInstance>>();
         _config.TryAdd("Dynamics", dynamics);
 
-        ConcurrentDictionary<string, ConcurrentBag<JsonSound>> sounds = new ConcurrentDictionary<string, ConcurrentBag<JsonSound>>();
-        _config.TryAdd("Sounds", sounds);
+        //ConcurrentDictionary<string, ConcurrentBag<JsonSound>> sounds = new ConcurrentDictionary<string, ConcurrentBag<JsonSound>>();
+        //_config.TryAdd("Sounds", sounds);
+
+        ConcurrentDictionary<string, ConcurrentBag<JsonCubemap>> cubemaps = new ConcurrentDictionary<string, ConcurrentBag<JsonCubemap>>();
+        _config.TryAdd("Cubemaps", cubemaps);
 
         bOpen = true;
     }
@@ -100,6 +103,13 @@ public class InfoConfigHandler
         public float Scale;
     }
 
+    private struct JsonCubemap
+    {
+        public float[] Translation;
+        public float[] Rotation;
+        public float[] Scale;
+    }
+
     public void AddInstance(string modelHash, float scale, Vector4 quatRotation, Vector3 translation)
     {
         if (!_config["Instances"].ContainsKey(modelHash))
@@ -111,6 +121,20 @@ public class InfoConfigHandler
             Translation = new [] { translation.X, translation.Y, translation.Z },
             Rotation = new [] { quatRotation.X, quatRotation.Y, quatRotation.Z, quatRotation.W },
             Scale = scale
+        });
+    }
+
+    public void AddCubemap(string name, Vector3 scale, Vector4 quatRotation, Vector3 translation)
+    {
+        if (!_config["Cubemaps"].ContainsKey(name))
+        {
+            _config["Cubemaps"][name] = new ConcurrentBag<JsonCubemap>();
+        }
+        _config["Cubemaps"][name].Add(new JsonCubemap
+        {
+            Translation = new[] { translation.X, translation.Y, translation.Z },
+            Rotation = new[] { quatRotation.X, quatRotation.Y, quatRotation.Z, quatRotation.W },
+            Scale = new[] { scale.X, scale.Y, scale.Z }
         });
     }
 

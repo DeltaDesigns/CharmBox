@@ -147,7 +147,7 @@ public partial class DevView : UserControl
                 else
                 {
                     //SearchFloatRangeInBins(7.32417f, 7.326f);
-                    SearchStringInFiles("map");
+                    SearchStringInFiles("cubemap");
                     
                     //if (_cachedTags == null || _cachedTags.Count == 0)
                     //{

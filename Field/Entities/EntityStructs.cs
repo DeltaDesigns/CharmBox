@@ -1595,6 +1595,7 @@ public struct D2Class_95668080 //Dataresource for cubemaps
     public Vector4 CubemapPosition; //Cubemap texture lines up with this one
     [DestinyOffset(0xF0)]
     public Vector4 UnkF0; //This might actually be position? Similar to other but in GDC image this one looked more correct
+    public Vector4 CubemapRotation;
     [DestinyOffset(0x1B0), DestinyField(FieldType.RelativePointer)]
     public string CubemapName;
     [DestinyOffset(0x1B8), DestinyField(FieldType.TagHash)]
