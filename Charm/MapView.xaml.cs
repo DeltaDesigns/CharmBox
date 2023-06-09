@@ -319,6 +319,7 @@ public partial class MapView : UserControl
 
                                 //fbxHandler.AddEmptyToScene($"{item.Material.Hash} {boxCorners.Unk24}", location, Vector4.Zero);
                                 fbxHandler.InfoHandler.AddDecal(boxCorners.Unk24.GetHashString(), item.Material.Hash, location, boxCorners.Corner1, boxCorners.Corner2);
+                                fbxHandler.InfoHandler.AddMaterial(item.Material);
                             }
                         }
                     }

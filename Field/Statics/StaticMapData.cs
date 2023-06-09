@@ -320,16 +320,46 @@ public struct D2Class_636A8080
 public struct D2Class_B5678080
 {
     [DestinyOffset(0x10), DestinyField(FieldType.TagHash)]
-    public Tag Unk10;  // D2Class_A16D8080, has some materials and coords
+    public Tag<D2Class_786A8080> Unk10;
 }
 
 /// <summary>
 /// Unk data resource.
 /// </summary>
-[StructLayout(LayoutKind.Sequential, Size = 0x88)]
+[StructLayout(LayoutKind.Sequential, Size = 0x38)]
+public struct D2Class_786A8080
+{
+    public ulong FileSize;
+
+    [DestinyOffset(0x18), DestinyField(FieldType.TagHash)]
+    public Tag<D2Class_A16D8080> Unk10;
+    [DestinyOffset(0x20), DestinyField(FieldType.TablePointer)]
+    public List<D2Class_7D6A8080> Unk20;
+    public DestinyHash Unk30;
+}
+
+/// <summary>
+/// Unk data resource.
+/// </summary>
+[StructLayout(LayoutKind.Sequential, Size = 0xC)]
+public struct D2Class_7D6A8080
+{
+    [DestinyField(FieldType.TagHash)]
+    public Material Unk00;
+    [DestinyField(FieldType.TagHash)]
+    public Tag<D2Class_A16D8080> Unk04;
+    public int Unk08;
+}
+
+/// <summary>
+/// Unk data resource.
+/// </summary>
+[StructLayout(LayoutKind.Sequential, Size = 0x80)]
 public struct D2Class_A16D8080
 {
-
+    public ulong FileSize;
+    [DestinyOffset(0x60), DestinyField(FieldType.TablePointer)]
+    public List<D2Class_90008080> Unk60; //first entry might be color?
 }
 
 /// <summary>
@@ -407,7 +437,9 @@ public struct D2Class_B78C8080
 [StructLayout(LayoutKind.Sequential, Size = 0x30)]
 public struct D2Class_B98C8080
 {
-
+    public Vector4 Unk00; //??
+    public Vector4 Unk10;
+    public DestinyHash Unk20;
 }
 
 /// <summary>
@@ -534,12 +566,6 @@ public struct D2Class_C46A8080
     public Tag Unk08;
     [DestinyOffset(0x10), DestinyField(FieldType.TablePointer)]
     public List<D2Class_D86E8080> Unk10;
-    //[DestinyField(FieldType.TablePointer)]
-    //public List<D2Class_94008080> Unk11;
-    //[DestinyField(FieldType.TablePointer)]
-    //public List<D2Class_DD6E8080> Unk12;
-    //[DestinyField(FieldType.TablePointer)]
-    //public List<D2Class_94008080> Unk13;
 }
 
 /// <summary>
