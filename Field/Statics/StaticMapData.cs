@@ -85,6 +85,7 @@ public struct D2Class_B3938080
     public Vector4 Corner1;
     public Vector4 Corner2;
     public DestinyHash Unk20;
+    public DestinyHash Unk24;
 }
 
 [StructLayout(LayoutKind.Sequential, Size = 0x40)]
@@ -252,7 +253,7 @@ public struct D2Class_85988080
     [DestinyOffset(0x28), DestinyField(FieldType.TagHash64, true)]
     public Entity Entity;
     [DestinyOffset(0x78), DestinyField(FieldType.ResourcePointer)]
-    public dynamic? DataResource;
+    public dynamic? DataResource; //55698080
 }
 
 /// <summary>
@@ -435,38 +436,51 @@ public struct D2Class_A76A8080
 public struct D2Class_55698080
 {
     [DestinyOffset(0x10), DestinyField(FieldType.TagHash)]
-    public Tag<D2Class_5B698080> Unk10;  // 5B698080, lights/volumes/smth maybe cubemaps idk
+    public Tag<D2Class_5B698080> Unk10;
 }
 
 /// <summary>
-/// lights/volumes/smth maybe cubemaps idk
+/// Map Decals
 /// </summary>
 [StructLayout(LayoutKind.Sequential, Size = 0x78)]
 public struct D2Class_5B698080
 {
-    [DestinyOffset(0x28), DestinyField(FieldType.ResourcePointer)]
-    public dynamic? Unk28;
-    //[DestinyOffset(0x2C), DestinyField(FieldType.ResourcePointer)]
-    //public dynamic? Unk2C;
-    //?? 2 lists or dynamic arrays: one of D2Class_63698080, one of D2Class_64698080?
+    public ulong FileSize;
+    [DestinyField(FieldType.TablePointer)]
+    public List<D2Class_63698080> DecalResources;
+    [DestinyOffset(0x18), DestinyField(FieldType.TablePointer)]
+    public List<D2Class_64698080> Locations;
+    [DestinyOffset(0x28), DestinyField(FieldType.TagHash)]
+    public Tag Unk28;
+    [DestinyField(FieldType.TagHash)]
+    public Tag Unk2C;
+    [DestinyOffset(0x38), DestinyField(FieldType.TagHash)]
+    public Tag<D2Class_B1938080> DecalProjectionBounds;
+    [DestinyOffset(0x40)]
+    public Vector4 Unk40; //some type of bounds
+    public Vector4 Unk50;
+    public DestinyHash Unk60;
 }
 
 /// <summary>
-/// Unk data resource.
+/// Decal resources
 /// </summary>
 [StructLayout(LayoutKind.Sequential, Size = 8)]
 public struct D2Class_63698080
 {
-   
+    [DestinyField(FieldType.TagHash)]
+    public Material Material;
+    public short Index; //Start index
+    public short Entries; //Number of entries to read
 }
 
 /// <summary>
-/// Unk data resource.
+/// Decal Location
 /// </summary>
 [StructLayout(LayoutKind.Sequential, Size = 0x10)]
 public struct D2Class_64698080
 {
-
+    public Vector4 Location;
 }
 
 /// <summary>

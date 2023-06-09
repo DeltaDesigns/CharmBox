@@ -783,24 +783,17 @@ public class FbxHandler
         }
     }
 
-    public void AddDynamicPointsToScene(D2Class_85988080 points, string meshName, FbxHandler dynamicHandler)
+    public void AddEmptyToScene(string emptyName, Vector4 position, Vector4 rotation)
     {
-        Entity entity = PackageHandler.GetTag(typeof(Entity), points.Entity.Hash);
-
-        if (entity.HasGeometry())
-        {
-            meshName += "_Model";
-        }
- 
         FbxNode node;
         lock (_fbxLock)
         {
-            node = FbxNode.Create(_manager, $"{meshName}");
+            node = FbxNode.Create(_manager, $"{emptyName}");
         }
-        Vector4 quatRot = new Vector4(points.Rotation.X, points.Rotation.Y, points.Rotation.Z, points.Rotation.W);
-        Vector3 eulerRot = quatRot.QuaternionToEulerAnglesZYX();
 
-        node.LclTranslation.Set(new FbxDouble3(points.Translation.X * 100, points.Translation.Z * 100, -points.Translation.Y * 100));
+        Vector3 eulerRot = rotation.QuaternionToEulerAnglesZYX();
+
+        node.LclTranslation.Set(new FbxDouble3(position.X * 100, position.Z * 100, -position.Y * 100));
         node.LclRotation.Set(new FbxDouble3(eulerRot.X, eulerRot.Y, eulerRot.Z));
         node.LclScaling.Set(new FbxDouble3(100, 100, 100));
 
@@ -810,29 +803,6 @@ public class FbxHandler
         }
     }
 
-    public void AddCubemapPointsToScene(D2Class_95668080 points, string meshName, FbxHandler dynamicHandler)
-    {
-        FbxNode node;
-        lock (_fbxLock)
-        {
-            node = FbxNode.Create(_manager, $"{meshName}");
-        }
-
-        if (InfoHandler != null)
-            InfoHandler.AddCubemap(meshName, points.CubemapSize.ToVec3(), points.CubemapRotation, points.CubemapPosition.ToVec3());
-
-        Vector4 quatRot = new Vector4(points.CubemapRotation.X, points.CubemapRotation.Y, points.CubemapRotation.Z, points.CubemapRotation.W);
-        Vector3 eulerRot = quatRot.QuaternionToEulerAnglesZYX();
-
-        node.LclTranslation.Set(new FbxDouble3(points.CubemapPosition.X * 100, points.CubemapPosition.Z * 100, -points.CubemapPosition.Y * 100));
-        node.LclRotation.Set(new FbxDouble3(eulerRot.X, eulerRot.Y, eulerRot.Z));
-        node.LclScaling.Set(new FbxDouble3(100, 100, 100));
-
-        lock (_fbxLock)
-        {
-            _scene.GetRootNode().AddChild(node);
-        }
-    }
 
     // From https://github.com/OwlGamingCommunity/V/blob/492d0cb3e89a97112ac39bf88de39da57a3a1fbf/Source/owl_core/Server/MapLoader.cs
     private static System.Numerics.Vector3 QuaternionToEulerAngles(Quaternion q)

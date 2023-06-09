@@ -543,12 +543,25 @@ public partial class DevView : UserControl
         string strHash = TagHashBox.Text.Replace(" ", "");
         var hash = GetTagHash(strHash);
 
-        if (!hash.IsValid() && strHash.Length != 4)
+        if(!strHash.EndsWith("8080") && strHash.Length == 8)
         {
-            TagHashBox.Text = "INVALID HASH";
-            return;
+            if (!hash.IsValid() && strHash.Length != 4)
+            {
+                TagHashBox.Text = "INVALID HASH";
+                return;
+            }
+            SearchBins32(hash.Hash);
         }
-        SearchBins32(hash.Hash);
+        else
+        {
+            SearchBins32(Convert.ToUInt32(strHash));
+        }
+        //if (strHash.EndsWith("8080"))
+        //{
+        //    SearchBins32(Convert.ToUInt32(strHash, 16));
+        //}
+        
+        
     }
 
     private void SearchReferences64Bins_OnClick(object sender, RoutedEventArgs e)

@@ -303,13 +303,13 @@ public partial class ActivityMapView : UserControl
 
     private void PopulateDynamicsList(Tag<D2Class_07878080> map)//(Tag<D2Class_01878080> bubbleMaps)
     {
-        //FbxHandler dynamicPoints = new FbxHandler(false);
+        FbxHandler dynamicPoints = new FbxHandler(false);
 
         ConcurrentBag<DisplayDynamicMap> items = new ConcurrentBag<DisplayDynamicMap>();   
         Parallel.ForEach(map.Header.DataTables, data =>
         {
             data.DataTable.Header.DataEntries.ForEach(entry =>
-            {  
+            {
                 //if (entry.DataResource is D2Class_6D668080 a) //spatial audio
                 //{ 
                 //    if (a.AudioContainer is not null)
@@ -322,7 +322,10 @@ public partial class ActivityMapView : UserControl
                 //        }
                 //    }
                 //}
-                    
+                //if (!entry.Entity.HasGeometry() && entry.DataResource is not D2Class_C96C8080)
+                //{
+                //    Console.WriteLine($"{data.DataTable.Hash} - {entry.Entity.Hash}");
+                //}
                 if (!items.Contains(new DisplayDynamicMap { Hash = entry.Entity.Hash }))
                 {  
                     if (entry.Entity.HasGeometry())
@@ -334,12 +337,46 @@ public partial class ActivityMapView : UserControl
                         });
                     }
                 }
-                //if (entry.DataResource is D2Class_95668080 cubemap)
-                //{
-                //    Console.WriteLine($"{map.Hash} - {data.DataTable.Hash}");
-                //    Console.WriteLine($"{entry.Entity.Hash} - yes");
-                //    dynamicPoints.AddCubemapPointsToScene(cubemap, cubemap.CubemapName, dynamicPoints);
-                //}
+                if (entry.DataResource is D2Class_55698080 decals)
+                {
+                    //Material list contains material and 2 shorts, first short is the index in Locations,
+                    //second is the number of Location entries to read
+
+                    Console.WriteLine($"{data.DataTable.Hash} {decals.Unk10.Header.Locations.Count}");
+ 
+                    foreach (var item in decals.Unk10.Header.DecalResources)
+                    {
+                        // Check if the index is within the bounds of the second list
+                        if (item.Index >= 0 && item.Index < decals.Unk10.Header.Locations.Count)
+                        {
+                            // Get the starting index and the number of entries to select
+                            int startIndex = item.Index;
+                            int numEntries = item.Entries;
+
+                            Console.WriteLine($"Start index {startIndex} Num Entries {numEntries}");
+                            // Loop through the second list based on the given parameters
+                            for (int i = startIndex; i < startIndex + numEntries && i < decals.Unk10.Header.Locations.Count; i++)
+                            {
+                                var secondListEntry = decals.Unk10.Header.Locations[i];
+                                var boxCorners = decals.Unk10.Header.DecalProjectionBounds.Header.InstanceBounds[i];
+
+                                // Access the desired data from the second list entry
+                                Vector4 location = secondListEntry.Location;
+
+                                // Do whatever you need with the retrieved data
+                                Console.WriteLine($"Material: {item.Material.Hash}");
+                                Console.WriteLine($"Location: {location.X} {location.Y} {location.Z}");
+                                Console.WriteLine($"Box {boxCorners.Unk24}: Corner 1 {boxCorners.Corner1.X} {boxCorners.Corner1.Y} {boxCorners.Corner1.Z} | Corner 2 {boxCorners.Corner2.X} {boxCorners.Corner2.Y} {boxCorners.Corner2.Z} ");
+
+                                //item.Material.SavePixelShader($"{ConfigHandler.GetExportSavePath()}/test/");
+                                //item.Material.SaveAllTextures($"{ConfigHandler.GetExportSavePath()}/test/textures/");
+
+                                dynamicPoints.AddEmptyToScene($"{item.Material.Hash} {boxCorners.Unk24}", location, Vector4.Zero);
+                            }
+                            Console.WriteLine("-----");
+                        }
+                    }
+                }
             });
         });
         var sortedItems = new List<DisplayDynamicMap>(items);
@@ -350,8 +387,8 @@ public partial class ActivityMapView : UserControl
             Parent = map
         });
         DynamicsList.ItemsSource = sortedItems;
-        //dynamicPoints.ExportScene($"{ConfigHandler.GetExportSavePath()}/{map.Hash.GetHashString()}_DynamicPoints.fbx");
-        //dynamicPoints.Dispose();
+        dynamicPoints.ExportScene($"{ConfigHandler.GetExportSavePath()}/{map.Hash.GetHashString()}_Empties.fbx");
+        dynamicPoints.Dispose();
     }
 
     public async void ExportFull(ExportInfo info)

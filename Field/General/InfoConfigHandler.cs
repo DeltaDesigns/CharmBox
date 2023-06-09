@@ -29,6 +29,9 @@ public class InfoConfigHandler
         ConcurrentDictionary<string, ConcurrentBag<JsonCubemap>> cubemaps = new ConcurrentDictionary<string, ConcurrentBag<JsonCubemap>>();
         _config.TryAdd("Cubemaps", cubemaps);
 
+        ConcurrentDictionary<string, ConcurrentBag<JsonDecal>> decals = new ConcurrentDictionary<string, ConcurrentBag<JsonDecal>>();
+        _config.TryAdd("Decals", decals);
+
         bOpen = true;
     }
 
@@ -109,6 +112,14 @@ public class InfoConfigHandler
         public float[] Rotation;
         public float[] Scale;
     }
+    private struct JsonDecal
+    {
+        public string Material;
+        public float[] Origin;
+        public float Scale;
+        public float[] Corner1;
+        public float[] Corner2;
+    }
 
     public void AddInstance(string modelHash, float scale, Vector4 quatRotation, Vector3 translation)
     {
@@ -135,6 +146,22 @@ public class InfoConfigHandler
             Translation = new[] { translation.X, translation.Y, translation.Z },
             Rotation = new[] { quatRotation.X, quatRotation.Y, quatRotation.Z, quatRotation.W },
             Scale = new[] { scale.X, scale.Y, scale.Z }
+        });
+    }
+
+    public void AddDecal(string boxhash, string materialName, Vector4 origin, Vector4 corner1, Vector4 corner2)
+    {
+        if (!_config["Decals"].ContainsKey(boxhash))
+        {
+            _config["Decals"][boxhash] = new ConcurrentBag<JsonDecal>();
+        }
+        _config["Decals"][boxhash].Add(new JsonDecal
+        {
+            Material = materialName,
+            Origin = new[] { origin.X, origin.Y, origin.Z },
+            Scale = origin.W,
+            Corner1 = new[] { corner1.X, corner1.Y, corner1.Z },
+            Corner2 = new[] { corner2.X, corner2.Y, corner2.Z }
         });
     }
 

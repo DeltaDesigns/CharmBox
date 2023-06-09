@@ -294,6 +294,35 @@ public partial class MapView : UserControl
                 {
                     fbxHandler.InfoHandler.AddCubemap(cubemap.CubemapName, cubemap.CubemapSize.ToVec3(), cubemap.CubemapRotation, cubemap.CubemapPosition.ToVec3());
                 }
+                if (entry.DataResource is D2Class_55698080 decals)
+                {
+                    foreach (var item in decals.Unk10.Header.DecalResources)
+                    {
+                        // Check if the index is within the bounds of the second list
+                        if (item.Index >= 0 && item.Index < decals.Unk10.Header.Locations.Count)
+                        {
+                            // Get the starting index and the number of entries to select
+                            int startIndex = item.Index;
+                            int numEntries = item.Entries;
+
+                            // Loop through the second list based on the given parameters
+                            for (int i = startIndex; i < startIndex + numEntries && i < decals.Unk10.Header.Locations.Count; i++)
+                            {
+                                var secondListEntry = decals.Unk10.Header.Locations[i];
+                                var boxCorners = decals.Unk10.Header.DecalProjectionBounds.Header.InstanceBounds[i];
+
+                                // Access the desired data from the second list entry
+                                Vector4 location = secondListEntry.Location;
+
+                                //item.Material.SavePixelShader($"{ConfigHandler.GetExportSavePath()}/test/");
+                                //item.Material.SaveAllTextures($"{ConfigHandler.GetExportSavePath()}/test/textures/");
+
+                                //fbxHandler.AddEmptyToScene($"{item.Material.Hash} {boxCorners.Unk24}", location, Vector4.Zero);
+                                fbxHandler.InfoHandler.AddDecal(boxCorners.Unk24.GetHashString(), item.Material.Hash, location, boxCorners.Corner1, boxCorners.Corner2);
+                            }
+                        }
+                    }
+                }
             });
         });
         dynamicHandler.ExportScene($"{savePath}/{map.Hash.GetHashString()}_Dynamics.fbx");

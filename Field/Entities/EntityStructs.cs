@@ -186,7 +186,8 @@ public struct D2Class_029D8080
 [StructLayout(LayoutKind.Sequential, Size = 0x18)]
 public struct D2Class_4D898080
 {
-
+    [DestinyField(FieldType.RelativePointer)]
+    public string Unk00;
 }
 
 [StructLayout(LayoutKind.Sequential, Size = 0x10)]
@@ -1545,6 +1546,18 @@ public struct D2Class_B85F8080
 public struct D2Class_AA5F8080
 {
     
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x68)]
+public struct D2Class_E7978080
+{
+
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x78)]
+public struct D2Class_FA988080
+{
+
 }
 
 [StructLayout(LayoutKind.Sequential, Size = 0x220)]
