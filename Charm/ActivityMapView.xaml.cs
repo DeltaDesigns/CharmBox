@@ -159,16 +159,16 @@ public partial class ActivityMapView : UserControl
                         //    //dynamicPoints.AddEmptyToScene($"{a1.Unk10.Header.Unk10.Hash}", b.Translation, b.Rotation);
                         //    //Console.WriteLine($"{m.MapResource.Hash} {a1.Unk10.Header.Unk10}");      
                         //}
-                        //if(b.DataResource is D2Class_636A8080 a2)
-                        //{
-                        //    //Console.WriteLine($"{a.DataTable.Hash} {a2.Unk10.Header.Unk30.Count}");
-                        //    for(int i = 0; i < a2.Unk10.Header.Unk30.Count; i++)
-                        //    {
-                        //        //var vec = a2.Unk10.Header.Unk30[i].UnkD0.Header.Unk40[a2.Unk10.Header.Unk30[i].UnkDF].Unk00;
-                        //        //Console.WriteLine($"{a2.Unk10.Header.Unk30[i].UnkDF}: {vec.X} {vec.Y} {vec.Z} {vec.W}");
-                        //        dynamicPoints.AddEmptyToScene($"{a2.Unk10.Header.Unk30[i].UnkCC.Hash} {a2.Unk10.Header.Unk58.Header.InstanceBounds[i].Unk24} {i}", a2.Unk10.Header.Unk40[i].Translation, a2.Unk10.Header.Unk40[i].Rotation);
-                        //    } 
-                        //}
+                        if (b.DataResource is D2Class_636A8080 a2)
+                        {
+                            //Console.WriteLine($"{a.DataTable.Hash} {a2.Unk10.Header.Unk30.Count}");
+                            for (int i = 0; i < a2.Unk10.Header.Unk30.Count; i++)
+                            {
+                                //var vec = a2.Unk10.Header.Unk30[i].UnkD0.Header.Unk40[a2.Unk10.Header.Unk30[i].UnkDF].Unk00;
+                                Console.WriteLine($"{a2.Unk10.Header.Unk30[i].UnkD0.Hash} {a2.Unk10.Header.Unk58.Header.InstanceBounds[i].Unk24}");
+                                //dynamicPoints.AddEmptyToScene($"{a2.Unk10.Header.Unk30[i].UnkCC.Hash} {a2.Unk10.Header.Unk58.Header.InstanceBounds[i].Unk24} {i}", a2.Unk10.Header.Unk40[i].Translation, a2.Unk10.Header.Unk40[i].Rotation);
+                            }
+                        }
 
                         if (b.DataResource is not null && b.DataResource is not D2Class_C96C8080)
                         {

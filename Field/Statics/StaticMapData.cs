@@ -340,8 +340,8 @@ public struct D2Class_706C8080 //?????????
     public Vector4 Unk70;
     public Vector4 Unk80;
     public Vector4 Unk90;
-    public Vector4 UnkA0;
-    public Vector4 UnkB0;
+    public Vector4 UnkA0; //W might be area light size X/2?
+    public Vector4 UnkB0; //W Size Y/2?
     [DestinyField(FieldType.TagHash)]
     public Material UnkC0;
     [DestinyField(FieldType.TagHash)]
@@ -352,8 +352,10 @@ public struct D2Class_706C8080 //?????????
     public Tag<D2Class_A16D8080> UnkCC;
     [DestinyField(FieldType.TagHash)]
     public Tag<D2Class_A16D8080> UnkD0;
+    [DestinyOffset(0xE0)]
+    public byte UnkE0; //light shape?
     [DestinyOffset(0xDF)]
-    public byte UnkDF; //color index?
+    public byte UnkDF; //color index? unlikely
 
 }
 

@@ -331,14 +331,26 @@ public partial class MapView : UserControl
                 if (entry.DataResource is D2Class_B5678080 light)
                 {
                     //Seem correct enough, no idea about radius and intensity
-                    fbxHandler.InfoHandler.AddLight(light.Unk10.Hash, "Point", entry.Translation, entry.Rotation, (light.Unk10.Header.Unk10.Header.Unk40.Count == 0 ? light.Unk10.Header.Unk10.Header.Unk60[0].Unk00 : light.Unk10.Header.Unk10.Header.Unk40[0].Unk00));
+                    fbxHandler.InfoHandler.AddLight(
+                        light.Unk10.Hash, 
+                        "Point", 
+                        entry.Translation, 
+                        entry.Rotation,
+                        new Vector2(1, 1),
+                        (light.Unk10.Header.Unk10.Header.Unk40.Count == 0 ? light.Unk10.Header.Unk10.Header.Unk60[0].Unk00 : light.Unk10.Header.Unk10.Header.Unk40[0].Unk00));
                 }
                 if (entry.DataResource is D2Class_636A8080 areaLight)
                 {
                     for (int i = 0; i < areaLight.Unk10.Header.Unk30.Count; i++)
                     {
                         //these lights are gonna kill me. I dont understand..
-                        fbxHandler.InfoHandler.AddLight(areaLight.Unk10.Header.Unk30[i].UnkD0.Hash, "Area", areaLight.Unk10.Header.Unk40[i].Translation, areaLight.Unk10.Header.Unk40[i].Rotation, (areaLight.Unk10.Header.Unk30[i].UnkD0.Header.Unk40.Count > 0 ? areaLight.Unk10.Header.Unk30[i].UnkD0.Header.Unk40[0].Unk00 : areaLight.Unk10.Header.Unk30[i].UnkD0.Header.Unk60[0].Unk00));
+                        fbxHandler.InfoHandler.AddLight(
+                            areaLight.Unk10.Header.Unk30[i].UnkD0.Hash, 
+                            "Area", 
+                            areaLight.Unk10.Header.Unk40[i].Translation, 
+                            areaLight.Unk10.Header.Unk40[i].Rotation,
+                            new Vector2(areaLight.Unk10.Header.Unk30[i].UnkA0.W, areaLight.Unk10.Header.Unk30[i].UnkB0.W),
+                            (areaLight.Unk10.Header.Unk30[i].UnkD0.Header.Unk40.Count > 0 ? areaLight.Unk10.Header.Unk30[i].UnkD0.Header.Unk40[0].Unk00 : areaLight.Unk10.Header.Unk30[i].UnkD0.Header.Unk60[0].Unk00));
                     }
                 }
             });

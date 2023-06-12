@@ -154,7 +154,7 @@ public class InfoConfigHandler
         }
     }
 
-    public void AddLight(string name, string type, Vector4 translation, Vector4 quatRotation, Vector4 color)
+    public void AddLight(string name, string type, Vector4 translation, Vector4 quatRotation, Vector2 size, Vector4 color)
     {
         //Idfk how color/intensity is handled, so if its above 1 then bring it down
         var R = color.X > 1 ? color.X / 100 : color.X;
@@ -170,6 +170,7 @@ public class InfoConfigHandler
             Type = type,
             Translation = new[] { translation.X, translation.Y, translation.Z },
             Rotation = new[] { quatRotation.X, quatRotation.Y, quatRotation.Z, quatRotation.W },
+            Size = new[] { size.X, size.Y },
             Color = new[] { R, G, B }
         });
     }
@@ -294,6 +295,7 @@ public class InfoConfigHandler
         public string Type;
         public float[] Translation;
         public float[] Rotation;
+        public float[] Size;
         public float[] Color;
     }
 }

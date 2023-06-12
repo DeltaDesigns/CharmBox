@@ -146,7 +146,7 @@ public partial class DevView : UserControl
                 }
                 else
                 {
-                    SearchFloatRangeInBins(128.4f, 128.6f);
+                    SearchFloatRangeInBins(3.47f, 3.5f);
                     //SearchStringInFiles("intensity");
                     
                     //if (_cachedTags == null || _cachedTags.Count == 0)
