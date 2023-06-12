@@ -32,6 +32,9 @@ public class InfoConfigHandler
         ConcurrentDictionary<string, ConcurrentBag<JsonDecal>> decals = new ConcurrentDictionary<string, ConcurrentBag<JsonDecal>>();
         _config.TryAdd("Decals", decals);
 
+        ConcurrentDictionary<string, ConcurrentBag<JsonLight>> lights = new ConcurrentDictionary<string, ConcurrentBag<JsonLight>>();
+        _config.TryAdd("Lights", lights);
+
         bOpen = true;
     }
 
@@ -99,28 +102,6 @@ public class InfoConfigHandler
         }
     }
 
-    private struct JsonInstance
-    {
-        public float[] Translation;
-        public float[] Rotation;
-        public float Scale;
-    }
-
-    private struct JsonCubemap
-    {
-        public float[] Translation;
-        public float[] Rotation;
-        public float[] Scale;
-    }
-    private struct JsonDecal
-    {
-        public string Material;
-        public float[] Origin;
-        public float Scale;
-        public float[] Corner1;
-        public float[] Corner2;
-    }
-
     public void AddInstance(string modelHash, float scale, Vector4 quatRotation, Vector3 translation)
     {
         if (!_config["Instances"].ContainsKey(modelHash))
@@ -173,10 +154,24 @@ public class InfoConfigHandler
         }
     }
 
-    private struct JsonSound
+    public void AddLight(string name, string type, Vector4 translation, Vector4 quatRotation, Vector4 color)
     {
-        public float[] Translation;
-        public float Range;
+        //Idfk how color/intensity is handled, so if its above 1 then bring it down
+        var R = color.X > 1 ? color.X / 100 : color.X;
+        var G = color.Y > 1 ? color.Y / 100 : color.Y;
+        var B = color.Z > 1 ? color.Z / 100 : color.Z;
+
+        if (!_config["Lights"].ContainsKey(name))
+        {
+            _config["Lights"][name] = new ConcurrentBag<JsonLight>();
+        }
+        _config["Lights"][name].Add(new JsonLight
+        {
+            Type = type,
+            Translation = new[] { translation.X, translation.Y, translation.Z },
+            Rotation = new[] { quatRotation.X, quatRotation.Y, quatRotation.Z, quatRotation.W },
+            Color = new[] { R, G, B }
+        });
     }
 
     public void AddSound(string soundHash, float range, Vector4 translation)
@@ -267,6 +262,39 @@ public class InfoConfigHandler
             File.WriteAllText($"{path}/info.cfg", s);
         }
         Dispose();
+    }
+
+    private struct JsonInstance
+    {
+        public float[] Translation;
+        public float[] Rotation;
+        public float Scale;
+    }
+    private struct JsonSound
+    {
+        public float[] Translation;
+        public float Range;
+    }
+    private struct JsonCubemap
+    {
+        public float[] Translation;
+        public float[] Rotation;
+        public float[] Scale;
+    }
+    private struct JsonDecal
+    {
+        public string Material;
+        public float[] Origin;
+        public float Scale;
+        public float[] Corner1;
+        public float[] Corner2;
+    }
+    private struct JsonLight
+    {
+        public string Type;
+        public float[] Translation;
+        public float[] Rotation;
+        public float[] Color;
     }
 }
 

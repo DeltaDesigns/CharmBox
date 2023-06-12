@@ -136,7 +136,7 @@ public struct D2Class_1E898080
 [StructLayout(LayoutKind.Sequential, Size = 0x38)]
 public struct D2Class_0B878080
 {
-    public ulong FileSize;
+    public long FileSize;
     [DestinyField(FieldType.TagHash)]
     public Tag Unk08; //BF968080
     [DestinyField(FieldType.TagHash)]
@@ -150,7 +150,7 @@ public struct D2Class_0B878080
 [StructLayout(LayoutKind.Sequential, Size = 0x40)]
 public struct D2Class_BF968080
 {
-    public ulong FileSize;
+    public long FileSize;
     [DestinyField(FieldType.RelativePointer)]
     public string Unk08;
     [DestinyOffset(0x10), DestinyField(FieldType.TablePointer)]
@@ -304,13 +304,57 @@ public struct D2Class_5E6C8080
 }
 
 /// <summary>
-/// Unk data resource, maybe lights for entities?
+/// Unk data resource, maybe the fucking SUN or some big light source
 /// </summary>
 [StructLayout(LayoutKind.Sequential, Size = 0x18)]
 public struct D2Class_636A8080
 {
     [DestinyOffset(0x10), DestinyField(FieldType.TagHash)]
-    public Tag Unk10;  // D2Class_656C8080, might be related to lights for entities?
+    public Tag<D2Class_656C8080> Unk10;
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x60)]
+public struct D2Class_656C8080
+{
+    [DestinyOffset(0x10)]
+    public Vector4 Unk10;
+    public Vector4 Unk20;
+    [DestinyField(FieldType.TablePointer)]
+    public List<D2Class_706C8080> Unk30;
+    [DestinyField(FieldType.TablePointer)]
+    public List<D2Class_4F9F8080> Unk40;
+    [DestinyOffset(0x58), DestinyField(FieldType.TagHash)]
+    public Tag<D2Class_B1938080> Unk58;
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0xF0)]
+public struct D2Class_706C8080 //?????????
+{
+    public Vector4 Unk00;
+    public Vector4 Unk10;
+    public Vector4 Unk20;
+    public Vector4 Unk30;
+    public Vector4 Unk40;
+    public Vector4 Unk50;
+    public Vector4 Unk60;
+    public Vector4 Unk70;
+    public Vector4 Unk80;
+    public Vector4 Unk90;
+    public Vector4 UnkA0;
+    public Vector4 UnkB0;
+    [DestinyField(FieldType.TagHash)]
+    public Material UnkC0;
+    [DestinyField(FieldType.TagHash)]
+    public Material UnkC4;
+    [DestinyField(FieldType.TagHash)]
+    public Material UnkC8;
+    [DestinyField(FieldType.TagHash)]
+    public Tag<D2Class_A16D8080> UnkCC;
+    [DestinyField(FieldType.TagHash)]
+    public Tag<D2Class_A16D8080> UnkD0;
+    [DestinyOffset(0xDF)]
+    public byte UnkDF; //color index?
+
 }
 
 /// <summary>
@@ -329,7 +373,7 @@ public struct D2Class_B5678080
 [StructLayout(LayoutKind.Sequential, Size = 0x38)]
 public struct D2Class_786A8080
 {
-    public ulong FileSize;
+    public long FileSize;
 
     [DestinyOffset(0x18), DestinyField(FieldType.TagHash)]
     public Tag<D2Class_A16D8080> Unk10;
@@ -357,9 +401,11 @@ public struct D2Class_7D6A8080
 [StructLayout(LayoutKind.Sequential, Size = 0x80)]
 public struct D2Class_A16D8080
 {
-    public ulong FileSize;
+    public long FileSize;
+    [DestinyOffset(0x40), DestinyField(FieldType.TablePointer)]
+    public List<D2Class_90008080> Unk40; //first entry might be color?
     [DestinyOffset(0x60), DestinyField(FieldType.TablePointer)]
-    public List<D2Class_90008080> Unk60; //first entry might be color?
+    public List<D2Class_90008080> Unk60; //if first doesnt exist then use this one?
 }
 
 /// <summary>
@@ -458,7 +504,34 @@ public struct D2Class_A36A8080
 [StructLayout(LayoutKind.Sequential, Size = 0x60)]
 public struct D2Class_A76A8080
 {
+    public long FileSize;
+    [DestinyField(FieldType.TablePointer)]
+    public List<D2Class_A96A8080> Unk08;
+    [DestinyField(FieldType.TablePointer)]
+    public List<D2Class_B3938080> Unk18;
+    [DestinyField(FieldType.TablePointer)]
+    public List<D2Class_07008080> Unk28;
+}
 
+[StructLayout(LayoutKind.Sequential, Size = 0x90)]
+public struct D2Class_A96A8080
+{
+    public Vector4 Unk00;
+    public Vector4 Unk10;
+    public Vector4 Unk20;
+    public Vector4 Unk30;
+    public Vector4 Unk40;
+    public Vector4 Unk50;
+    [DestinyField(FieldType.TagHash)]
+    public Tag<D2Class_AE6A8080> Unk60;
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x10)]
+public struct D2Class_AE6A8080
+{
+    public long FileSize;
+    [DestinyField(FieldType.TagHash)]
+    public Tag<D2Class_076F8080> Unk08;
 }
 
 /// <summary>
@@ -477,7 +550,7 @@ public struct D2Class_55698080
 [StructLayout(LayoutKind.Sequential, Size = 0x78)]
 public struct D2Class_5B698080
 {
-    public ulong FileSize;
+    public long FileSize;
     [DestinyField(FieldType.TablePointer)]
     public List<D2Class_63698080> DecalResources;
     [DestinyOffset(0x18), DestinyField(FieldType.TablePointer)]
@@ -544,6 +617,23 @@ public struct D2Class_C0858080
 {
     [DestinyOffset(0x10), DestinyField(FieldType.TagHash)]
     public Tag Unk10;  // C2858080
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x18)]
+public struct D2Class_C2858080
+{
+    public long FileSize;
+    [DestinyField(FieldType.TablePointer)]
+    public List<D2Class_C4858080> Unk08;
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x30)]
+public struct D2Class_C4858080
+{
+    public DestinyHash Unk00;
+    [DestinyOffset(0x10)]
+    public Vector4 Unk10;
+    public Vector4 Unk20;
 }
 
 /// <summary>
@@ -655,6 +745,26 @@ public struct D2Class_6B6E8080
 /// <summary>
 /// Unk data resource.
 /// </summary>
+[StructLayout(LayoutKind.Sequential, Size = 0x28)]
+public struct D2Class_6E6E8080
+{
+    public long FileSize;
+    [DestinyField(FieldType.TablePointer)]
+    public List<D2Class_209F8080> Unk08;
+    [DestinyField(FieldType.TablePointer)]
+    public List<D2Class_716E8080> Unk18;
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x4)]
+public struct D2Class_716E8080
+{
+    public short Index; //index for 209F8080?
+    public short Entries;
+}
+
+/// <summary>
+/// Unk data resource.
+/// </summary>
 [StructLayout(LayoutKind.Sequential, Size = 0x10)]
 public struct D2Class_77968080
 {
@@ -669,7 +779,8 @@ public struct D2Class_77968080
 [StructLayout(LayoutKind.Sequential, Size = 0x4)]
 public struct D2Class_84958080
 {
-
+    [DestinyField(FieldType.TagHash)]
+    public Tag<D2Class_50968080> Unk00;
 }
 
 /// <summary>
@@ -701,7 +812,7 @@ public struct D2Class_88958080
     public long Unk00;
     public DestinyHash Unk08;
     public DestinyHash Unk0C;
-    [DestinyOffset(0x18)]
+    public long Unk10;
     public DestinyHash Unk18;
     public DestinyHash Unk1C;
 }
@@ -721,7 +832,9 @@ public struct D2Class_896E8080
 [StructLayout(LayoutKind.Sequential, Size = 0x14)]
 public struct D2Class_89958080
 {
-
+    public Vector4 Unk00;
+    public short Unk10;
+    public short Unk12;
 }
 
 /// <summary>
@@ -754,6 +867,8 @@ public struct D2Class_67958080
     public Tag Unk78; //7B958080
     [DestinyField(FieldType.TagHash)]
     public Tag Unk7C; //81958080
+    public DestinyHash Unk80;
+    public DestinyHash Unk84;
 }
 
 /// <summary>
@@ -774,7 +889,7 @@ public struct D2Class_F16C8080
 [StructLayout(LayoutKind.Sequential, Size = 0x48)]
 public struct D2Class_9D6A8080
 {
-    public ulong FileSize;
+    public long FileSize;
     [DestinyField(FieldType.TablePointer)]
     public List<D2Class_9F6A8080> Unk08;
     [DestinyOffset(0x18), DestinyField(FieldType.TablePointer)]

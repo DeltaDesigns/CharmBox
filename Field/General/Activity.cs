@@ -84,7 +84,7 @@ public struct D2Class_DE448080
 [StructLayout(LayoutKind.Sequential, Size = 0x18)]
 public struct D2Class_E1998080
 {
-    public ulong FileSize;
+    public long FileSize;
     [DestinyField(FieldType.TablePointer)]
     public List<D2Class_E3998080> Unk08;
 }
@@ -463,7 +463,7 @@ public struct D2Class_0C008080
 [StructLayout(LayoutKind.Sequential, Size = 0x38)]
 public struct D2Class_75988080
 {
-    public ulong Unk00;
+    public long Unk00;
     [DestinyField(FieldType.TagHash)]
     public Tag<D2Class_20808080> Unk08;
     [DestinyOffset(0x10), DestinyField(FieldType.RelativePointer)]

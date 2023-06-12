@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Security.Policy;
+using System.Text;
 using Field.Entities;
 
 namespace Field.Models;
@@ -147,4 +148,45 @@ public class Source2Handler
 			}
 		}
 	}
+
+	public static void SaveDecalVMAT(string savePath, string hash, Material materialHeader) //Testing
+	{
+        StringBuilder vmat = new StringBuilder();
+        vmat.AppendLine("Layer0 \n{");
+
+        
+        vmat.AppendLine($"  shader \"projected_decals.shader\"");
+
+        //Use just the first texture for the diffuse
+        if (materialHeader.Header.PSTextures.Count > 0)
+        {
+            if (materialHeader.Header.PSTextures[0].Texture is not null)
+                vmat.AppendLine($"  TextureColor \"materials/Textures/{materialHeader.Header.PSTextures[0].Texture.Hash}.png\"");
+        }
+        
+
+        foreach (var e in materialHeader.Header.PSTextures)
+        {
+            if (e.Texture == null)
+            {
+                continue;
+            }
+
+            vmat.AppendLine($"  TextureT{e.TextureIndex} \"materials/Textures/{e.Texture.Hash}.png\"");
+        }
+
+        vmat.AppendLine("}");
+
+        if (!File.Exists($"{savePath}/Source2/materials/{hash}_decal.vmat"))
+        {
+            try
+            {
+				Directory.CreateDirectory($"{savePath}/Source2/materials/");
+                File.WriteAllText($"{savePath}/Source2/materials/{hash}_decal.vmat", vmat.ToString());
+            }
+            catch (IOException)
+            {
+            }
+        }
+    }
 }

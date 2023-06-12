@@ -296,32 +296,49 @@ public partial class MapView : UserControl
                 }
                 if (entry.DataResource is D2Class_55698080 decals)
                 {
-                    foreach (var item in decals.Unk10.Header.DecalResources)
+                    if(decals.Unk10 is not null)
                     {
-                        // Check if the index is within the bounds of the second list
-                        if (item.Index >= 0 && item.Index < decals.Unk10.Header.Locations.Count)
+                        foreach (var item in decals.Unk10.Header.DecalResources)
                         {
-                            // Get the starting index and the number of entries to select
-                            int startIndex = item.Index;
-                            int numEntries = item.Entries;
-
-                            // Loop through the second list based on the given parameters
-                            for (int i = startIndex; i < startIndex + numEntries && i < decals.Unk10.Header.Locations.Count; i++)
+                            // Check if the index is within the bounds of the second list
+                            if (item.Index >= 0 && item.Index < decals.Unk10.Header.Locations.Count)
                             {
-                                var secondListEntry = decals.Unk10.Header.Locations[i];
-                                var boxCorners = decals.Unk10.Header.DecalProjectionBounds.Header.InstanceBounds[i];
+                                // Get the starting index and the number of entries to select
+                                int startIndex = item.Index;
+                                int numEntries = item.Entries;
 
-                                // Access the desired data from the second list entry
-                                Vector4 location = secondListEntry.Location;
+                                // Loop through the second list based on the given parameters
+                                for (int i = startIndex; i < startIndex + numEntries && i < decals.Unk10.Header.Locations.Count; i++)
+                                {
+                                    var secondListEntry = decals.Unk10.Header.Locations[i];
+                                    var boxCorners = decals.Unk10.Header.DecalProjectionBounds.Header.InstanceBounds[i];
 
-                                //item.Material.SavePixelShader($"{ConfigHandler.GetExportSavePath()}/test/");
-                                //item.Material.SaveAllTextures($"{ConfigHandler.GetExportSavePath()}/test/textures/");
+                                    // Access the desired data from the second list entry
+                                    Vector4 location = secondListEntry.Location;
 
-                                //fbxHandler.AddEmptyToScene($"{item.Material.Hash} {boxCorners.Unk24}", location, Vector4.Zero);
-                                fbxHandler.InfoHandler.AddDecal(boxCorners.Unk24.GetHashString(), item.Material.Hash, location, boxCorners.Corner1, boxCorners.Corner2);
-                                fbxHandler.InfoHandler.AddMaterial(item.Material);
+                                    //item.Material.SavePixelShader($"{ConfigHandler.GetExportSavePath()}/test/");
+                                    //item.Material.SaveAllTextures($"{ConfigHandler.GetExportSavePath()}/test/textures/");
+                                    //Source2Handler.SaveDecalVMAT($"{ConfigHandler.GetExportSavePath()}/test/", item.Material.Hash, item.Material);
+
+                                    //fbxHandler.AddEmptyToScene($"{item.Material.Hash} {boxCorners.Unk24}", location, Vector4.Zero);
+                                    fbxHandler.InfoHandler.AddDecal(boxCorners.Unk24.GetHashString(), item.Material.Hash, location, boxCorners.Corner1, boxCorners.Corner2);
+                                    fbxHandler.InfoHandler.AddMaterial(item.Material);
+                                }
                             }
                         }
+                    }
+                }
+                if (entry.DataResource is D2Class_B5678080 light)
+                {
+                    //Seem correct enough, no idea about radius and intensity
+                    fbxHandler.InfoHandler.AddLight(light.Unk10.Hash, "Point", entry.Translation, entry.Rotation, (light.Unk10.Header.Unk10.Header.Unk40.Count == 0 ? light.Unk10.Header.Unk10.Header.Unk60[0].Unk00 : light.Unk10.Header.Unk10.Header.Unk40[0].Unk00));
+                }
+                if (entry.DataResource is D2Class_636A8080 areaLight)
+                {
+                    for (int i = 0; i < areaLight.Unk10.Header.Unk30.Count; i++)
+                    {
+                        //these lights are gonna kill me. I dont understand..
+                        fbxHandler.InfoHandler.AddLight(areaLight.Unk10.Header.Unk30[i].UnkD0.Hash, "Area", areaLight.Unk10.Header.Unk40[i].Translation, areaLight.Unk10.Header.Unk40[i].Rotation, (areaLight.Unk10.Header.Unk30[i].UnkD0.Header.Unk40.Count > 0 ? areaLight.Unk10.Header.Unk30[i].UnkD0.Header.Unk40[0].Unk00 : areaLight.Unk10.Header.Unk30[i].UnkD0.Header.Unk60[0].Unk00));
                     }
                 }
             });

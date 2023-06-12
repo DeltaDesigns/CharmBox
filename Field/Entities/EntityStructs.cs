@@ -399,8 +399,8 @@ public struct D2Class_DC818080
 [StructLayout(LayoutKind.Sequential, Size = 0x20)]
 public struct D2Class_4F9F8080
 {
-    public Field.Models.Vector4 Rotation;
-    public Field.Models.Vector4 Translation;
+    public Vector4 Rotation;
+    public Vector4 Translation;
 }
 
 [StructLayout(LayoutKind.Sequential, Size = 8)]
@@ -583,7 +583,7 @@ public struct D2Class_6C6D8080
 [StructLayout(LayoutKind.Sequential, Size = 0x18)]
 public struct D2Class_F79A8080
 {
-    public ulong Unk00;
+    public long Unk00;
 }
 
 [StructLayout(LayoutKind.Sequential, Size = 4)]
@@ -1615,4 +1615,50 @@ public struct D2Class_95668080 //Dataresource for cubemaps
     public TextureHeader CubemapTexture;
     [DestinyOffset(0x1C0), DestinyField(FieldType.TagHash)]
     public TextureHeader Unk1C0; //Sometype of reflection tint texture idk
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x28)]
+public struct D2Class_E7878080
+{
+    [DestinyOffset(0x18), DestinyField(FieldType.TagHash)]
+    public Tag<D2Class_3D888080> Unk18;
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x30)]
+public struct D2Class_3D888080
+{
+    public long FileSize;
+    [DestinyField(FieldType.TagHash)]
+    public Tag<D2Class_3F888080> Unk08;
+    [DestinyField(FieldType.TagHash)]
+    public Tag<D2Class_41888080> Unk0C;
+    public Vector4 Unk10; //Bounds?
+    public Vector4 Unk20;
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x280)]
+public struct D2Class_3F888080
+{
+    [DestinyOffset(0x38), DestinyField(FieldType.TablePointer)]
+    public List<D2Class_29888080> Unk38;
+    [DestinyField(FieldType.TablePointer)]
+    public List<D2Class_45888080> Unk48;
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x250)]
+public struct D2Class_41888080
+{
+
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x3C)]
+public struct D2Class_29888080
+{
+
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x6)]
+public struct D2Class_45888080
+{
+
 }

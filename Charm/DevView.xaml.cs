@@ -146,8 +146,8 @@ public partial class DevView : UserControl
                 }
                 else
                 {
-                    //SearchFloatRangeInBins(7.32417f, 7.326f);
-                    SearchStringInFiles("cubemap");
+                    SearchFloatRangeInBins(128.4f, 128.6f);
+                    //SearchStringInFiles("intensity");
                     
                     //if (_cachedTags == null || _cachedTags.Count == 0)
                     //{
@@ -469,33 +469,33 @@ public partial class DevView : UserControl
 
         foreach (string filePath in binFiles)
         {
-            //Console.WriteLine("Searching in: " + filePath);
+            // Convert the search value to a byte array
+            byte[] searchBytes = BitConverter.GetBytes(searchValue);
+
             // Read the binary file
             using (FileStream fs = File.OpenRead(filePath))
             {
-                byte[] buffer = new byte[sizeof(Int32)];
+                byte[] buffer = new byte[searchBytes.Length];
                 int bytesRead;
-
-                long positionOffset = 0;
 
                 while ((bytesRead = fs.Read(buffer, 0, buffer.Length)) > 0)
                 {
-                    for (int i = 0; i < bytesRead - sizeof(UInt32) + 1; i++)
+                    // Compare the read bytes with the search bytes
+                    for (int i = 0; i < bytesRead - searchBytes.Length + 1; i++)
                     {
-                        Int32 value = BitConverter.ToInt32(buffer, i);
-                        if (value == searchValue)
+                        if (ByteArrayEquals(buffer, i, searchBytes))
                         {
-                            long position = positionOffset + fs.Position - buffer.Length + i;
-                            Console.WriteLine($"{filePath}");
-                            Console.WriteLine("Match found at offset: 0x" + position.ToString("X"));
+                            // Match found, do something with the position or handle the match
+                            long position = fs.Position - buffer.Length + i;
                             found++;
+                            Console.WriteLine($"{filePath}");
+                            Console.WriteLine("Match found at position: 0x" + position.ToString("X"));
                         }
                     }
-                    positionOffset += bytesRead;
                 }
             }
         }
-        if(found == 0)
+        if (found == 0)
         {
             Console.WriteLine("Found 0 matches, trying h64...");
             SearchBins64(TagHash64Handler.Get64From32(searchValue));
@@ -542,6 +542,7 @@ public partial class DevView : UserControl
     {
         string strHash = TagHashBox.Text.Replace(" ", "");
         var hash = GetTagHash(strHash);
+        Console.WriteLine($"{hash.Hash}");
 
         if(!strHash.EndsWith("8080") && strHash.Length == 8)
         {
@@ -554,7 +555,7 @@ public partial class DevView : UserControl
         }
         else
         {
-            SearchBins32(Convert.ToUInt32(strHash));
+            SearchBins32(hash.Hash);
         }
         //if (strHash.EndsWith("8080"))
         //{
