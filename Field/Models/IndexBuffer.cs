@@ -34,11 +34,18 @@ public class IndexBuffer : Tag
                 }
                 else
                 {
-                    handle.BaseStream.Seek(offset * 2, SeekOrigin.Begin);
-                    for (uint i = 0; i < count; i+= 3)
+                    try
                     {
-                        indices.Add(new UIntVector3(handle.ReadUInt16(), handle.ReadUInt16(), handle.ReadUInt16()));
-                    }   
+                        handle.BaseStream.Seek(offset * 2, SeekOrigin.Begin);
+                        for (uint i = 0; i < count; i += 3)
+                        {
+                            indices.Add(new UIntVector3(handle.ReadUInt16(), handle.ReadUInt16(), handle.ReadUInt16()));
+                        }
+                    }
+                    catch (Exception e) 
+                    { 
+                    }
+                      
                 }
             }
             else if (indexFormat == EPrimitiveType.TriangleStrip)

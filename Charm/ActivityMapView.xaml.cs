@@ -143,7 +143,7 @@ public partial class ActivityMapView : UserControl
             }
         });
 
-        //FbxHandler dynamicPoints = new FbxHandler(false);
+        FbxHandler dynamicPoints = new FbxHandler(false);
         Parallel.ForEach(bubbleMaps.Header.MapResources, m => //Need to do this after the main static maps have been added so we can get the map ambient entities that arent in the static maps
         {
             if (m.MapResource.Header.DataTables.Count > 0)
@@ -153,22 +153,50 @@ public partial class ActivityMapView : UserControl
                     //Console.WriteLine($"{a.DataTable.Hash}");
                     foreach (var b in a.DataTable.Header.DataEntries)
                     {
-                        //dynamicPoints.AddEmptyToScene($"{a.DataTable.Hash} {b.Entity}", b.Translation, b.Rotation);
-                        //if (b.DataResource is D2Class_B5678080 a1)
-                        //{
-                        //    //dynamicPoints.AddEmptyToScene($"{a1.Unk10.Header.Unk10.Hash}", b.Translation, b.Rotation);
-                        //    //Console.WriteLine($"{m.MapResource.Hash} {a1.Unk10.Header.Unk10}");      
-                        //}
-                        if (b.DataResource is D2Class_636A8080 a2)
+                        //dynamicPoints.AddEmptyToScene($"{a.DataTable.Hash} {b.DataResource}", b.Translation, b.Rotation);
+                        if (b.DataResource is D2Class_C36C8080 a1)
                         {
-                            //Console.WriteLine($"{a.DataTable.Hash} {a2.Unk10.Header.Unk30.Count}");
-                            for (int i = 0; i < a2.Unk10.Header.Unk30.Count; i++)
+                            if (a1.Unk10 is not null)
                             {
-                                //var vec = a2.Unk10.Header.Unk30[i].UnkD0.Header.Unk40[a2.Unk10.Header.Unk30[i].UnkDF].Unk00;
-                                Console.WriteLine($"{a2.Unk10.Header.Unk30[i].UnkD0.Hash} {a2.Unk10.Header.Unk58.Header.InstanceBounds[i].Unk24}");
-                                //dynamicPoints.AddEmptyToScene($"{a2.Unk10.Header.Unk30[i].UnkCC.Hash} {a2.Unk10.Header.Unk58.Header.InstanceBounds[i].Unk24} {i}", a2.Unk10.Header.Unk40[i].Translation, a2.Unk10.Header.Unk40[i].Rotation);
+                                foreach(var a2 in a1.Unk10.Header.Unk08)
+                                {
+                                    //foreach (var a3 in a2.Unk00.Header.Unk08.Header.Meshes)
+                                    //{
+                                    //    Console.WriteLine($"{a3.Vertices1.Hash} {a3.Vertices2?.Hash} {a3.Parts.Count}");   
+                                    //}
+
+                                    EntityModel model = new(a2.Unk00.Header.Unk08.Hash);
+                                    var parts = model.Load(ELOD.MostDetail, b.Entity.ModelParentResource);
+                                    //Console.WriteLine($"{parts.Count}");
+                                    foreach (var part in parts)
+                                    {
+                                        if (part.Material.Header.PSTextures.Count == 0) //Dont know if this will 100% "fix" the duplicate meshs that come with entities
+                                        {
+                                            continue;
+                                        }
+                                        
+                                        dynamicPoints.AddMeshPartToScene(part, part.Index, $"{model.Hash}_{part.Index}_{part.GroupIndex}");
+                                        part.Material.SaveAllTextures($"{ConfigHandler.GetExportSavePath()}/test/");
+                                    }
+                                }
                             }
+                                
                         }
+                        //if (b.DataResource is D2Class_406A8080 a1)
+                        //{
+                        //    if(a1.Unk10 is not null)
+                        //        Console.WriteLine($"{a1.Unk10.Header.Unk08.Buffer.Hash}");      
+                        //}
+                        //if (b.DataResource is D2Class_636A8080 a2)
+                        //{
+                        //    //Console.WriteLine($"{a.DataTable.Hash} {a2.Unk10.Header.Unk30.Count}");
+                        //    for (int i = 0; i < a2.Unk10.Header.Unk30.Count; i++)
+                        //    {
+                        //        //var vec = a2.Unk10.Header.Unk30[i].UnkD0.Header.Unk40[a2.Unk10.Header.Unk30[i].UnkDF].Unk00;
+                        //        //Console.WriteLine($"{a2.Unk10.Header.Unk30[i].UnkD0.Hash} {a2.Unk10.Header.Unk58.Header.InstanceBounds[i].Unk24}");
+                        //        //dynamicPoints.AddEmptyToScene($"{a2.Unk10.Header.Unk30[i].UnkCC.Hash} {a2.Unk10.Header.Unk58.Header.InstanceBounds[i].Unk24} {i}", a2.Unk10.Header.Unk40[i].Translation, a2.Unk10.Header.Unk40[i].Rotation);
+                        //    }
+                        //}
 
                         if (b.DataResource is not null && b.DataResource is not D2Class_C96C8080)
                         {
@@ -202,15 +230,16 @@ public partial class ActivityMapView : UserControl
             Name = "Select all"
         });
         StaticList.ItemsSource = sortedItems;
-        //dynamicPoints.ExportScene($"{ConfigHandler.GetExportSavePath()}/{bubbleMaps.Hash.GetHashString()}_Empties.fbx");
-        //dynamicPoints.Dispose();
+        dynamicPoints.ExportScene($"{ConfigHandler.GetExportSavePath()}/{bubbleMaps.Hash.GetHashString()}_Empties.fbx");
+        dynamicPoints.Dispose();
     }
 
     private void PopulateDynamicsList(Tag<D2Class_07878080> map)//(Tag<D2Class_01878080> bubbleMaps)
     {
         //FbxHandler dynamicPoints = new FbxHandler(false);
 
-        ConcurrentBag<DisplayDynamicMap> items = new ConcurrentBag<DisplayDynamicMap>();   
+        ConcurrentBag<DisplayDynamicMap> items = new ConcurrentBag<DisplayDynamicMap>();
+        MainWindow.Progress.SetProgressStages(new List<string> { "Loading Entities" });
         Parallel.ForEach(map.Header.DataTables, data =>
         {
             data.DataTable.Header.DataEntries.ForEach(entry =>
@@ -232,7 +261,7 @@ public partial class ActivityMapView : UserControl
                 //    Console.WriteLine($"{data.DataTable.Hash} - {entry.Entity.Hash}");
                 //}
                 if (!items.Contains(new DisplayDynamicMap { Hash = entry.Entity.Hash }))
-                {  
+                {
                     if (entry.Entity.HasGeometry())
                     {
                         items.Add(new DisplayDynamicMap
@@ -242,48 +271,9 @@ public partial class ActivityMapView : UserControl
                         });
                     }
                 }
-                //if (entry.DataResource is D2Class_55698080 decals)
-                //{
-                //    //Material list contains material and 2 shorts, first short is the index in Locations,
-                //    //second is the number of Location entries to read
-
-                //    Console.WriteLine($"{data.DataTable.Hash} {decals.Unk10.Header.Locations.Count}");
-
-                //    foreach (var item in decals.Unk10.Header.DecalResources)
-                //    {
-                //        // Check if the index is within the bounds of the second list
-                //        if (item.Index >= 0 && item.Index < decals.Unk10.Header.Locations.Count)
-                //        {
-                //            // Get the starting index and the number of entries to select
-                //            int startIndex = item.Index;
-                //            int numEntries = item.Entries;
-
-                //            Console.WriteLine($"Start index {startIndex} Num Entries {numEntries}");
-                //            // Loop through the second list based on the given parameters
-                //            for (int i = startIndex; i < startIndex + numEntries && i < decals.Unk10.Header.Locations.Count; i++)
-                //            {
-                //                var secondListEntry = decals.Unk10.Header.Locations[i];
-                //                var boxCorners = decals.Unk10.Header.DecalProjectionBounds.Header.InstanceBounds[i];
-
-                //                // Access the desired data from the second list entry
-                //                Vector4 location = secondListEntry.Location;
-
-                //                // Do whatever you need with the retrieved data
-                //                Console.WriteLine($"Material: {item.Material.Hash}");
-                //                Console.WriteLine($"Location: {location.X} {location.Y} {location.Z}");
-                //                Console.WriteLine($"Box {boxCorners.Unk24}: Corner 1 {boxCorners.Corner1.X} {boxCorners.Corner1.Y} {boxCorners.Corner1.Z} | Corner 2 {boxCorners.Corner2.X} {boxCorners.Corner2.Y} {boxCorners.Corner2.Z} ");
-
-                //                //item.Material.SavePixelShader($"{ConfigHandler.GetExportSavePath()}/test/");
-                //                //item.Material.SaveAllTextures($"{ConfigHandler.GetExportSavePath()}/test/textures/");
-
-                //                //dynamicPoints.AddEmptyToScene($"{item.Material.Hash} {boxCorners.Unk24}", location, Vector4.Zero);
-                //            }
-                //            Console.WriteLine("-----");
-                //        }
-                //    }
-                //}
             });
         });
+        MainWindow.Progress.CompleteStage();
         var sortedItems = new List<DisplayDynamicMap>(items);
         sortedItems.Sort((a, b) => b.Hash.CompareTo(a.Hash));
         sortedItems.Insert(0, new DisplayDynamicMap

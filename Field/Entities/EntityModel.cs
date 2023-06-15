@@ -71,7 +71,7 @@ public class EntityModel : Tag
     private List<DynamicPart> GenerateParts(Dictionary<int, D2Class_CB6E8080> dynamicParts, EntityResource parentResource)
     {
         List<DynamicPart> parts = new List<DynamicPart>();
-        if (Header.Meshes.Count > 1) throw new Exception("Multiple meshes not supported");
+        //if (Header.Meshes.Count > 1) throw new Exception("Multiple meshes not supported");
         if (Header.Meshes.Count == 0) return new List<DynamicPart>();
         D2Class_C56E8080 mesh = Header.Meshes[0];
         
@@ -113,7 +113,7 @@ public class DynamicPart : Part
     {
         IndexOffset = part.IndexOffset;
         IndexCount = part.IndexCount;
-        PrimitiveType = (EPrimitiveType)part.PrimitiveType;
+        PrimitiveType = (EPrimitiveType)part.PrimitiveType;      
         if (part.VariantShaderIndex == -1)
         {
             Material = part.Material;
@@ -142,7 +142,8 @@ public class DynamicPart : Part
         VertexIndices = uniqueVertexIndices.ToList();
         // Have to call it like this b/c we don't know the format of the vertex data here
         mesh.Vertices1.Buffer.ParseBuffer(this, uniqueVertexIndices);
-        mesh.Vertices2.Buffer.ParseBuffer(this, uniqueVertexIndices);
+        if(mesh.Vertices2 is not null)
+            mesh.Vertices2.Buffer.ParseBuffer(this, uniqueVertexIndices);
         if (mesh.OldWeights != null)
         {
             mesh.OldWeights.Buffer.ParseBuffer(this, uniqueVertexIndices);

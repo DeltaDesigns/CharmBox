@@ -13,10 +13,6 @@ using Field.General;
 using Field.Models;
 using Field.Entities;
 using Field.Statics;
-using Serilog;
-using HelixToolkit.SharpDX.Core.Model.Scene;
-using SharpDX.Direct3D9;
-using System.Security.Policy;
 
 namespace Charm;
 

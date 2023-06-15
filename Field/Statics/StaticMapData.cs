@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices;
 using Field.Entities;
 using Field.General;
+using Field.Investment;
 using Field.Models;
 using Field.Statics;
 using static Field.General.PackageHandler;
@@ -906,4 +907,56 @@ public struct D2Class_9F6A8080
 {
     [DestinyField(FieldType.TablePointer)]
     public List<D2Class_0B008080> Unk00;
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x70)]
+public struct D2Class_D4688080
+{
+    [DestinyOffset(0x10), DestinyField(FieldType.TagHash)]
+    public Tag<D2Class_076F8080> Unk10;
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x18)]
+public struct D2Class_406A8080
+{
+    [DestinyOffset(0x10), DestinyField(FieldType.TagHash)]
+    public Tag<D2Class_196D8080> Unk10;
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x78)]
+public struct D2Class_196D8080 
+{
+    public long FileSize;
+    [DestinyField(FieldType.TagHash)]
+    public VertexHeader Unk08;
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x18)]
+public struct D2Class_C36C8080 //Foliage?
+{
+    [DestinyOffset(0x10), DestinyField(FieldType.TagHash)]
+    public Tag<D2Class_986C8080> Unk10;
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0xA0)]
+public struct D2Class_986C8080
+{
+    public long FileSize;
+    [DestinyField(FieldType.TablePointer)]
+    public List<D2Class_B16C8080> Unk08;
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x4)]
+public struct D2Class_B16C8080
+{
+    [DestinyField(FieldType.TagHash)]
+    public Tag<D2Class_B26C8080> Unk00;
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x100)]
+public struct D2Class_B26C8080
+{
+    public long FileSize;
+    [DestinyField(FieldType.TagHash)]
+    public Tag<D2Class_076F8080> Unk08;
 }

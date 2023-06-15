@@ -21,6 +21,7 @@ public class VertexBuffer : Tag
     {
         using (var handle = GetHandle())
         {
+            Console.WriteLine($"{part.Material.Hash} {Hash} {header.Stride.ToString("X")}({header.Stride}) {header.Type}");
             foreach (var vertexIndex in uniqueVertexIndices)
             {
                 ReadVertexData(part, vertexIndex, handle);
@@ -30,6 +31,7 @@ public class VertexBuffer : Tag
 
     private void ReadVertexData(Part part, uint vertexIndex, BinaryReader handle)
     {
+        //Console.WriteLine($"{Hash} {vertexIndex} {header.Stride.ToString("X")}({header.Stride}) {header.Type}");
         handle.BaseStream.Seek(vertexIndex * header.Stride, SeekOrigin.Begin);
         bool status = false;
         switch (header.Type)
@@ -86,6 +88,28 @@ public class VertexBuffer : Tag
                 part.VertexPositions.Add(new Vector4(handle.ReadInt16(), handle.ReadInt16(), handle.ReadInt16(), handle.ReadInt16(), true));
                 part.VertexNormals.Add(new Vector4(handle.ReadInt16(), handle.ReadInt16(), handle.ReadInt16(), handle.ReadInt16(), true));
                 part.VertexTangents.Add(new Vector4(handle.ReadInt16(), handle.ReadInt16(), handle.ReadInt16(), handle.ReadInt16(), true));
+                break;
+
+            case 0x1C:
+                part.VertexPositions.Add(new Vector4(handle.ReadInt16(), handle.ReadInt16(), handle.ReadInt16(), handle.ReadInt16(), true));
+                part.VertexTangents.Add(new Vector4(handle.ReadInt16(), handle.ReadInt16(), handle.ReadInt16(), handle.ReadInt16(), true));
+                part.VertexTexcoords.Add(new Vector2(handle.ReadInt16(), handle.ReadInt16()));
+                break;
+            case 0x20:
+                part.VertexPositions.Add(new Vector4(handle.ReadInt16(), handle.ReadInt16(), handle.ReadInt16(), handle.ReadInt16(), true));
+                part.VertexTexcoords.Add(new Vector2(handle.ReadInt16(), handle.ReadInt16()));
+                part.VertexNormals.Add(new Vector4(handle.ReadInt16(), handle.ReadInt16(), handle.ReadInt16(), handle.ReadInt16(), true));
+                part.VertexTangents.Add(new Vector4(handle.ReadInt16(), handle.ReadInt16(), handle.ReadInt16(), handle.ReadInt16(), true));
+                part.VertexColours.Add(new Vector4(handle.ReadByte(), handle.ReadByte(), handle.ReadByte(), handle.ReadByte()));
+                break;
+            case 0x28:
+                part.VertexPositions.Add(new Vector4(handle.ReadInt16(), handle.ReadInt16(), handle.ReadInt16(), handle.ReadInt16(), true));
+                part.VertexTangents.Add(new Vector4(handle.ReadInt16(), handle.ReadInt16(), handle.ReadInt16(), handle.ReadInt16(), true));
+                part.VertexTexcoords.Add(new Vector2(handle.ReadInt16(), handle.ReadInt16()));
+                part.VertexColours.Add(new Vector4(handle.ReadByte(), handle.ReadByte(), handle.ReadByte(), handle.ReadByte()));
+                
+                var padding = handle.ReadInt32();
+                part.VertexNormals.Add(new Vector4(handle.ReadInt16(), handle.ReadInt16(), handle.ReadInt16(), handle.ReadInt16(), true));
                 break;
             default:
                 return false;

@@ -103,7 +103,7 @@ public class Terrain : Tag
                     fbxHandler.InfoHandler.AddCustomTexture(part.Material.Hash, terrainTextureIndex, Header.MeshGroups[part.GroupIndex].Dyemap);
                 }
 
-                if (FieldConfigHandler.GetS2VMATExportEnabled())
+                if (FieldConfigHandler.GetS2ShaderExportEnabled())
                 { 
                     if (File.Exists($"{saveDirectory}/Shaders/Source2/materials/{part.Material.Hash}.vmat"))
                     {

@@ -146,7 +146,7 @@ public partial class DevView : UserControl
                 }
                 else
                 {
-                    SearchFloatRangeInBins(3.47f, 3.5f);
+                    SearchFloatRangeInBins(31.23f, 31.24f);
                     //SearchStringInFiles("intensity");
                     
                     //if (_cachedTags == null || _cachedTags.Count == 0)
@@ -546,11 +546,11 @@ public partial class DevView : UserControl
 
         if(!strHash.EndsWith("8080") && strHash.Length == 8)
         {
-            if (!hash.IsValid() && strHash.Length != 4)
-            {
-                TagHashBox.Text = "INVALID HASH";
-                return;
-            }
+            //if (!hash.IsValid() && strHash.Length != 4)
+            //{
+            //    TagHashBox.Text = "INVALID HASH";
+            //    return;
+            //}
             SearchBins32(hash.Hash);
         }
         else

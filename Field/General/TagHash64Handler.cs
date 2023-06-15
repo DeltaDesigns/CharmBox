@@ -52,10 +52,11 @@ public class TagHash64Handler
     
     public static bool CheckTagHash64Valid(ulong hash)
     {
-        if ((hash & 0xffff) != 0)  // Only want to accept a subset of them
-        {
-            return false;
-        }
+        //if ((hash & 0xffff) != 0)  // Only want to accept a subset of them
+        //{
+        //    Console.WriteLine($"{hash} {hash & 0xffff}");
+        //    return false;
+        //} //Commented out because its making some stuff I want to export null
         return true;
     }
 
