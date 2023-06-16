@@ -371,26 +371,27 @@ public class UsfConverter
                 usf.AppendLine($"   {texture.Type} {texture.Variable},");
             }
 
-            usf.AppendLine($"   float2 tx)");
+            usf.AppendLine($"   float2 tx,");
+            usf.AppendLine($"   float3 vc,");
+            usf.AppendLine($"   float vcw)"); //UE5 Vertex color node doesnt support RGBA output for some reason?
 
             usf.AppendLine("{").AppendLine("    FMaterialAttributes output;");
             // Output render targets, todo support vertex shader
             usf.AppendLine("    float4 o0,o1,o2;");
+
+            usf.AppendLine("        float4 v0 = {0,0,1,1};");
+            usf.AppendLine("        float4 v1 = {1,0,0,1};");
+            usf.AppendLine("        float4 v2 = {0,1,0,1};");
+            usf.AppendLine("        float4 v3 = {tx.xy, 1,1};");
+            usf.AppendLine("        float4 v4 = {vc.xyz, vcw};");
+            usf.AppendLine("        float4 v5 = {1,1,1,1};");
+
             foreach (var i in inputs)
             {
-                if (i.Type == "float4")
+                if (i.Type == "uint")
                 {
-                    usf.AppendLine($"    {i.Variable}.xyzw = {i.Variable}.xyzw * tx.xyxy;");
+                    usf.AppendLine($"    {i.Variable}.x = {i.Variable}.x;");
                 }
-                else if (i.Type == "float3")
-                {
-                    usf.AppendLine($"    {i.Variable}.xyz = {i.Variable}.xyz * tx.xyx;");
-                }
-                else if (i.Type == "uint")
-                {
-                    usf.AppendLine($"    {i.Variable}.x = {i.Variable}.x * tx.x;");
-                }
-                usf.Replace("v0.xyzw = v0.xyzw * tx.xyxy;", "v0.xyzw = v0.xyzw;");
             }
         }
     }
@@ -465,8 +466,8 @@ public class UsfConverter
         float3 biased_normal = o1.xyz - float3(0.5, 0.5, 0.5);
         float normal_length = length(biased_normal);
         float3 normal_in_world_space = biased_normal / normal_length;
-        normal_in_world_space.z = sqrt(1.0 - saturate(dot(normal_in_world_space.xy, normal_in_world_space.xy)));
-        output.Normal = normalize((normal_in_world_space * 2 - 1.35)*0.5 + 0.5);
+        
+        output.Normal = normal_in_world_space.xyz;
 
         // Roughness
         float smoothness = saturate(8 * (normal_length - 0.375));
@@ -489,7 +490,7 @@ public class UsfConverter
         usf.AppendLine("}").AppendLine("};");
         if (!bIsVertexShader)
         {
-            usf.AppendLine("shader s;").AppendLine($"return s.main({String.Join(',', textures.Select(x => x.Variable))},tx);");
+            usf.AppendLine("shader s;").AppendLine($"return s.main({String.Join(',', textures.Select(x => x.Variable))},tx,vc,vcw);");
         }
     }
 }
