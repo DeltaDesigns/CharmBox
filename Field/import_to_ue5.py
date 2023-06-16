@@ -35,8 +35,10 @@ class CharmImporter:
         unreal.EditorAssetLibrary.save_directory(f"/Game/{self.content_path}/", False)
         
     def assemble_map(self) -> None:
-        # Create new level asset
-        unreal.EditorLevelLibrary.new_level(f'/Game/{self.content_path}/map_{self.config["MeshName"]}')
+        # Create new level asset if there isnt one active already
+        #world = unreal.EditorLevelLibrary.get_editor_world()
+        #if not "map_" in world.get_name():
+            #unreal.EditorLevelLibrary.new_level(f'/Game/{self.content_path}/map_{self.config["MeshName"]}')
         
         static_names = {}
         for x in unreal.EditorAssetLibrary.list_assets(f'/Game/{self.content_path}/Statics/', recursive=False):
@@ -55,6 +57,9 @@ class CharmImporter:
                 print(f"Failed on {static}")
             for part in parts:
                 sm = unreal.EditorAssetLibrary.load_asset(part)
+                sm.set_editor_property('complex_collision_mesh', sm) #idk how bad this is for performance
+                sm.set_editor_property('customized_collision', True)
+                sm.get_editor_property('body_setup').set_editor_property('collision_trace_flag', unreal.CollisionTraceFlag.CTF_USE_COMPLEX_AS_SIMPLE)
                 for instance in instances:
                     quat = unreal.Quat(instance["Rotation"][0], instance["Rotation"][1], instance["Rotation"][2], instance["Rotation"][3])
                     euler = quat.euler()
@@ -102,7 +107,7 @@ class CharmImporter:
         #     #                                        False)
         #     # actor.set_editor_property('root_component', instance_component)
         unreal.EditorLevelLibrary.save_current_level()
-    
+
     def assign_map_materials(self) -> None:
         for x in unreal.EditorAssetLibrary.list_assets(f'/Game/{self.content_path}/Statics/', recursive=False):
             # Identify static mesh
@@ -114,12 +119,11 @@ class CharmImporter:
             new_mesh_materials = []
             for skeletal_material in mesh_materials:
                 slot_name = skeletal_material.get_editor_property("material_slot_name").__str__()
-                slot_name = '_'.join(slot_name.split('_')[:-1])
+                slot_name = slot_name[:8]
                 for material in material_slot_name_dict.values():
                     if slot_name in material.get_name():
                         skeletal_material.set_editor_property("material_interface", material)
                 new_mesh_materials.append(skeletal_material)
-            print(new_mesh_materials)
             mesh.set_editor_property("static_materials", new_mesh_materials)
     
     def assign_static_materials(self) -> None:
@@ -132,12 +136,11 @@ class CharmImporter:
         new_mesh_materials = []
         for skeletal_material in mesh_materials:
             slot_name = skeletal_material.get_editor_property("material_slot_name").__str__()
-            slot_name = '_'.join(slot_name.split('_')[:-1])
+            slot_name = slot_name[:8]
             for material in material_slot_name_dict.values():
                 if slot_name in material.get_name():
                     skeletal_material.set_editor_property("material_interface", material)
             new_mesh_materials.append(skeletal_material)
-        print(new_mesh_materials)
         mesh.set_editor_property("static_materials", new_mesh_materials)
 
     def assign_entity_materials(self) -> None:
@@ -150,12 +153,11 @@ class CharmImporter:
         new_mesh_materials = []
         for skeletal_material in mesh_materials:
             slot_name = skeletal_material.get_editor_property("material_slot_name").__str__()
-            slot_name = '_'.join(slot_name.split('_')[:-1])
+            slot_name = slot_name[:8]
             for material in material_slot_name_dict.values():
                 if slot_name in material.get_name():
                     skeletal_material.set_editor_property("material_interface", material)
             new_mesh_materials.append(skeletal_material)
-        print(new_mesh_materials)
         mesh.set_editor_property("materials", new_mesh_materials)
 
     def import_entity_mesh(self) -> None:
@@ -200,6 +202,7 @@ class CharmImporter:
         options.static_mesh_import_data.set_editor_property('combine_meshes', combine)
         options.static_mesh_import_data.set_editor_property('generate_lightmap_u_vs', False)
         options.static_mesh_import_data.set_editor_property('auto_generate_collision', False)
+        options.static_mesh_import_data.set_editor_property('one_convex_hull_per_ucx', False)
         options.static_mesh_import_data.set_editor_property('normal_import_method', unreal.FBXNormalImportMethod.FBXNIM_IMPORT_NORMALS)
         options.static_mesh_import_data.set_editor_property("vertex_color_import_option", unreal.VertexColorImportOption.REPLACE)
         options.static_mesh_import_data.set_editor_property("build_nanite", False)  # todo add nanite option
@@ -211,8 +214,8 @@ class CharmImporter:
         # Get all materials we need
         materials = list(self.config["Materials"].keys())
 
-        # Check if materials exist already
-        existing_materials = [x.split('/')[-1].split('.')[0][2:] for x in unreal.EditorAssetLibrary.list_assets(f'/Game/{self.config["UnrealInteropPath"]}/Materials/', recursive=False) if unreal.EditorAssetLibrary.find_asset_data(x).asset_class == 'Material']
+        assets = unreal.EditorAssetLibrary.list_assets(f'/Game/{self.config["UnrealInteropPath"]}/Materials/', recursive=False)
+        existing_materials = [x.split('/')[-1].split('.')[0][2:] for x in assets ] #if unreal.EditorAssetLibrary.find_asset_data(x).asset_class == 'Material'
         materials_to_make = list(set(materials)-set(existing_materials))
 
         # If doesn't exist, make

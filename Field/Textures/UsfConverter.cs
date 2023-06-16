@@ -35,7 +35,7 @@ public struct Output
     public string Variable;
     public string Type;
     public int Index;
-    public string Semantic; 
+    public string Semantic;
 }
 
 public class UsfConverter
@@ -48,7 +48,7 @@ public class UsfConverter
     private List<Cbuffer> cbuffers = new List<Cbuffer>();
     private List<Input> inputs = new List<Input>();
     private List<Output> outputs = new List<Output>();
-    
+
     public string HlslToUsf(Material material, string hlslText, bool bIsVertexShader)
     {
         hlsl = new StringReader(hlslText);
@@ -154,11 +154,11 @@ public class UsfConverter
         // Try to find matches, pixel shader has Unk2D0 Unk2E0 Unk2F0 Unk300 available
         foreach (var cbuffer in cbuffers)
         {
-            if(bIsVertexShader)
+            if (bIsVertexShader)
                 usf.AppendLine($"static {cbuffer.Type} {cbuffer.Variable}[{cbuffer.Count}] = ").AppendLine("{");
             else
                 usf.AppendLine($"static {cbuffer.Type} {cbuffer.Variable}[{cbuffer.Count}] = ").AppendLine("{");
-            
+
             dynamic data = null;
             if (bIsVertexShader)
             {
@@ -180,7 +180,7 @@ public class UsfConverter
                 }
                 else
                 {
-                    
+
                     // if (material.Header.VSVector4Container.Hash != 0xffff_ffff)
                     // {
                     //     // Try the Vector4 storage file
@@ -231,11 +231,11 @@ public class UsfConverter
                             List<Vector4> float4s = new List<Vector4>();
                             for (int i = 0; i < containerData.Length / 16; i++)
                             {
-                                float4s.Add(StructConverter.ToStructure<Vector4>(containerData.Skip(i*16).Take(16).ToArray()));
+                                float4s.Add(StructConverter.ToStructure<Vector4>(containerData.Skip(i * 16).Take(16).ToArray()));
                             }
 
                             data = float4s;
-                        }                        
+                        }
                     }
 
                 }
@@ -247,17 +247,17 @@ public class UsfConverter
                 switch (cbuffer.Type)
                 {
                     case "float4":
-                        if(bIsVertexShader)
+                        if (bIsVertexShader)
                         {
                             if (data == null)
                             {
-                                 usf.AppendLine("    float4(1.0, 1.0, 1.0, 1.0),");
+                                usf.AppendLine("    float4(1.0, 1.0, 1.0, 1.0),");
                             }
-                            break;        
+                            break;
                         }
-                        
+
                         if (data == null)
-                        { 
+                        {
                             usf.AppendLine("    float4(0.0, 0.0, 0.0, 0.0),");
                         }
                         else
@@ -276,9 +276,9 @@ public class UsfConverter
                             }
                             catch (Exception e)  // figure out whats up here, taniks breaks it
                             {
-                                if(bIsVertexShader)
+                                if (bIsVertexShader)
                                 {
-                                    usf.AppendLine("    float4(1.0, 1.0, 1.0, 1.0),");        
+                                    usf.AppendLine("    float4(1.0, 1.0, 1.0, 1.0),");
                                 }
                                 else
                                     usf.AppendLine("    float4(0.0, 0.0, 0.0, 0.0),");
@@ -286,38 +286,38 @@ public class UsfConverter
                         }
                         break;
                     case "float3":
-                        if(bIsVertexShader)
+                        if (bIsVertexShader)
                         {
                             if (data == null)
                             {
-                                 usf.AppendLine("    float3(1.0, 1.0, 1.0),");
+                                usf.AppendLine("    float3(1.0, 1.0, 1.0),");
                             }
-                            break;        
+                            break;
                         }
                         if (data == null) usf.AppendLine("    float3(0.0, 0.0, 0.0),");
                         else usf.AppendLine($"    float3({data[i].Unk00.X}, {data[i].Unk00.Y}, {data[i].Unk00.Z}),");
                         break;
                     case "float":
-                        if(bIsVertexShader)
+                        if (bIsVertexShader)
                         {
                             if (data == null)
                             {
-                                 usf.AppendLine("    float(1.0),");
+                                usf.AppendLine("    float(1.0),");
                             }
-                            break;        
+                            break;
                         }
                         if (data == null) usf.AppendLine("    float(0.0),");
                         else usf.AppendLine($"    float4({data[i].Unk00}),");
                         break;
                     default:
                         throw new NotImplementedException();
-                }  
+                }
             }
 
             usf.AppendLine("};");
         }
     }
-    
+
     private void WriteFunctionDefinition(bool bIsVertexShader)
     {
         if (!bIsVertexShader)
@@ -437,7 +437,7 @@ public class UsfConverter
                     var sampleUv = line.Split(", ")[1].Split(")")[0];
                     var dotAfter = line.Split(").")[1];
                     // todo add dimension
-                    usf.AppendLine($"   {equal}= Material_Texture2D_{sortedIndices.IndexOf(texIndex)}.SampleLevel(Material_Texture2D_{sampleIndex-1}Sampler, {sampleUv}, 0).{dotAfter}");
+                    usf.AppendLine($"   {equal}= Material_Texture2D_{sortedIndices.IndexOf(texIndex)}.SampleLevel(Material_Texture2D_{sampleIndex - 1}Sampler, {sampleUv}, 0).{dotAfter}");
                 }
                 // todo add load, levelofdetail, o0.w, discard
                 else if (line.Contains("discard"))
