@@ -43,14 +43,6 @@ public partial class ActivityMapView : UserControl
 
         var maps = new ObservableCollection<DisplayBubble>();
 
-        Console.WriteLine($"Activity {activity.Hash}");
-        if (activity.Header.UnkActivity68 is not null)
-            Console.WriteLine($"UnkActivity68 {activity.Header.UnkActivity68.Hash}");
-
-        var tag2 = PackageHandler.GetTag<D2Class_8B8E8080>(activity.Header.Unk20.Hash);
-        Console.WriteLine($"D2Class_8B8E8080 {activity.Header.Unk20.Hash.ToString()} {tag2.Header.DestinationName} StringHashTable.Count {activity.Header.Unk20.Header.StringContainer?.Header.StringHashTable?.Count}");
-        Console.WriteLine($"{tag2.Header.Patrols?.Hash} Patrols: Unk18 {tag2.Header.Patrols?.Header.PatrolTable?.Hash} PatrolTableString {tag2.Header.Patrols?.Header.PatrolTablePath}");
-
         //foreach (var a in activity.Header.Unk20.Header.StringContainer.Header.StringHashTable)
         //{
         //    Console.WriteLine(activity.Header.Unk20.Header.StringContainer.GetStringFromHash(ELanguage.English, a));
@@ -66,7 +58,6 @@ public partial class ActivityMapView : UserControl
         //            Console.WriteLine($"{b.Unk00}");
         //        }
         //    }
-
 
         foreach (var mapEntry in activity.Header.Unk50)
         {
@@ -153,35 +144,58 @@ public partial class ActivityMapView : UserControl
                     //Console.WriteLine($"{a.DataTable.Hash}");
                     foreach (var b in a.DataTable.Header.DataEntries)
                     {
-                        //dynamicPoints.AddEmptyToScene($"{a.DataTable.Hash} {b.DataResource}", b.Translation, b.Rotation);
-                        if (b.DataResource is D2Class_C36C8080 a1)
-                        {
-                            if (a1.Unk10 is not null)
-                            {
-                                foreach(var a2 in a1.Unk10.Header.Unk08)
-                                {
-                                    //foreach (var a3 in a2.Unk00.Header.Unk08.Header.Meshes)
-                                    //{
-                                    //    Console.WriteLine($"{a3.Vertices1.Hash} {a3.Vertices2?.Hash} {a3.Parts.Count}");   
-                                    //}
+                        dynamicPoints.AddEmptyToScene($"{a.DataTable.Hash} {b.DataResource}", b.Translation, b.Rotation);
+                        //if (b.DataResource is D2Class_D4688080 a1)
+                        //{
+                        //    EntityModel model = new(a1.Unk10.Hash);
+                        //    var parts = model.Load(ELOD.MostDetail, b.Entity.ModelParentResource);
+                            
+                        //    foreach (var part in parts)
+                        //    {
+                        //        if (part.Material.Header.PSTextures.Count == 0)
+                        //        {
+                        //            continue;
+                        //        }
+                        //        Console.WriteLine($"{part.Material.Hash}");
+                        //        dynamicPoints.AddMeshPartToScene(part, part.Index, $"{model.Hash}_{part.Index}_{part.GroupIndex}");
+                        //        part.Material.SaveAllTextures($"{ConfigHandler.GetExportSavePath()}/test/");
+                        //    }
+                        //}
 
-                                    EntityModel model = new(a2.Unk00.Header.Unk08.Hash);
-                                    var parts = model.Load(ELOD.MostDetail, b.Entity.ModelParentResource);
-                                    //Console.WriteLine($"{parts.Count}");
-                                    foreach (var part in parts)
-                                    {
-                                        if (part.Material.Header.PSTextures.Count == 0) //Dont know if this will 100% "fix" the duplicate meshs that come with entities
-                                        {
-                                            continue;
-                                        }
-                                        
-                                        dynamicPoints.AddMeshPartToScene(part, part.Index, $"{model.Hash}_{part.Index}_{part.GroupIndex}");
-                                        part.Material.SaveAllTextures($"{ConfigHandler.GetExportSavePath()}/test/");
-                                    }
-                                }
-                            }
-                                
-                        }
+                        //if (b.DataResource is D2Class_C36C8080 a1)
+                        //{
+                        //    Console.WriteLine($"{a.DataTable.Hash}");
+                        //    if (a1.Unk10 is not null)
+                        //    {
+                        //        foreach (var a3 in a1.Unk10.Header.Unk4C.Header.InstanceBounds)
+                        //        {
+                        //            dynamicPoints.AddEmptyToScene($"{a3.Unk24}", (a3.Corner1 + a3.Corner2) / 2, new Vector4(0, 0, 0, 1));
+                        //        }
+
+                        //        foreach (var a2 in a1.Unk10.Header.Unk08)
+                        //        {
+
+                        //            //foreach (var a3 in a2.Unk00.Header.)
+                        //            //{
+                        //            //    Console.WriteLine($"{a3.Vertices1.Hash} {a3.Vertices2?.Hash} {a3.Parts.Count}");
+                        //            //}
+
+                        //            EntityModel model = new(a2.Unk00.Header.Unk08.Hash);
+                        //            var parts = model.Load(ELOD.MostDetail, b.Entity.ModelParentResource);
+                        //            //Console.WriteLine($"{parts.Count}");
+                        //            foreach (var part in parts)
+                        //            {
+                        //                if (part.Material.Header.PSTextures.Count == 0)
+                        //                {
+                        //                    continue;
+                        //                }
+
+                        //                dynamicPoints.AddMeshPartToScene(part, part.Index, $"{model.Hash}_{part.Index}_{part.GroupIndex}");
+                        //                part.Material.SaveAllTextures($"{ConfigHandler.GetExportSavePath()}/test/");
+                        //            }
+                        //        }
+                        //    }      
+                        //}
                         //if (b.DataResource is D2Class_406A8080 a1)
                         //{
                         //    if(a1.Unk10 is not null)

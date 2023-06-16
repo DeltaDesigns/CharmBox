@@ -944,6 +944,16 @@ public struct D2Class_986C8080
     public long FileSize;
     [DestinyField(FieldType.TablePointer)]
     public List<D2Class_B16C8080> Unk08;
+    [DestinyField(FieldType.TablePointer)]
+    public List<D2Class_07008080> Unk18;
+    [DestinyField(FieldType.TablePointer)]
+    public List<D2Class_07008080> Unk28;
+    [DestinyField(FieldType.TablePointer)]
+    public List<D2Class_07008080> Unk38;
+    [DestinyField(FieldType.TagHash)]
+    public Tag<D2Class_A46C8080> Unk48;
+    [DestinyField(FieldType.TagHash)]
+    public Tag<D2Class_B1938080> Unk4C;
 }
 
 [StructLayout(LayoutKind.Sequential, Size = 0x4)]
@@ -959,4 +969,43 @@ public struct D2Class_B26C8080
     public long FileSize;
     [DestinyField(FieldType.TagHash)]
     public Tag<D2Class_076F8080> Unk08;
+    [DestinyOffset(0x10)]
+    public Vector4 Unk10;
+    public Vector4 Unk20;
+    [DestinyField(FieldType.TagHash)]
+    public Tag Unk30; //D2Class_B46C8080
+    [DestinyField(FieldType.TagHash)]
+    public Tag<D2Class_B86C8080> Unk34;
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x20)]
+public struct D2Class_A46C8080
+{
+    public long FileSize;
+    public DestinyHash Unk08;
+    public DestinyHash Unk0C;
+    public int Unk10;
+    [DestinyField(FieldType.TagHash)]
+    public Tag Unk14; //D2Class_9F6C8080
+    [DestinyField(FieldType.TagHash)]
+    public VertexHeader Unk18;
+    [DestinyField(FieldType.TagHash)]
+    public Tag Unk1C; //D2Class_A76C8080
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x18)]
+public struct D2Class_B86C8080
+{
+    public long FileSize;
+    [DestinyField(FieldType.TablePointer)]
+    public List<D2Class_BA6C8080> Unk08;
+}
+
+
+[StructLayout(LayoutKind.Sequential, Size = 0x50)]
+public struct D2Class_BA6C8080
+{
+    public Vector4 Unk00; //Scale?
+    public Vector4 Unk10; //Rotation?
+    //other vector4s
 }

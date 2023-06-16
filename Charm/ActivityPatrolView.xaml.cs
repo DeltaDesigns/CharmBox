@@ -19,12 +19,11 @@ public partial class ActivityPatrolView : UserControl
 
     public void LoadUI(Activity activity)
     {
-        var tag = PackageHandler.GetTag<D2Class_8B8E8080>(activity.Header.Unk20.Hash);
-
-        if (tag.Header.Patrols?.Header.PatrolTable is not null)
+        var tag = PackageHandler.GetTag<D2Class_75988080>(activity.Header.Unk20.Header.Patrols.Hash);
+        if (tag.Header.PatrolTable is not null)
         {
-            ListView.ItemsSource = GetPatrolItems(tag.Header.Patrols?.Header.PatrolTable?.Header.Unk28);
-            PatrolTablePath.Text = $"{tag.Header.LocationName}: {tag.Header.Patrols.Header.PatrolTablePath}";
+            ListView.ItemsSource = GetPatrolItems(tag.Header.PatrolTable?.Header.Unk28);
+            PatrolTablePath.Text = $"{activity.Header.Unk20.Header.LocationName}: {tag.Header.PatrolTablePath}";
         }
     }
 

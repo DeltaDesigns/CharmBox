@@ -21,7 +21,7 @@ public class VertexBuffer : Tag
     {
         using (var handle = GetHandle())
         {
-            Console.WriteLine($"{part.Material.Hash} {Hash} {header.Stride.ToString("X")}({header.Stride}) {header.Type}");
+            //Console.WriteLine($"{part.Material.Hash} {Hash} {header.Stride.ToString("X")}({header.Stride}) {header.Type}");
             foreach (var vertexIndex in uniqueVertexIndices)
             {
                 ReadVertexData(part, vertexIndex, handle);
@@ -109,7 +109,7 @@ public class VertexBuffer : Tag
                 part.VertexColours.Add(new Vector4(handle.ReadByte(), handle.ReadByte(), handle.ReadByte(), handle.ReadByte()));
                 
                 var padding = handle.ReadInt32();
-                part.VertexNormals.Add(new Vector4(handle.ReadInt16(), handle.ReadInt16(), handle.ReadInt16(), handle.ReadInt16(), true));
+                part.VertexNormals.Add(new Vector4(handle.ReadInt16(), handle.ReadInt16(), handle.ReadInt16(), handle.ReadInt16(), true)); //??
                 break;
             default:
                 return false;

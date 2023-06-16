@@ -47,9 +47,9 @@ public struct D2Class_8E8E8080
 	public List<D2Class_24898080> Unk50;
 	public DestinyHash Unk60;
 	[DestinyField(FieldType.TagHash)]
-	public Tag<D2Class_8C978080> Unk64;  // an entity thing
-	[DestinyField(FieldType.TagHash64)]
-	public Tag<D2Class_8E8E8080> UnkActivity68; //8E8E8080, Tag for the ambient activity?
+	public Tag Unk64;  //8C978080 an entity thing
+    [DestinyField(FieldType.TagHash64)]
+	public Tag UnkActivity68; //8E8E8080, Tag for the ambient activity?
 }
 
 [StructLayout(LayoutKind.Sequential, Size = 0x78)]
@@ -62,7 +62,7 @@ public struct D2Class_8B8E8080
 	[DestinyField(FieldType.TagHash)]
 	public Tag<D2Class_E1998080> Events;
 	[DestinyField(FieldType.TagHash)]
-	public Tag<D2Class_75988080> Patrols;
+	public Tag Patrols;
 	public uint Unk28;
 	[DestinyField(FieldType.TagHash)]
 	public Tag Unk2C; //Different class but same thing as Patrols?

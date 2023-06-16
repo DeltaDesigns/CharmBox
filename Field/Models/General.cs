@@ -320,6 +320,16 @@ public struct Vector4
         return new Vector4(x.X - y.X, x.Y - y.Y, x.Z - y.Z, x.W - y.W);
     }
 
+    public static Vector4 operator +(Vector4 x, Vector4 y)
+    {
+        return new Vector4(x.X + y.X, x.Y + y.Y, x.Z + y.Z, x.W + y.W);
+    }
+
+    public static Vector4 operator /(Vector4 x, int y)
+    {
+        return new Vector4(x.X / y, x.Y / y, x.Z / y, x.W / y);
+    }
+
     public float this[int index]
     {
         get
