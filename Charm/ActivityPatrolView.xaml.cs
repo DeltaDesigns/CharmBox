@@ -19,6 +19,9 @@ public partial class ActivityPatrolView : UserControl
 
     public void LoadUI(Activity activity)
     {
+        if (activity.Header.Unk20.Header.Patrols is null)
+            return;
+
         var tag = PackageHandler.GetTag<D2Class_75988080>(activity.Header.Unk20.Header.Patrols.Hash);
         if (tag.Header.PatrolTable is not null)
         {
