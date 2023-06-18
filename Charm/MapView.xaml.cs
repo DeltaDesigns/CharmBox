@@ -13,6 +13,7 @@ using Field.General;
 using Field.Models;
 using Field.Entities;
 using Field.Statics;
+using System.Text.RegularExpressions;
 
 namespace Charm;
 
@@ -135,6 +136,7 @@ public partial class MapView : UserControl
         {
             savePath = ConfigHandler.GetExportSavePath() + $"/Maps/{activity.Header.LocationName}/{bubbleName}/";
         }
+        savePath = Regex.Replace(savePath, @"[^\u0000-\u007F]", "_");
         fbxHandler.InfoHandler.SetMeshName(meshName);
         Directory.CreateDirectory(savePath);
     
@@ -181,7 +183,8 @@ public partial class MapView : UserControl
 		{
 			savePath = ConfigHandler.GetExportSavePath() + $"/Maps/{activity.Header.LocationName}/{bubbleName}/";
 		}
-		fbxHandler.InfoHandler.SetMeshName(meshName);
+        savePath = Regex.Replace(savePath, @"[^\u0000-\u007F]", "_");
+        fbxHandler.InfoHandler.SetMeshName(meshName);
         Directory.CreateDirectory(savePath);
         Directory.CreateDirectory(savePath + "/Dynamics");
     
@@ -217,6 +220,7 @@ public partial class MapView : UserControl
         {
             savePath = ConfigHandler.GetExportSavePath() + $"/Maps/{activity.Header.LocationName}/{bubbleName}/";
         }
+        savePath = Regex.Replace(savePath, @"[^\u0000-\u007F]", "_");
         if (ConfigHandler.GetUnrealInteropEnabled())
         {
             fbxHandler.InfoHandler.SetUnrealInteropPath(ConfigHandler.GetUnrealInteropPath());
