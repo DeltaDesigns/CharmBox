@@ -60,8 +60,8 @@ public struct D2Class_8B8E8080
 	[DestinyOffset(0x10), DestinyField(FieldType.TagHash64)]
 	public StringContainer StringContainer;
 	[DestinyField(FieldType.TagHash)]
-	public Tag<D2Class_E1998080> Events;
-	[DestinyField(FieldType.TagHash)]
+	public Tag Events; //D2Class_E1998080
+    [DestinyField(FieldType.TagHash)]
 	public Tag Patrols;
 	public uint Unk28;
 	[DestinyField(FieldType.TagHash)]
