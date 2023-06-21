@@ -291,6 +291,9 @@ public partial class ActivityEntityView : UserControl
                 {
                     if (entry.Entity.HasGeometry())
                     {
+                        if (ConfigHandler.GetIndvidualEntitiesEnabled())
+                            ExportDynamics(savePath, entry);
+
                         dynamicHandler.AddDynamicToScene(entry, entry.Entity.Hash, savePath, ConfigHandler.GetUnrealInteropEnabled() || ConfigHandler.GetS2ShaderExportEnabled(), ConfigHandler.GetSaveCBuffersEnabled());
                         Entity ent = new Entity(entry.Entity.Hash, false);
                         if (ent.Header.EntityResources is null)
@@ -340,6 +343,58 @@ public partial class ActivityEntityView : UserControl
         });
         _activityLog.Information($"Exported activity data name: {PackageHandler.GetActivityName(_activeActivity.Hash)}, hash: {_activeActivity.Hash}");
         MessageBox.Show("Activity map data exported completed.");
+    }
+
+    private static void ExportDynamics(string savePath, D2Class_85988080 entry)
+    {
+        if (!Directory.Exists($"{savePath}/Dynamics/"))
+            Directory.CreateDirectory($"{savePath}/Dynamics/");
+
+        FbxHandler singleDynamicHandler = new FbxHandler(false);
+        singleDynamicHandler.AddDynamicToScene(entry, entry.Entity.Hash, savePath, ConfigHandler.GetUnrealInteropEnabled() || ConfigHandler.GetS2ShaderExportEnabled(), ConfigHandler.GetSaveCBuffersEnabled());
+
+        if (ConfigHandler.GetS2VMDLExportEnabled())
+        {
+            Source2Handler.SaveEntityVMDL($"{savePath}/Dynamics", entry.Entity);
+        }
+
+        Entity ent = new Entity(entry.Entity.Hash, false);
+        if (ent.Header.EntityResources is not null)
+        {
+            foreach (var e in ent.Header.EntityResources)
+            {
+                if (e.ResourceHash.Header.Unk18 is D2Class_0E848080 f)
+                {
+                    foreach (var g in f.Unk88)
+                    {
+                        foreach (var h in g.Unk08)
+                        {
+                            singleDynamicHandler.AddDynamicToScene(entry, h.Unk08.Hash, savePath, ConfigHandler.GetUnrealInteropEnabled() || ConfigHandler.GetS2ShaderExportEnabled(), ConfigHandler.GetSaveCBuffersEnabled());
+                            Entity ent2 = new Entity(h.Unk08.Hash, false);
+                            if (ent2.Header.EntityResources is null)
+                                continue;
+
+                            foreach (var e2 in ent2.Header.EntityResources)
+                            {
+                                if (e2.ResourceHash.Header.Unk18 is D2Class_0E848080 f2)
+                                {
+                                    foreach (var g2 in f2.Unk88)
+                                    {
+                                        foreach (var h2 in g2.Unk08)
+                                        {
+                                            singleDynamicHandler.AddDynamicToScene(entry, h2.Unk08.Hash, savePath, ConfigHandler.GetUnrealInteropEnabled() || ConfigHandler.GetS2ShaderExportEnabled(), ConfigHandler.GetSaveCBuffersEnabled());
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        singleDynamicHandler.ExportScene($"{savePath}/Dynamics/{entry.Entity.Hash}.fbx");
+        singleDynamicHandler.Dispose();           
     }
 
     private async void Entity_OnClick(object sender, RoutedEventArgs e)

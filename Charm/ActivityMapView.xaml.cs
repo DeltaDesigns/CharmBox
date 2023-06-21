@@ -144,12 +144,12 @@ public partial class ActivityMapView : UserControl
                     //Console.WriteLine($"{a.DataTable.Hash}");
                     foreach (var b in a.DataTable.Header.DataEntries)
                     {
-                        dynamicPoints.AddEmptyToScene($"{a.DataTable.Hash} {b.DataResource}", b.Translation, b.Rotation);
+                        //dynamicPoints.AddEmptyToScene($"{a.DataTable.Hash} {b.DataResource}", b.Translation, b.Rotation);
                         //if (b.DataResource is D2Class_D4688080 a1)
                         //{
                         //    EntityModel model = new(a1.Unk10.Hash);
                         //    var parts = model.Load(ELOD.MostDetail, b.Entity.ModelParentResource);
-                            
+
                         //    foreach (var part in parts)
                         //    {
                         //        if (part.Material.Header.PSTextures.Count == 0)
@@ -162,40 +162,41 @@ public partial class ActivityMapView : UserControl
                         //    }
                         //}
 
-                        //if (b.DataResource is D2Class_C36C8080 a1)
-                        //{
-                        //    Console.WriteLine($"{a.DataTable.Hash}");
-                        //    if (a1.Unk10 is not null)
-                        //    {
-                        //        foreach (var a3 in a1.Unk10.Header.Unk4C.Header.InstanceBounds)
-                        //        {
-                        //            dynamicPoints.AddEmptyToScene($"{a3.Unk24}", (a3.Corner1 + a3.Corner2) / 2, new Vector4(0, 0, 0, 1));
-                        //        }
+                        if (b.DataResource is D2Class_C36C8080 a1)
+                        {
+                            Console.WriteLine($"{a.DataTable.Hash}");
+                            if (a1.Unk10 is not null)
+                            {
+                                //foreach (var a3 in a1.Unk10.Header.Unk4C.Header.InstanceBounds)
+                                //{
+                                //    dynamicPoints.AddEmptyToScene($"{a3.Unk24}", (a3.Corner1 + a3.Corner2) / 2, new Vector4(0, 0, 0, 1));
+                                //}
 
-                        //        foreach (var a2 in a1.Unk10.Header.Unk08)
-                        //        {
+                                foreach (var a2 in a1.Unk10.Header.Unk08)
+                                {
 
-                        //            //foreach (var a3 in a2.Unk00.Header.)
-                        //            //{
-                        //            //    Console.WriteLine($"{a3.Vertices1.Hash} {a3.Vertices2?.Hash} {a3.Parts.Count}");
-                        //            //}
+                                    //foreach (var a3 in a2.Unk00.Header.)
+                                    //{
+                                    //    Console.WriteLine($"{a3.Vertices1.Hash} {a3.Vertices2?.Hash} {a3.Parts.Count}");
+                                    //}
 
-                        //            EntityModel model = new(a2.Unk00.Header.Unk08.Hash);
-                        //            var parts = model.Load(ELOD.MostDetail, b.Entity.ModelParentResource);
-                        //            //Console.WriteLine($"{parts.Count}");
-                        //            foreach (var part in parts)
-                        //            {
-                        //                if (part.Material.Header.PSTextures.Count == 0)
-                        //                {
-                        //                    continue;
-                        //                }
+                                    EntityModel model = new(a2.Unk00.Header.Unk08.Hash);
+                                    var parts = model.Load(ELOD.MostDetail, b.Entity.ModelParentResource);
+                                    //Console.WriteLine($"{parts.Count}");
+                                    foreach (var part in parts)
+                                    {
+                                        if (part.Material.Header.PSTextures.Count == 0)
+                                        {
+                                            continue;
+                                        }
 
-                        //                dynamicPoints.AddMeshPartToScene(part, part.Index, $"{model.Hash}_{part.Index}_{part.GroupIndex}");
-                        //                part.Material.SaveAllTextures($"{ConfigHandler.GetExportSavePath()}/test/");
-                        //            }
-                        //        }
-                        //    }      
-                        //}
+                                        dynamicPoints.AddMeshPartToScene(part, part.Index, $"{model.Hash}_{part.Index}_{part.GroupIndex}");
+                                        part.Material.SaveAllTextures($"{ConfigHandler.GetExportSavePath()}/test/");
+                                    }
+                                }
+                            }
+                        }
+
                         //if (b.DataResource is D2Class_406A8080 a1)
                         //{
                         //    if(a1.Unk10 is not null)
