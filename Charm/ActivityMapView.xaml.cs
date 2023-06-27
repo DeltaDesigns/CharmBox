@@ -37,28 +37,7 @@ public partial class ActivityMapView : UserControl
 
     private ObservableCollection<DisplayBubble> GetMapList(Activity activity)
     {
-        //var vals = PackageHandler.GetAllTagsWithReference(0x8080916a); //6A918080
-        //foreach (var val in vals)
-        //    Console.WriteLine(val.ToString());
-
         var maps = new ObservableCollection<DisplayBubble>();
-
-        //foreach (var a in activity.Header.Unk20.Header.StringContainer.Header.StringHashTable)
-        //{
-        //    Console.WriteLine(activity.Header.Unk20.Header.StringContainer.GetStringFromHash(ELanguage.English, a));
-        //}
-
-        //Console.WriteLine($"Events {tag2.Header.Events?.Hash}");
-        //if (tag2.Header.Events?.Header.Unk08 is not null)
-        //    foreach (var a in tag2.Header.Events?.Header.Unk08)
-        //    {
-        //        Console.WriteLine($"{a.Unk00}");
-        //        foreach (var b in a.Unk20)
-        //        {
-        //            Console.WriteLine($"{b.Unk00}");
-        //        }
-        //    }
-
         foreach (var mapEntry in activity.Header.Unk50)
         {
             foreach (var mapReferences in mapEntry.MapReferences)
@@ -141,28 +120,10 @@ public partial class ActivityMapView : UserControl
             {
                 foreach (var a in m.MapResource.Header.DataTables)
                 {
-                    //Console.WriteLine($"{a.DataTable.Hash}");
                     foreach (var b in a.DataTable.Header.DataEntries)
                     {
                         //dynamicPoints.AddEmptyToScene($"{a.DataTable.Hash} {b.DataResource}", b.Translation, b.Rotation);
-                        //if (b.DataResource is D2Class_D4688080 a1)
-                        //{
-                        //    EntityModel model = new(a1.Unk10.Hash);
-                        //    var parts = model.Load(ELOD.MostDetail, b.Entity.ModelParentResource);
-
-                        //    foreach (var part in parts)
-                        //    {
-                        //        if (part.Material.Header.PSTextures.Count == 0)
-                        //        {
-                        //            continue;
-                        //        }
-                        //        Console.WriteLine($"{part.Material.Hash}");
-                        //        dynamicPoints.AddMeshPartToScene(part, part.Index, $"{model.Hash}_{part.Index}_{part.GroupIndex}");
-                        //        part.Material.SaveAllTextures($"{ConfigHandler.GetExportSavePath()}/test/");
-                        //    }
-                        //}
-
-                        if (b.DataResource is D2Class_C36C8080 a1)
+                        if (b.DataResource is D2Class_C36C8080 a1) //Foliage
                         {
                             Console.WriteLine($"{a.DataTable.Hash}");
                             if (a1.Unk10 is not null)
@@ -174,15 +135,8 @@ public partial class ActivityMapView : UserControl
 
                                 foreach (var a2 in a1.Unk10.Header.Unk08)
                                 {
-
-                                    //foreach (var a3 in a2.Unk00.Header.)
-                                    //{
-                                    //    Console.WriteLine($"{a3.Vertices1.Hash} {a3.Vertices2?.Hash} {a3.Parts.Count}");
-                                    //}
-
                                     EntityModel model = new(a2.Unk00.Header.Unk08.Hash);
                                     var parts = model.Load(ELOD.MostDetail, b.Entity.ModelParentResource);
-                                    //Console.WriteLine($"{parts.Count}");
                                     foreach (var part in parts)
                                     {
                                         if (part.Material.Header.PSTextures.Count == 0)
@@ -196,22 +150,6 @@ public partial class ActivityMapView : UserControl
                                 }
                             }
                         }
-
-                        //if (b.DataResource is D2Class_406A8080 a1)
-                        //{
-                        //    if(a1.Unk10 is not null)
-                        //        Console.WriteLine($"{a1.Unk10.Header.Unk08.Buffer.Hash}");      
-                        //}
-                        //if (b.DataResource is D2Class_636A8080 a2)
-                        //{
-                        //    //Console.WriteLine($"{a.DataTable.Hash} {a2.Unk10.Header.Unk30.Count}");
-                        //    for (int i = 0; i < a2.Unk10.Header.Unk30.Count; i++)
-                        //    {
-                        //        //var vec = a2.Unk10.Header.Unk30[i].UnkD0.Header.Unk40[a2.Unk10.Header.Unk30[i].UnkDF].Unk00;
-                        //        //Console.WriteLine($"{a2.Unk10.Header.Unk30[i].UnkD0.Hash} {a2.Unk10.Header.Unk58.Header.InstanceBounds[i].Unk24}");
-                        //        //dynamicPoints.AddEmptyToScene($"{a2.Unk10.Header.Unk30[i].UnkCC.Hash} {a2.Unk10.Header.Unk58.Header.InstanceBounds[i].Unk24} {i}", a2.Unk10.Header.Unk40[i].Translation, a2.Unk10.Header.Unk40[i].Rotation);
-                        //    }
-                        //}
 
                         if (b.DataResource is not null && b.DataResource is not D2Class_C96C8080)
                         {
@@ -249,10 +187,8 @@ public partial class ActivityMapView : UserControl
         dynamicPoints.Dispose();
     }
 
-    private void PopulateDynamicsList(Tag<D2Class_07878080> map)//(Tag<D2Class_01878080> bubbleMaps)
+    private void PopulateDynamicsList(Tag<D2Class_07878080> map)
     {
-        //FbxHandler dynamicPoints = new FbxHandler(false);
-
         ConcurrentBag<DisplayDynamicMap> items = new ConcurrentBag<DisplayDynamicMap>();
         MainWindow.Progress.SetProgressStages(new List<string> { "Loading Entities" });
         Parallel.ForEach(map.Header.DataTables, data =>
@@ -271,10 +207,7 @@ public partial class ActivityMapView : UserControl
                 //        }
                 //    }
                 //}
-                //if (!entry.Entity.HasGeometry() && entry.DataResource is not D2Class_C96C8080)
-                //{
-                //    Console.WriteLine($"{data.DataTable.Hash} - {entry.Entity.Hash}");
-                //}
+
                 if (!items.Contains(new DisplayDynamicMap { Hash = entry.Entity.Hash }))
                 {
                     if (entry.Entity.HasGeometry())
@@ -297,8 +230,6 @@ public partial class ActivityMapView : UserControl
             Parent = map
         });
         DynamicsList.ItemsSource = sortedItems;
-        //dynamicPoints.ExportScene($"{ConfigHandler.GetExportSavePath()}/{map.Hash.GetHashString()}_Empties.fbx");
-        //dynamicPoints.Dispose();
     }
 
     public async void ExportFull(ExportInfo info)
@@ -335,7 +266,7 @@ public partial class ActivityMapView : UserControl
 
         List<string> mapStages = maps.Select((x, i) => $"exporting {i+1}/{maps.Count}").ToList();
         MainWindow.Progress.SetProgressStages(mapStages);
-        // MainWindow.Progress.SetProgressStages(new List<string> { "exporting activity map data parallel" });
+
         Parallel.ForEach(maps, map =>
         {
             if (info.ExportType == EExportTypeFlag.Full)
@@ -358,8 +289,6 @@ public partial class ActivityMapView : UserControl
             
             MainWindow.Progress.CompleteStage();
         });
-        // MapView.ExportFullMap(staticMapData);
-            // MainWindow.Progress.CompleteStage();
 
         Dispatcher.Invoke(() =>
         {

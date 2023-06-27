@@ -380,20 +380,6 @@ public class FbxHandler
 
         if (!skipModel)
         {
-            //// Add model
-            //uint helm = 997252576; //1637326795;
-            //uint chest = 648507367; //3524020798;
-            //uint arms = 2899766705; //68357813;
-            //uint legs = 2731019523; //4012977685;
-            ////uint classitem = //2218948028;
-            //List<uint> models = new List<uint>
-            //{
-            //    helm,
-            //    chest,
-            //    arms,
-            //    legs,
-            //    //classitem
-            //};
             uint helm = Convert.ToUInt32(FieldConfigHandler.GetAnimationHelmetHash());
             uint arms = Convert.ToUInt32(FieldConfigHandler.GetAnimationArmsHash());
             uint chest = Convert.ToUInt32(FieldConfigHandler.GetAnimationChestHash());
@@ -630,7 +616,7 @@ public class FbxHandler
         lock (_fbxLock)
         {
             animStack = FbxAnimStack.Create(_scene, $"{entHash}animStack_{animation.Hash}");
-            animLayer = FbxAnimLayer.Create(_scene, $"{entHash}animLayer_{animation.Hash}");
+            animLayer = FbxAnimLayer.Create(_scene, $"");
             time = new FbxTime();
             animStack.AddMember(animLayer);        
         }
@@ -686,6 +672,87 @@ public class FbxHandler
     public void AddAnimationToEntity(Animation animation)
     {
         AddAnimationToEntity(animation, _globalSkeletonNodes);
+    }
+
+    public void AddAnimationsToEntity(List<Animation> animations, List<FbxNode> skeletonNodes, Entity entity = null)
+    {
+        string entHash = "";
+        if (entity != null) //scuffed
+            entHash = $"{entity.Hash}_";
+
+        float currentFrameIndex = 0;
+        FbxAnimStack animStack;
+        FbxAnimLayer animLayer;
+        FbxTime time;
+
+        lock (_fbxLock)
+        {
+            animStack = FbxAnimStack.Create(_scene, $"{entHash}animStack");
+            animLayer = FbxAnimLayer.Create(_scene, $"");
+            time = new FbxTime();
+            animStack.AddMember(animLayer);
+        }
+
+        foreach (var animation in animations)
+        {
+            animation.Load();
+
+            string[] dims = { "X", "Y", "Z" };
+            foreach (var track in animation.Tracks)
+            {
+                var scale = dims.Select(x => skeletonNodes[track.TrackIndex].LclScaling.GetCurve(animLayer, x, true)).ToList();
+                var rotation = dims.Select(x => skeletonNodes[track.TrackIndex].LclRotation.GetCurve(animLayer, x, true)).ToList();
+                var translation = dims.Select(x => skeletonNodes[track.TrackIndex].LclTranslation.GetCurve(animLayer, x, true)).ToList();
+
+                scale.ForEach(x => x.KeyModifyBegin());
+                rotation.ForEach(x => x.KeyModifyBegin());
+                translation.ForEach(x => x.KeyModifyBegin());
+
+                for (int d = 0; d < dims.Length; d++)
+                {
+                    for (int i = 0; i < track.TrackTimes.Count; i++)
+                    {
+                        float frameTime = track.TrackTimes[i];
+                        time.SetSecondDouble(frameTime + currentFrameIndex);
+                        
+                        if (track.TrackScales.Count > 0)
+                        {
+                            var scaleKeyIndex = scale[d].KeyAdd(time);
+                            scale[d].KeySetValue(scaleKeyIndex, track.TrackScales[i]);
+                            scale[d].KeySetInterpolation(scaleKeyIndex, FbxAnimCurveDef.EInterpolationType.eInterpolationLinear);
+                        }
+
+                        if (track.TrackRotations.Count > 0)
+                        {
+                            var rotDim = Array.FindIndex(dims, x => x == animation.rotXYZ[d]);
+                            var rotationKeyIndex = rotation[d].KeyAdd(time);
+                            rotation[d].KeySetValue(rotationKeyIndex, (animation.flipRot[d] == 1 ? -1 : 1) * track.TrackRotations[i][rotDim] + animation.rot[d]);
+                            rotation[d].KeySetInterpolation(rotationKeyIndex, FbxAnimCurveDef.EInterpolationType.eInterpolationLinear);
+                        }
+
+                        if (track.TrackTranslations.Count > 0)
+                        {
+                            var traDim = Array.FindIndex(dims, x => x == animation.traXYZ[d]);
+                            var translationKeyIndex = translation[d].KeyAdd(time);
+                            translation[d].KeySetValue(translationKeyIndex, (animation.flipTra[d] == 1 ? -1 : 1) * track.TrackTranslations[i][traDim] + animation.tra[d]);
+                            translation[d].KeySetInterpolation(translationKeyIndex, FbxAnimCurveDef.EInterpolationType.eInterpolationLinear);
+                        }
+                    }
+                }
+
+                scale.ForEach(x => x.KeyModifyEnd());
+                rotation.ForEach(x => x.KeyModifyEnd());
+                translation.ForEach(x => x.KeyModifyEnd());
+            }
+
+            float animationTotalFrames = animation.Tracks.SelectMany(t => t.TrackTimes).Max();
+            currentFrameIndex += animationTotalFrames;
+        }
+    }
+
+    public void AddAnimationsToEntity(List<Animation> animations)
+    {
+        AddAnimationsToEntity(animations, _globalSkeletonNodes);
     }
 
     public void Clear()
@@ -801,6 +868,31 @@ public class FbxHandler
         {
             _scene.GetRootNode().AddChild(node);
         }
+    }
+
+    public void AddCameraToScene(string camName)
+    {
+        FbxCamera camera = FbxCamera.Create(_manager, $"Camera_{camName}");
+        camera.SetAspect(FbxCamera.EAspectRatioMode.eFixedResolution, 1920, 800);
+        camera.SetFarPlane(100000);
+        camera.SetNearPlane(1);
+
+        FbxNode cameraNode = FbxNode.Create(_manager, $"CameraNode_{camName}");
+        cameraNode.SetNodeAttribute(camera);
+
+        FbxNode parentNode = _globalSkeletonNodes[1];
+
+        FbxAMatrix parentTransform = parentNode.EvaluateGlobalTransform();
+        FbxDouble3 pTranslation = parentTransform.GetT().ToDouble3();
+        FbxDouble3 pRotation = parentTransform.GetR().ToDouble3();
+        FbxDouble3 pScale = parentTransform.GetS().ToDouble3();
+        cameraNode.SetNodeAttribute(camera);
+        cameraNode.LclTranslation.Set(pTranslation);
+        cameraNode.LclRotation.Set(pRotation);
+        cameraNode.LclScaling.Set(pScale);
+
+        parentNode.AddChild(cameraNode);
+        _scene.GetGlobalSettings().SetDefaultCamera($"Camera_{camName}");
     }
 
 

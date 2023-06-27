@@ -15,6 +15,7 @@ using Field.Models;
 using Field.Statics;
 using System.Linq;
 using System.Threading.Tasks;
+using SharpDX.Direct3D9;
 
 
 namespace Charm;
@@ -133,11 +134,19 @@ public partial class DevView : UserControl
                 {
                     var pkgid = Int32.Parse(strHash, NumberStyles.HexNumber);
                     //PackageHandler.GetAllTagsWithTypes
-                    var tags = PackageHandler.GetTagsWithTypes(pkgid, 8, 0);
-                    var tags2 = PackageHandler.GetTagsWithTypes(pkgid, 16, 0);
-                    tags.AddRange(tags2);
+                    //var tags = PackageHandler.GetTagsWithTypes(pkgid, 8, 0);
+                    //var tags2 = PackageHandler.GetTagsWithTypes(pkgid, 16, 0);
+                    
+                    List<TagHash> tags = new();
+                    for(int i = 0; i < 64; i++) //fuck it, save ALL(?) the tags
+                    {
+                        for (int i2 = 0; i2 < 64; i2++)
+                        {
+                            tags.AddRange(PackageHandler.GetTagsWithTypes(pkgid, i, i2));
+                        }
+                    }
 
-                    Console.WriteLine($"Tags from {strHash} - {tags.Count + tags2.Count}");
+                    Console.WriteLine($"Tags from {strHash} - {tags.Count}");
                     Parallel.ForEach(tags, tag =>
                     {
                         SaveBin(tag);
@@ -428,7 +437,7 @@ public partial class DevView : UserControl
         string savePath = ConfigHandler.GetExportSavePath() + "/temp";
 
         string[] binFiles = Directory.GetFiles(savePath, "*.bin");
-        Console.WriteLine($"Searching for h64 in {savePath}");
+        Console.WriteLine($"Searching for h64 ({searchValue}) in {savePath}");
 
         foreach (string filePath in binFiles)
         {
