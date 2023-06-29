@@ -4,6 +4,7 @@ using Field.General;
 using Field.Statics;
 using Internal.Fbx;
 using System.Numerics;
+using System.Collections.Concurrent;
 
 namespace Field.Models;
 
@@ -621,6 +622,7 @@ public class FbxHandler
             animStack.AddMember(animLayer);        
         }
         string[] dims = { "X", "Y", "Z" };
+        
         foreach (var track in animation.Tracks)
         {
             var scale = dims.Select(x => skeletonNodes[track.TrackIndex].LclScaling.GetCurve(animLayer, x, true)).ToList();
@@ -674,13 +676,13 @@ public class FbxHandler
         AddAnimationToEntity(animation, _globalSkeletonNodes);
     }
 
-    public void AddAnimationsToEntity(List<Animation> animations, List<FbxNode> skeletonNodes, Entity entity = null)
+    public void AddAnimationsToEntity(ConcurrentDictionary<Animation, int> animations, ConcurrentDictionary<int, int> timings, List<FbxNode> skeletonNodes, Entity entity = null)
     {
         string entHash = "";
         if (entity != null) //scuffed
             entHash = $"{entity.Hash}_";
 
-        float currentFrameIndex = 0;
+        double currentFrameIndex = 0;
         FbxAnimStack animStack;
         FbxAnimLayer animLayer;
         FbxTime time;
@@ -693,11 +695,18 @@ public class FbxHandler
             animStack.AddMember(animLayer);
         }
 
-        foreach (var animation in animations)
+        //Console.WriteLine(animations.Count);
+        foreach (var data in animations.OrderBy(x => x.Value))
         {
+            var animation = data.Key;
+            int order = data.Value;
+            int suborder = 0;
+            var startFrame = timings[order];
             animation.Load();
 
+            //Console.WriteLine($"{order} : {startFrame}");
             string[] dims = { "X", "Y", "Z" };
+            
             foreach (var track in animation.Tracks)
             {
                 var scale = dims.Select(x => skeletonNodes[track.TrackIndex].LclScaling.GetCurve(animLayer, x, true)).ToList();
@@ -713,13 +722,14 @@ public class FbxHandler
                     for (int i = 0; i < track.TrackTimes.Count; i++)
                     {
                         float frameTime = track.TrackTimes[i];
-                        time.SetSecondDouble(frameTime + currentFrameIndex);
-                        
+                        //time.SetSecondDouble(frameTime + currentFrameIndex);
+                        time.SetFramePrecise(startFrame + i, FbxTime.EMode.eFrames30);
+
                         if (track.TrackScales.Count > 0)
-                        {
+                        {   
                             var scaleKeyIndex = scale[d].KeyAdd(time);
                             scale[d].KeySetValue(scaleKeyIndex, track.TrackScales[i]);
-                            scale[d].KeySetInterpolation(scaleKeyIndex, FbxAnimCurveDef.EInterpolationType.eInterpolationLinear);
+                            scale[d].KeySetInterpolation(scaleKeyIndex, i == track.TrackTimes.Count - 1 ? FbxAnimCurveDef.EInterpolationType.eInterpolationConstant : FbxAnimCurveDef.EInterpolationType.eInterpolationLinear);
                         }
 
                         if (track.TrackRotations.Count > 0)
@@ -727,7 +737,7 @@ public class FbxHandler
                             var rotDim = Array.FindIndex(dims, x => x == animation.rotXYZ[d]);
                             var rotationKeyIndex = rotation[d].KeyAdd(time);
                             rotation[d].KeySetValue(rotationKeyIndex, (animation.flipRot[d] == 1 ? -1 : 1) * track.TrackRotations[i][rotDim] + animation.rot[d]);
-                            rotation[d].KeySetInterpolation(rotationKeyIndex, FbxAnimCurveDef.EInterpolationType.eInterpolationLinear);
+                            rotation[d].KeySetInterpolation(rotationKeyIndex, i == track.TrackTimes.Count - 1 ? FbxAnimCurveDef.EInterpolationType.eInterpolationConstant : FbxAnimCurveDef.EInterpolationType.eInterpolationLinear);
                         }
 
                         if (track.TrackTranslations.Count > 0)
@@ -735,7 +745,7 @@ public class FbxHandler
                             var traDim = Array.FindIndex(dims, x => x == animation.traXYZ[d]);
                             var translationKeyIndex = translation[d].KeyAdd(time);
                             translation[d].KeySetValue(translationKeyIndex, (animation.flipTra[d] == 1 ? -1 : 1) * track.TrackTranslations[i][traDim] + animation.tra[d]);
-                            translation[d].KeySetInterpolation(translationKeyIndex, FbxAnimCurveDef.EInterpolationType.eInterpolationLinear);
+                            translation[d].KeySetInterpolation(translationKeyIndex, i == track.TrackTimes.Count - 1 ? FbxAnimCurveDef.EInterpolationType.eInterpolationConstant : FbxAnimCurveDef.EInterpolationType.eInterpolationLinear);
                         }
                     }
                 }
@@ -745,14 +755,15 @@ public class FbxHandler
                 translation.ForEach(x => x.KeyModifyEnd());
             }
 
-            float animationTotalFrames = animation.Tracks.SelectMany(t => t.TrackTimes).Max();
+            //float animationTotalFrames = animation.Header.FrameCount;
+            double animationTotalFrames = animation.Tracks.SelectMany(t => t.TrackTimes).Max();
             currentFrameIndex += animationTotalFrames;
         }
     }
 
-    public void AddAnimationsToEntity(List<Animation> animations)
+    public void AddAnimationsToEntity(ConcurrentDictionary<Animation, int> animations, ConcurrentDictionary<int, int> timings)
     {
-        AddAnimationsToEntity(animations, _globalSkeletonNodes);
+        AddAnimationsToEntity(animations, timings, _globalSkeletonNodes);
     }
 
     public void Clear()

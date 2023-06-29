@@ -683,7 +683,7 @@ public struct D2Class_13268080
     // lots of array stuff
 }
 
-[StructLayout(LayoutKind.Sequential, Size = 0x830)]
+[StructLayout(LayoutKind.Sequential, Size = 0x130)]
 public struct D2Class_F8258080
 {
     [DestinyField(FieldType.ResourceInTag)]
@@ -1562,9 +1562,15 @@ public struct D2Class_FA988080
 
 [StructLayout(LayoutKind.Sequential, Size = 0x220)]
 public struct D2Class_B75F8080
-{
+{ 
+    [DestinyOffset(0x198), DestinyField(FieldType.TagHash)]
+    public Tag Unk198;
     [DestinyOffset(0x1a0), DestinyField(FieldType.TablePointer)]
     public List<D2Class_AE5F8080> CinematicEntityGroups;
+    [DestinyOffset(0x1c8), DestinyField(FieldType.TagHash64)]
+    public Tag Unk1C8; //Leads to BKHD
+    [DestinyField(FieldType.TagHash64)]
+    public Tag Unk1D8; //Leads to BKHD 
 }
 
 [StructLayout(LayoutKind.Sequential, Size = 0x68)]
@@ -1584,6 +1590,8 @@ public struct D2Class_AE5F8080
 [StructLayout(LayoutKind.Sequential, Size = 0x78)]
 public struct D2Class_B15F8080
 {
+    [DestinyOffset(0x8)]
+    public int Unk08;
     [DestinyOffset(0x18), DestinyField(FieldType.TagHash)]
     public Tag Unk18;  // some kind of index table
     [DestinyOffset(0x30)] 

@@ -2053,6 +2053,7 @@ public partial class TagListView : UserControl
         
         Activity activity = PackageHandler.GetTag(typeof(Activity), new TagHash(tagHash));
         ConcurrentDictionary<string, ConcurrentBag<AnimationData>> animationData = new();
+        ConcurrentDictionary<int, int> animationTimings = new(); //order, starting frame
 
         if (activity.Header.Unk40.Count == 0)
         {
@@ -2085,42 +2086,54 @@ public partial class TagListView : UserControl
         await Task.Run(() =>
         {
             int i = 0; //Order
+            Console.WriteLine($"----{cinematicResource.Hash}");
             foreach (D2Class_AE5F8080 groupEntry in ((D2Class_B75F8080)cinematicResource.Header.Unk18).CinematicEntityGroups)
             {
+                //Console.WriteLine($"{i} -----------");
                 foreach (D2Class_B15F8080 entityEntry in groupEntry.CinematicEntities)
                 {
                     var entityWithModel = entityEntry.CinematicEntityModel;
                     var entityWithAnims = entityEntry.CinematicEntityAnimations;
+
+                    if (entityWithModel.Hash == "7946A380" && entityWithAnims.AnimationGroup != null) //Camera
+                    {
+                        if (((D2Class_F8258080)entityWithAnims.AnimationGroup.Header.Unk18).AnimationGroup.Header.Animations.Count > 1)
+                        {
+                            Console.WriteLine(((D2Class_F8258080)entityWithAnims.AnimationGroup.Header.Unk18).AnimationGroup.Hash.ToString());
+                            Console.WriteLine($"---{entityWithModel.Hash} : {entityWithAnims.Hash} : Unk08 {entityEntry.Unk08} Unk34 {entityEntry.Unk34} Unk70 {entityEntry.Unk70}");
+                        }
+                    }
+                    
+                    
                     if (entityWithModel != null)
                     {
-                        //if (entityWithModel.Hash == "7946A380" && entityWithAnims.AnimationGroup != null) //Camera
+                        //int i21 = 0; //Sub order
+                        //foreach (var animation in ((D2Class_F8258080)entityWithAnims.AnimationGroup.Header.Unk18).AnimationGroup.Header.Animations)
                         //{
-                        //    if(((D2Class_F8258080)entityWithAnims.AnimationGroup.Header.Unk18).AnimationGroup.Header.Animations.Count > 1)
-                        //        Console.WriteLine(((D2Class_F8258080)entityWithAnims.AnimationGroup.Header.Unk18).AnimationGroup.Hash.ToString());
-                            
-                        //    int i2 = 0; //Sub order
-                        //    foreach (var animation in ((D2Class_F8258080)entityWithAnims.AnimationGroup.Header.Unk18).AnimationGroup.Header.Animations)
-                        //    {
-                        //        animation.Animation.ParseTag();
-                        //        animation.Animation.Load();
-                        //        FbxHandler fbxHandler = new FbxHandler(false);
-                        //        fbxHandler.AddEntityToScene(entityWithModel, entityWithModel.Load(ELOD.MostDetail), ELOD.MostDetail, animation.Animation, null, true);
-                        //        fbxHandler.AddCameraToScene("camera");
-                        //        fbxHandler.ExportScene($"{ConfigHandler.GetExportSavePath()}/cinematic/{tagHash}/Camera_{animation.Animation.Hash}_{animation.Animation.Header.FrameCount}_{i}_{i2}.fbx");
-                        //        fbxHandler.Dispose();
-                        //        i2++;
-                        //    }
+                        //    animation.Animation.ParseTag();
+                        //    animation.Animation.Load();
+                        //    FbxHandler fbxHandler = new FbxHandler(false);
+                        //    fbxHandler.AddEntityToScene(entityWithModel, entityWithModel.Load(ELOD.MostDetail), ELOD.MostDetail, animation.Animation, null, true);
+                        //    fbxHandler.ExportScene($"{ConfigHandler.GetExportSavePath()}/cinematic/{tagHash}/{entityWithModel.Hash}_{animation.Animation.Hash}_{animation.Animation.Header.FrameCount}_{i}_{i21}.fbx");
+                        //    fbxHandler.Dispose();
+                        //    i21++;
                         //}
+
+                        //Console.WriteLine($"---{entityWithModel.Hash} : {entityWithAnims.Hash} : Unk08 {entityEntry.Unk08} Unk34 {entityEntry.Unk34} Unk70 {entityEntry.Unk70}");
                         if (entityWithAnims.AnimationGroup != null)
                         {
+                            //Console.WriteLine($"-{((D2Class_F8258080)entityWithAnims.AnimationGroup.Header.Unk18).AnimationGroup.Hash}");
+
                             int i2 = 0; //Sub order
                             foreach (var animation in ((D2Class_F8258080)entityWithAnims.AnimationGroup.Header.Unk18).AnimationGroup.Header.Animations)
                             {
                                 if (animation.Animation == null)
                                     continue;
-
+                                
                                 animation.Animation.ParseTag();
                                 animation.Animation.Load();
+
+                                //Console.WriteLine($"{animation.Animation.Hash} : {animation.Animation.Header.FrameCount} - {animation.Animation.Tracks[0].TrackTimes.Last()}");
 
                                 if (!animationData.ContainsKey(entityWithModel.Hash))
                                 {
@@ -2142,13 +2155,29 @@ public partial class TagListView : UserControl
                 i++;
             }
 
+            if(animationData.ContainsKey("7946A380")) //Camera seems to be best way to get order timings/order start frames
+            {
+                int startFrame = 0;
+                foreach (var anim in animationData["7946A380"].OrderBy(x => x.Order))
+                { 
+                    if(!animationTimings.ContainsKey(anim.Order))
+                    {
+                        Animation animTag = PackageHandler.GetTag(typeof(Animation), new TagHash(anim.Hash));
+                        animationTimings.TryAdd(anim.Order, startFrame);
+                        startFrame += animTag.Header.FrameCount;
+                    }    
+                }
+                //foreach (var time in animationTimings)
+                //    Console.WriteLine($"{time.Key} : {time.Value}");
+            }
+
             foreach (var a in animationData)
             {
-                ConcurrentBag<Animation> animations = new ConcurrentBag<Animation>();
+                ConcurrentDictionary<Animation, int> animations = new ConcurrentDictionary<Animation, int>();
                 FbxHandler fbxHandler = new FbxHandler(false);
                 string entName = a.Key;
 
-                if (a.Key == "5518DA80") //Player
+                if (a.Key == "91EBA880") //Player
                 {
                     fbxHandler.AddPlayerSkeletonAndMesh();
                     entName = $"Player_{a.Key}";
@@ -2163,16 +2192,20 @@ public partial class TagListView : UserControl
                     fbxHandler.AddCameraToScene("camera");
                     entName = $"Camera_{a.Key}";
                 }
-                    
+
+                //Console.WriteLine($"---{entName}");
                 foreach (var anim in a.Value.OrderByDescending(x => x.Order))
                 {
-                    if(anim.SubOrder == 0) //idk what to do about suborder yet
+                    //Console.WriteLine($"{anim.Hash} {anim.SubOrder}");
+                    if (anim.SubOrder == 0) //idk what to do about suborder yet
                     {
                         Animation animTag = PackageHandler.GetTag(typeof(Animation), new TagHash(anim.Hash));
-                        animations.Add(animTag);
+                        if(!animations.ContainsKey(animTag))
+                            animations.TryAdd(animTag, anim.Order);
                     }
                 }
-                fbxHandler.AddAnimationsToEntity(animations.ToList());
+
+                fbxHandler.AddAnimationsToEntity(animations, animationTimings);
                 fbxHandler.ExportScene($"{ConfigHandler.GetExportSavePath()}/cinematic/{PackageHandler.GetActivityName(activity.Hash)}/{entName}.fbx");
                 fbxHandler.Dispose();
             }
