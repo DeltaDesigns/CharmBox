@@ -2060,18 +2060,24 @@ public partial class TagListView : UserControl
             MessageBox.Show("No cinematic found for this activity.");
             return;
         }
-
-        if ((object)activity.Header.Unk40[0].Unk38[0].UnkEntityReference.Header.Unk18.Header.EntityResources[1].EntityResourceParent.Header.EntityResource.Header.Unk18 == null)
+        //Console.WriteLine($"{activity.Header.Unk40.Count}");
+        EntityResource cinematicResource = null;
+        foreach (var a in activity.Header.Unk40)
         {
-            MessageBox.Show("No cinematic found for this activity.");
-            return;
+            foreach (var b in a.Unk38)
+            {
+                foreach (var c in b.UnkEntityReference.Header.Unk18.Header.EntityResources)
+                {
+                    //Console.WriteLine($"{c.EntityResourceParent.Header.EntityResource.Header.Unk18}");
+                    if(c.EntityResourceParent.Header.EntityResource.Header.Unk18 is D2Class_0C468080)
+                    {
+                        cinematicResource = ((D2Class_0C468080)c.EntityResourceParent.Header.EntityResource.Header.Unk18).CinematicEntity.Header.EntityResources.Last().ResourceHash;
+                    }
+                }
+            }
         }
-           
-        D2Class_0C468080 unk18 = (D2Class_0C468080)activity.Header.Unk40[0].Unk38[0].UnkEntityReference.Header.Unk18.Header.EntityResources[1]
-            .EntityResourceParent.Header.EntityResource.Header.Unk18;
-        
-        EntityResource cinematicResource = unk18.CinematicEntity.Header.EntityResources.Last().ResourceHash;
-        if(cinematicResource.Header.Unk18 is null)
+
+        if(cinematicResource is null)
         {
             MessageBox.Show("No cinematic found for this activity.");
             return;
@@ -2095,18 +2101,16 @@ public partial class TagListView : UserControl
                     var entityWithModel = entityEntry.CinematicEntityModel;
                     var entityWithAnims = entityEntry.CinematicEntityAnimations;
 
-                    if (entityWithModel.Hash == "7946A380" && entityWithAnims.AnimationGroup != null) //Camera
-                    {
-                        if (((D2Class_F8258080)entityWithAnims.AnimationGroup.Header.Unk18).AnimationGroup.Header.Animations.Count > 1)
-                        {
-                            Console.WriteLine(((D2Class_F8258080)entityWithAnims.AnimationGroup.Header.Unk18).AnimationGroup.Hash.ToString());
-                            Console.WriteLine($"---{entityWithModel.Hash} : {entityWithAnims.Hash} : Unk08 {entityEntry.Unk08} Unk34 {entityEntry.Unk34} Unk70 {entityEntry.Unk70}");
-                        }
-                    }
-                    
-                    
                     if (entityWithModel != null)
                     {
+                        if (entityWithModel.Hash == "7946A380" && entityWithAnims.AnimationGroup != null) //Camera
+                        {
+                            if (((D2Class_F8258080)entityWithAnims.AnimationGroup.Header.Unk18).AnimationGroup.Header.Animations.Count > 1)
+                            {
+                                Console.WriteLine(((D2Class_F8258080)entityWithAnims.AnimationGroup.Header.Unk18).AnimationGroup.Hash.ToString());
+                                Console.WriteLine($"---{entityWithModel.Hash} : {entityWithAnims.Hash} : Unk08 {entityEntry.Unk08} Unk34 {entityEntry.Unk34} Unk70 {entityEntry.Unk70}");
+                            }
+                        }
                         //int i21 = 0; //Sub order
                         //foreach (var animation in ((D2Class_F8258080)entityWithAnims.AnimationGroup.Header.Unk18).AnimationGroup.Header.Animations)
                         //{

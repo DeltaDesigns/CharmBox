@@ -111,7 +111,8 @@ public class Animation : Tag
 
     private void ParseAnimatedCompressedCodec1(D2Class_438B8080 header)
     {
-        MessageBox.Show("Not Implemented");
+        Console.WriteLine($"{Hash} Compressed: Not Implemented");
+        //MessageBox.Show("Not Implemented");
         //throw new NotImplementedException();
     }
 
@@ -225,6 +226,9 @@ public class Animation : Tag
     /// </summary>
     private void ParseStaticData()
     {
+        if (Header.StaticBoneData is null)
+            return;
+
         var staticHeader = (D2Class_408B8080)Header.StaticBoneData;
         if (staticHeader.CodecType != AnimationCodecType._animation_codec_type_pose_quantized)
             throw new NotImplementedException();
@@ -649,7 +653,9 @@ public struct D2Class_438B8080
     public short TranslationStreamCount;
     public float ErrorValue;  // guess
     public float CompressionRate;  // guess
-    [DestinyOffset(0x20), DestinyField(FieldType.TablePointer)]
+    [DestinyField(FieldType.TablePointer)]
+    public List<D2Class_06008080> Unk10;
+    [DestinyField(FieldType.TablePointer)]
     public List<D2Class_06008080> Unk20;
     [DestinyField(FieldType.TablePointer)]
     public List<D2Class_09008080> Unk30;
@@ -658,7 +664,7 @@ public struct D2Class_438B8080
     [DestinyField(FieldType.TablePointer)]
     public List<D2Class_0F008080> Unk50;
     [DestinyField(FieldType.TablePointer)]
-    public List<D2Class_0F008080> Unk60;
+    public List<D2Class_06008080> Unk60;
     [DestinyField(FieldType.TablePointer)]
     public List<D2Class_06008080> Unk70;
 }
