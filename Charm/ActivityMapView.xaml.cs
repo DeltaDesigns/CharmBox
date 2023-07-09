@@ -125,6 +125,7 @@ public partial class ActivityMapView : UserControl
                         //dynamicPoints.AddEmptyToScene($"{a.DataTable.Hash} {b.DataResource}", b.Translation, b.Rotation);
                         if (b.DataResource is D2Class_C36C8080 a1) //Foliage
                         {
+                            continue;
                             Console.WriteLine($"{a.DataTable.Hash}");
                             if (a1.Unk10 is not null)
                             {
@@ -135,7 +136,16 @@ public partial class ActivityMapView : UserControl
 
                                 foreach (var a2 in a1.Unk10.Header.Unk08)
                                 {
-                                    EntityModel model = new(a2.Unk00.Header.Unk08.Hash);
+                                    EntityModel model = new(a2.Unk00.Header.Model.Hash);
+
+                                    for (int i = 0; i < a2.Unk00.Header.Model.Header.Meshes.Count; i++)
+                                    {
+                                        if (a2.Unk00.Header.Model.Header.Meshes[i].Vertices1.Header.Stride == 40)
+                                        {
+                                            model.Header.TexcoordScale = new Vector2(0.5f, 0.5f);
+                                        }
+                                    }
+
                                     var parts = model.Load(ELOD.MostDetail, b.Entity.ModelParentResource);
                                     foreach (var part in parts)
                                     {

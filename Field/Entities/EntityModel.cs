@@ -19,10 +19,10 @@ public class EntityModel : Tag
     /*
      * We need the parent resource to get access to the external materials
      */
-    public List<DynamicPart> Load(ELOD detailLevel, EntityResource parentResource)
+    public List<DynamicPart> Load(ELOD detailLevel, EntityResource parentResource, int meshesIndex = 0)
     {
-        Dictionary<int, D2Class_CB6E8080> dynamicParts = GetPartsOfDetailLevel(detailLevel);
-        List<DynamicPart> parts = GenerateParts(dynamicParts, parentResource);
+        Dictionary<int, D2Class_CB6E8080> dynamicParts = GetPartsOfDetailLevel(detailLevel, meshesIndex);
+        List<DynamicPart> parts = GenerateParts(dynamicParts, parentResource, meshesIndex);
         return parts;
     }
     
@@ -37,13 +37,13 @@ public class EntityModel : Tag
     /// </summary>
     /// <param name="detailLevel">The desired level of detail to get parts for.</param>
     /// <returns></returns>
-    private Dictionary<int, D2Class_CB6E8080> GetPartsOfDetailLevel(ELOD eDetailLevel)
+    private Dictionary<int, D2Class_CB6E8080> GetPartsOfDetailLevel(ELOD eDetailLevel, int meshesIndex)
     {
         Dictionary<int, D2Class_CB6E8080> parts = new Dictionary<int, D2Class_CB6E8080>();
         
-        for (var i = 0; i < Header.Meshes[0].Parts.Count; i++)
+        for (var i = 0; i < Header.Meshes[meshesIndex].Parts.Count; i++)
         {
-            D2Class_CB6E8080 part = Header.Meshes[0].Parts[i];
+            D2Class_CB6E8080 part = Header.Meshes[meshesIndex].Parts[i];
             if (eDetailLevel == ELOD.All)
             {
                 parts.Add(i, part);
@@ -68,12 +68,12 @@ public class EntityModel : Tag
         return parts;
     }
     
-    private List<DynamicPart> GenerateParts(Dictionary<int, D2Class_CB6E8080> dynamicParts, EntityResource parentResource)
+    private List<DynamicPart> GenerateParts(Dictionary<int, D2Class_CB6E8080> dynamicParts, EntityResource parentResource, int meshesIndex)
     {
         List<DynamicPart> parts = new List<DynamicPart>();
         //if (Header.Meshes.Count > 1) throw new Exception("Multiple meshes not supported");
         if (Header.Meshes.Count == 0) return new List<DynamicPart>();
-        D2Class_C56E8080 mesh = Header.Meshes[0];
+        D2Class_C56E8080 mesh = Header.Meshes[meshesIndex];
         
         // Make part group map
         Dictionary<int, int> partGroups = new Dictionary<int, int>();

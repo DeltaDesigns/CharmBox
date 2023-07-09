@@ -968,7 +968,7 @@ public struct D2Class_B26C8080
 {
     public long FileSize;
     [DestinyField(FieldType.TagHash)]
-    public Tag<D2Class_076F8080> Unk08;
+    public Tag<D2Class_076F8080> Model;
     [DestinyOffset(0x10)]
     public Vector4 Unk10;
     public Vector4 Unk20;
