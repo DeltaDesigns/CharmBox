@@ -214,6 +214,7 @@ public partial class MapView : UserControl
     public static void ExportTerrainMap(Tag<D2Class_07878080> map, Activity activity, string bubbleName)
     {
         FbxHandler fbxHandler = new FbxHandler();
+        bool export = false;
         string meshName = map.Hash.GetHashString();
         string savePath = ConfigHandler.GetExportSavePath() + $"/Maps/{activity.Header.LocationName}/";
         if (ConfigHandler.GetSingleFolderMapsEnabled())
@@ -221,11 +222,7 @@ public partial class MapView : UserControl
             savePath = ConfigHandler.GetExportSavePath() + $"/Maps/{activity.Header.LocationName}/{bubbleName}/";
         }
         savePath = Regex.Replace(savePath, @"[^\u0000-\u007F]", "_");
-        if (ConfigHandler.GetUnrealInteropEnabled())
-        {
-            fbxHandler.InfoHandler.SetUnrealInteropPath(ConfigHandler.GetUnrealInteropPath());
-        }
-        
+       
         fbxHandler.InfoHandler.SetMeshName(meshName+"_Terrain");
         Directory.CreateDirectory(savePath);
 
@@ -235,6 +232,7 @@ public partial class MapView : UserControl
             {
                 if (entry.DataResource is D2Class_7D6C8080 terrainArrangement)  // Terrain
                 {
+                    export = true;
                     //entry.Rotation.SetW(1);
                     terrainArrangement.Terrain.LoadIntoFbxScene(fbxHandler, savePath, ConfigHandler.GetUnrealInteropEnabled() || ConfigHandler.GetS2ShaderExportEnabled(), terrainArrangement, ConfigHandler.GetSaveCBuffersEnabled());
                     if(exportStatics)
@@ -253,19 +251,23 @@ public partial class MapView : UserControl
             });
         });
 
-        if (ConfigHandler.GetBlenderInteropEnabled())
+        if(export)
         {
-            AutomatedImporter.SaveInteropBlenderPythonFile(savePath, meshName + "_Terrain", AutomatedImporter.EImportType.Terrain, ConfigHandler.GetOutputTextureFormat());
+            if (ConfigHandler.GetUnrealInteropEnabled())
+            {
+                fbxHandler.InfoHandler.SetUnrealInteropPath(ConfigHandler.GetUnrealInteropPath());
+                AutomatedImporter.SaveInteropUnrealPythonFile(savePath, meshName + "_Terrain", AutomatedImporter.EImportType.Map, ConfigHandler.GetOutputTextureFormat(), ConfigHandler.GetSingleFolderMapsEnabled());
+            }
+            fbxHandler.InfoHandler.AddType("Terrain");
+            fbxHandler.ExportScene($"{savePath}/{meshName}_Terrain.fbx");
         }
-
-        fbxHandler.InfoHandler.AddType("Terrain");
-        fbxHandler.ExportScene($"{savePath}/{meshName}_Terrain.fbx");
         fbxHandler.Dispose();
     }
     
     private static void ExtractDataTables(Tag<D2Class_07878080> map, string savePath, FbxHandler fbxHandler, EExportTypeFlag exportTypeFlag)
     {
         FbxHandler dynamicHandler = new FbxHandler();
+        bool export = false;
         dynamicHandler.InfoHandler.SetMeshName($"{map.Hash.GetHashString()}_Dynamics");
         dynamicHandler.InfoHandler.AddType("Dynamics");
         //FbxHandler dynamicPoints = new FbxHandler(false);
@@ -287,7 +289,11 @@ public partial class MapView : UserControl
                 }
                 if(entry is D2Class_85988080 dynamicResource)
                 {
-                    dynamicHandler.AddDynamicToScene(dynamicResource, dynamicResource.Entity.Hash, savePath, ConfigHandler.GetUnrealInteropEnabled() || ConfigHandler.GetS2ShaderExportEnabled(), ConfigHandler.GetSaveCBuffersEnabled());
+                    if(dynamicResource.Entity.HasGeometry())
+                    {
+                        export = true; //only export entities if theres atleast 1
+                        dynamicHandler.AddDynamicToScene(dynamicResource, dynamicResource.Entity.Hash, savePath, ConfigHandler.GetUnrealInteropEnabled() || ConfigHandler.GetS2ShaderExportEnabled(), ConfigHandler.GetSaveCBuffersEnabled(), true);
+                    }
                     //dynamicPoints.AddDynamicPointsToScene(dynamicResource, dynamicResource.Entity.Hash, dynamicPoints);
                 }
                 if (entry.DataResource is D2Class_95668080 cubemap)
@@ -355,7 +361,8 @@ public partial class MapView : UserControl
                 }
             });
         });
-        dynamicHandler.ExportScene($"{savePath}/{map.Hash.GetHashString()}_Dynamics.fbx");
+        if(export)
+            dynamicHandler.ExportScene($"{savePath}/{map.Hash.GetHashString()}_Dynamics.fbx");
         dynamicHandler.Dispose();
 
         //dynamicPoints.ExportScene($"{savePath}/{map.Hash.GetHashString()}_DynamicPoints.fbx");

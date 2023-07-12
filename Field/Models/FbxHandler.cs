@@ -812,14 +812,15 @@ public class FbxHandler
         }
     }
 
-    public void AddDynamicToScene(D2Class_85988080 points, TagHash entityHash, string savePath, bool bSaveShaders = false, bool bSaveCBuffers = false)
+    public void AddDynamicToScene(D2Class_85988080 points, TagHash entityHash, string savePath, bool bSaveShaders = false, bool bSaveCBuffers = false, bool skipCheck = false)
     {
         Entity entity = PackageHandler.GetTag(typeof(Entity), entityHash);
 
-        if (!entity.HasGeometry())
-        {
-            return;
-        }
+        if(!skipCheck)
+            if (!entity.HasGeometry())
+            {
+                return;
+            }
      
         if (InfoHandler != null)
             InfoHandler.AddInstance(entity.Hash, points.Translation.W, points.Rotation, points.Translation.ToVec3());
