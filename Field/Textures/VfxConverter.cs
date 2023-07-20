@@ -355,7 +355,7 @@ PS
         float3 vTangentUWs = i.vTangentUWs.xyz;
         float3 vTangentVWs = i.vTangentVWs.xyz;
         //float3 vTangentViewDir = Vec3WsToTs( vCameraToPositionDirWs.xyz, vNormalWs.xyz, vTangentUWs.xyz, vTangentVWs.xyz ); //Not needed anymore, keeping in case
-        vCameraToPositionDirWs = vCameraToPositionDirWs/-vCameraToPositionDirWs.z; //idk if really needed
+        //vCameraToPositionDirWs = vCameraToPositionDirWs/-vCameraToPositionDirWs.z; //idk if really needed
         ");
 
             // Output render targets, todo support vertex shader

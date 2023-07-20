@@ -1346,7 +1346,10 @@ public struct D2Class_9B318080
     [DestinyOffset(0x18), DestinyField(FieldType.TagHash64)]
     public TagHash StringContainer;  // idk why but i presume debug strings
     public DestinyHash WeaponContentGroup2Hash;  // "weaponContentGroupHash" from API
-    // theres other stringcontainer stuff but skipping it
+    [DestinyOffset(0x38), DestinyField(FieldType.TagHash64)]
+    public Entity? Unk38;
+    [DestinyOffset(0x68), DestinyField(FieldType.TagHash64)]
+    public Entity? Unk68;
     [DestinyOffset(0xA0), DestinyField(FieldType.TagHash64)]
     public Entity? WeaponSkeletonEntity;
     [DestinyOffset(0xD0), DestinyField(FieldType.TagHash64)]
@@ -1458,7 +1461,7 @@ public struct D2Class_FA2C8080
 
 
 [StructLayout(LayoutKind.Sequential, Size = 0xA0)]
-public struct D2Class_2D098080
+public struct D2Class_092D8080
 {
     public long FileSize;
     public DestinyHash Unk08;

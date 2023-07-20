@@ -6,7 +6,11 @@ import json
 class CharmImporter:
     def __init__(self, folder_path: str, b_unique_folder: bool) -> None:
         self.folder_path = folder_path
-        info_name = f"{__file__.split('/')[-1].split('_')[0]}_info.cfg"
+        if "Terrain" in __file__:
+            info_name = f"{__file__.split('/')[-1].split('_')[0]}_Terrain_info.cfg"
+        else:
+            info_name = f"{__file__.split('/')[-1].split('_')[0]}_info.cfg"
+
         self.config = json.load(open(self.folder_path + f"/{info_name}"))
         if b_unique_folder:
             self.content_path = f"{self.config['UnrealInteropPath']}/{self.config['MeshName']}"

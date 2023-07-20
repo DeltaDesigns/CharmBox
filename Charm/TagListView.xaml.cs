@@ -1766,6 +1766,7 @@ public partial class TagListView : UserControl
         }
         _weaponItemName = InvestmentHandler.GetItemName(InvestmentHandler.GetInventoryItem(apiHash));
         var resourceUnnamed = (D2Class_F42C8080)val.PatternAudioUnnamed.Header.Unk18;
+        Console.WriteLine($"{val.PatternAudioUnnamed.Hash}");
         var resource = (D2Class_6E358080)val.PatternAudio.Header.Unk18;
         var item = InvestmentHandler.GetInventoryItem(apiHash);
         var weaponContentGroupHash = InvestmentHandler.GetWeaponContentGroupHash(item);
@@ -1832,7 +1833,7 @@ public partial class TagListView : UserControl
                     var reference2 = PackageHandler.GetEntryReference(entityData);
                     if (reference2 == 0x80802d09)
                     {
-                        var tagInner = PackageHandler.GetTag<D2Class_2D098080>(entityData);
+                        var tagInner = PackageHandler.GetTag<D2Class_092D8080>(entityData);
                         if (tagInner.Header.Unk18 != null)
                             entities.Add(tagInner.Header.Unk18);
                         if (tagInner.Header.Unk30 != null)
