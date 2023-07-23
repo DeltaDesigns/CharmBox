@@ -22,7 +22,7 @@ public class Terrain : Tag
     }
     
     // To test use edz.strike_hmyn and alleys_a adf6ae80
-    public void LoadIntoFbxScene(FbxHandler fbxHandler, string saveDirectory, bool bSaveShaders, D2Class_7D6C8080 parentResource, bool bSaveCBuffers, bool exportStatic = false)
+    public void LoadIntoFbxScene(FbxHandler fbxHandler, string saveDirectory, bool bSaveShaders, bool bSaveCBuffers, bool exportStatic = false)
     {
         // Directory.CreateDirectory(saveDirectory + "/Textures/Terrain/");
         // Directory.CreateDirectory(saveDirectory + "/Shaders/Terrain/");
@@ -32,7 +32,7 @@ public class Terrain : Tag
         //     return;
         // }
         // Uses triangle strip + only using first set of vertices and indices
-        List<Part> parts = new List<Part>();
+        Dictionary<Part, Material> parts = new Dictionary<Part, Material>();
         var x = new List<float>();
         var y = new List<float>();
         var z = new List<float>();
@@ -41,7 +41,7 @@ public class Terrain : Tag
             if (partEntry.DetailLevel == 0)
             {
                 var part = MakePart(partEntry);
-                parts.Add(part);
+                parts.TryAdd(part, partEntry.Material);
                 x.AddRange(part.VertexPositions.Select(a => a.X));
                 y.AddRange(part.VertexPositions.Select(a => a.Y));
                 z.AddRange(part.VertexPositions.Select(a => a.Z));
@@ -56,7 +56,7 @@ public class Terrain : Tag
                 if (bSaveShaders)
                 {
                     partEntry.Material.SavePixelShader($"{saveDirectory}/Shaders/", true, bSaveCBuffers);
-                    partEntry.Material.SaveVertexShader($"{saveDirectory}/Shaders/");
+                    partEntry.Material.SaveVertexShader($"{saveDirectory}/Shaders/", bSaveCBuffers);
                     partEntry.Material.SaveComputeShader($"{saveDirectory}/Shaders/");
                 }
             }
@@ -82,42 +82,46 @@ public class Terrain : Tag
         foreach (var part in parts)
         {
             // scale by 1.99 ish, -1 for all sides, multiply by 512?
-            TransformPositions(part, localOffset);
-            TransformTexcoords(part);
+            TransformPositions(part.Key, localOffset);
+            TransformTexcoords(part.Key);
         }
         
-        fbxHandler.AddStaticToScene(parts, Hash);
+        fbxHandler.AddStaticToScene(parts.Keys.ToList(), Hash);
         // For now we pre-transform it
         if (!exportStatic)
         {
             fbxHandler.InfoHandler.AddInstance(Hash, 1, Vector4.Zero, globalOffset);
         }
-        
+
         // We need to add these textures after the static is initialised
+        Console.WriteLine($"Parts {parts.Count}");
+        Console.WriteLine($"MeshGroups {Header.MeshGroups.Count}");
         foreach (var part in parts)
         {
-            if (Header.MeshGroups[part.GroupIndex].Dyemap != null)
+            //Console.WriteLine($"{Header.MeshGroups[part.Key.GroupIndex].Unk30}");
+            if (Header.MeshGroups[part.Key.GroupIndex].Dyemap != null)
             {
+                Console.WriteLine($"GroupIndex {part.Key.GroupIndex} Mat {part.Value.Hash} Dyemap {Header.MeshGroups[part.Key.GroupIndex].Dyemap.Hash}");
                 if (!exportStatic)
                 {
-                    fbxHandler.InfoHandler.AddCustomTexture(part.Material.Hash, terrainTextureIndex, Header.MeshGroups[part.GroupIndex].Dyemap);
+                    fbxHandler.InfoHandler.AddCustomTexture(part.Value.Hash, terrainTextureIndex, Header.MeshGroups[part.Key.GroupIndex].Dyemap);
                 }
 
                 if (FieldConfigHandler.GetS2ShaderExportEnabled())
                 { 
-                    if (File.Exists($"{saveDirectory}/Shaders/Source2/materials/{part.Material.Hash}.vmat"))
+                    if (File.Exists($"{saveDirectory}/Shaders/Source2/materials/{part.Value.Hash}.vmat"))
                     {
-                        string[] vmat = File.ReadAllLines($"{saveDirectory}/Shaders/Source2/materials/{part.Material.Hash}.vmat");
+                        string[] vmat = File.ReadAllLines($"{saveDirectory}/Shaders/Source2/materials/{part.Value.Hash}.vmat");
                         int lastBraceIndex = Array.FindLastIndex(vmat, line => line.Trim().Equals("}"));
                         bool textureFound = Array.Exists(vmat, line => line.Trim().StartsWith("TextureT14"));
                         if (!textureFound && lastBraceIndex != -1)
                         {
                             var newVmat = vmat.Take(lastBraceIndex).ToList();
                             newVmat.Add($"  TextureT{terrainTextureIndex} " +
-                                         $"\"materials/Textures/{Header.MeshGroups[part.GroupIndex].Dyemap.Hash}.png\"");
+                                         $"\"materials/Textures/{Header.MeshGroups[part.Key.GroupIndex].Dyemap.Hash}.png\"");
                             newVmat.AddRange(vmat.Skip(lastBraceIndex));
                             //Console.WriteLine($"Added T14 {Header.MeshGroups[part.GroupIndex].Dyemap.Hash} to {part.Material.Hash}");
-                            File.WriteAllLines($"{saveDirectory}/Shaders/Source2/materials/{part.Material.Hash}.vmat", newVmat);
+                            File.WriteAllLines($"{saveDirectory}/Shaders/Source2/materials/{part.Value.Hash}.vmat", newVmat);
                         }
                     }
                 }
@@ -126,7 +130,7 @@ public class Terrain : Tag
 
 		//Source 2
 		if (FieldConfigHandler.GetS2VMDLExportEnabled())
-			Source2Handler.SaveTerrainVMDL(saveDirectory, (string)Hash, parts, Header);
+			Source2Handler.SaveTerrainVMDL(saveDirectory, (string)Hash, parts.Keys.ToList(), Header);
 	}
 
     public Part MakePart(D2Class_846C8080 entry)
@@ -161,7 +165,6 @@ public class Terrain : Tag
                 (part.VertexPositions[i].Z - localOffset.Z) * 4,
                 part.VertexPositions[i].W
             );
-            var b = 0;
         }
     }
 
@@ -198,6 +201,22 @@ public class Terrain : Tag
         }
         for (int i = 0; i < part.VertexTexcoords.Count; i++)
         {
+            //Console.WriteLine($"{part.GroupIndex} {part.VertexTexcoords[i].X} {part.VertexTexcoords[i].Y}");
+            //if (i != 0)
+            //{
+            //    if (part.VertexTexcoords[i].Y != 0)
+            //    {
+            //        part.VertexTexcoords[i] = new Vector2(
+            //        part.VertexTexcoords[i].X,
+            //        part.VertexTexcoords[i].Y);
+            //    }
+            //    if (part.VertexTexcoords[i].X != 0)
+            //    {
+            //        part.VertexTexcoords[i] = new Vector2(
+            //        part.VertexTexcoords[i].X,
+            //        part.VertexTexcoords[i].Y);
+            //    }
+            //}
             part.VertexTexcoords[i] = new Vector2(
             part.VertexTexcoords[i].X * scaleX + translateX,
             part.VertexTexcoords[i].Y * scaleY + (1 - translateY)
@@ -263,14 +282,8 @@ public struct D2Class_816C8080
 [StructLayout(LayoutKind.Sequential, Size = 0x60)]
 public struct D2Class_866C8080
 {
-    public float Unk00;
-    public float Unk04;
-    public float Unk08;
-    public float Unk0C;
-    public float Unk10;
-    public float Unk14;
-    public float Unk18;
-    [DestinyOffset(0x20)]
+    public Vector4 Unk00; //cb11[3] vertex shader cbuffer maybeee?
+    public Vector4 Unk10;
     public Vector4 Unk20;
     public uint Unk30;
     public uint Unk34;

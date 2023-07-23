@@ -21,7 +21,7 @@ public class VertexBuffer : Tag
     {
         using (var handle = GetHandle())
         {
-            //Console.WriteLine($"{part.Material.Hash} {Hash} {header.Stride.ToString("X")}({header.Stride}) {header.Type}");
+            //Console.WriteLine($"{part.Index} {part.Material?.Hash} {Hash} {header.Stride.ToString("X")}({header.Stride}) {header.Type}");
             foreach (var vertexIndex in uniqueVertexIndices)
             {
                 ReadVertexData(part, vertexIndex, handle);

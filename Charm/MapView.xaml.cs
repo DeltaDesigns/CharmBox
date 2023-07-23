@@ -234,7 +234,7 @@ public partial class MapView : UserControl
                 {
                     export = true;
                     //entry.Rotation.SetW(1);
-                    terrainArrangement.Terrain.LoadIntoFbxScene(fbxHandler, savePath, ConfigHandler.GetUnrealInteropEnabled() || ConfigHandler.GetS2ShaderExportEnabled(), terrainArrangement, ConfigHandler.GetSaveCBuffersEnabled());
+                    terrainArrangement.Terrain.LoadIntoFbxScene(fbxHandler, savePath, ConfigHandler.GetUnrealInteropEnabled() || ConfigHandler.GetS2ShaderExportEnabled(), ConfigHandler.GetSaveCBuffersEnabled());
                     if(exportStatics)
                     {
 						Directory.CreateDirectory($"{savePath}/Statics/");
@@ -243,7 +243,7 @@ public partial class MapView : UserControl
 							File.Copy("template.vmdl", $"{savePath}/Statics/{terrainArrangement.Terrain.Hash}_Terrain.vmdl", true);
                         }
                         FbxHandler staticHandler = new FbxHandler(false);
-                        terrainArrangement.Terrain.LoadIntoFbxScene(staticHandler, savePath, ConfigHandler.GetUnrealInteropEnabled() || ConfigHandler.GetS2ShaderExportEnabled(), terrainArrangement, ConfigHandler.GetSaveCBuffersEnabled(), true);
+                        terrainArrangement.Terrain.LoadIntoFbxScene(staticHandler, savePath, ConfigHandler.GetUnrealInteropEnabled() || ConfigHandler.GetS2ShaderExportEnabled(), ConfigHandler.GetSaveCBuffersEnabled(), true);
                         staticHandler.ExportScene($"{savePath}/Statics/{terrainArrangement.Terrain.Hash}_Terrain.fbx");
                         staticHandler.Dispose();
                     }
@@ -345,7 +345,7 @@ public partial class MapView : UserControl
                         new Vector2(1, 1),
                         (light.Unk10.Header.Unk10.Header.Unk40.Count == 0 ? light.Unk10.Header.Unk10.Header.Unk60[0].Unk00 : light.Unk10.Header.Unk10.Header.Unk40[0].Unk00));
                 }
-                if (entry.DataResource is D2Class_636A8080 areaLight)
+                if (entry.DataResource is D2Class_636A8080 areaLight) //probably not JUST area lights, could be spot or omni?
                 {
                     for (int i = 0; i < areaLight.Unk10.Header.Unk30.Count; i++)
                     {

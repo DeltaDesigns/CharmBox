@@ -18,7 +18,7 @@ public class VfxConverter
     private List<Cbuffer> cbuffers = new List<Cbuffer>();
     private List<Input> inputs = new List<Input>();
     private List<Output> outputs = new List<Output>();
-    private bool isTerrain = false;
+    private static bool isTerrain = false;
     
     private readonly string[] sampleStates = {
         "SamplerState g_sWrap < Filter( ANISOTROPIC ); AddressU( WRAP ); AddressV( WRAP ); >;",
@@ -28,13 +28,13 @@ public class VfxConverter
     };
     
 
-    public string vfxStructure = @"HEADER
-{
+    public string vfxStructure = $@"HEADER
+{{
 	Description = ""Charm Auto-Generated Source 2 Shader""; 
-}
+}}
 
 MODES
-{
+{{
 	VrForward();
 
 	Depth(); 
@@ -44,51 +44,53 @@ MODES
 	ToolsShadingComplexity( ""tools_shading_complexity.shader"" );
 
 	Reflection( ""high_quality_reflections.shader"" );
-}
+}}
 
 FEATURES
-{
+{{
     #include ""common/features.hlsl""
     Feature( F_HIGH_QUALITY_REFLECTIONS, 0..1, ""Rendering"" );
-}
+}}
 
 COMMON
-{
+{{
     //alpha
 	#include ""common/shared.hlsl""
     #define CUSTOM_MATERIAL_INPUTS
     #define USES_HIGH_QUALITY_REFLECTIONS
-}
+}}
 
 struct VertexInput
-{
+{{
     float4 vColorBlendValues : Color0 < Semantic( Color ); >;
 	#include ""common/vertexinput.hlsl""
-};
+}};
 
 struct PixelInput
-{
+{{
     float4 vBlendValues		 : TEXCOORD14;
+    float3 o0                : TEXCOORD15;
 	#include ""common/pixelinput.hlsl""
-};
+}};
 
 VS
-{
+{{
 	#include ""common/vertex.hlsl""
 
     BoolAttribute( UsesHighQualityReflections, ( F_HIGH_QUALITY_REFLECTIONS > 0 ) );
 
 	PixelInput MainVs( INSTANCED_SHADER_PARAMS( VS_INPUT i ) )
-	{
+	{{
 		PixelInput o = ProcessVertex( i );
         o.vBlendValues = i.vColorBlendValues;
 		o.vBlendValues.a = i.vColorBlendValues.a;
+        {(isTerrain ? "float4 r0;\r\n        r0.xyzw = (int4)float4(i.vPositionOs.xyz,0);\r\n        r0.xyzw = float4(0,0,0,0) + r0.xyzw;\r\n        r0.z = r0.w * 65536 + r0.z;\r\n        r0.xyw = float3(0.015625,0.015625,0.000122070313) * r0.xyz;\r\n        o.o0.xyz = r0.xyw;": "")}
 		return FinalizeVertex( o );
-	}
-}
+	}}
+}}
 
 PS
-{
+{{
     #include ""common/pixel.hlsl""
     #define cmp -
     //#define CUSTOM_TEXTURE_FILTERING // uncomment to use custom texture filtering
@@ -364,24 +366,20 @@ PS
 
             if(isTerrain) //variables are different for terrain for whatever reason, kinda have to guess
             {
-                vfx.AppendLine("        float4 v0 = {i.vTextureCoords*7, 1,1};"); //Detail uv? x5? x10? no clue
-                vfx.AppendLine("        float4 v1 = {i.vTextureCoords, 1,1};"); //Main uv?
-                vfx.AppendLine("        float4 v2 = {vNormalWs,1};"); //no clue yet
-                vfx.AppendLine("        float4 v3 = {vTangentUWs,1};"); //Guessing
-                vfx.AppendLine("        float4 v4 = {vTangentVWs,1};"); //Guessing
+                vfx.AppendLine("        float4 v0 = {i.o0,1};"); //Detail uv?
+                vfx.AppendLine("        float4 v1 = {i.o0*0.05,1};"); //Main uv?
+                vfx.AppendLine("        float4 v2 = {vNormalWs,1};"); 
+                vfx.AppendLine("        float4 v3 = {vTangentUWs,1};");
+                vfx.AppendLine("        float4 v4 = {vTangentVWs,1};");
                 vfx.AppendLine("        float4 v5 = i.vBlendValues;"); //Havent seen v5 used on terrain yet
             }
             else
             {
-                //vfx.AppendLine("        float4 v0 = {0,0,1,1};"); //Seems to only be used for normals. No idea what it is.
-                //vfx.AppendLine("        float4 v1 = {1,0,0,1};"); //Pretty sure this is mesh normals.
-                //vfx.AppendLine("        float4 v2 = {0,1,0,1};"); //Tangent? Seems to only be used for normals.
-
                 vfx.AppendLine("        float4 v0 = {vNormalWs,1};");
                 vfx.AppendLine("        float4 v1 = {vTangentUWs,1};");
                 vfx.AppendLine("        float4 v2 = {vTangentVWs,1};");
                 vfx.AppendLine("        float4 v3 = {i.vTextureCoords, 1,1};"); //99.9% sure this is always UVs.
-                vfx.AppendLine("        float4 v4 = {1,1,1,1};"); //Might be i.vPositionSs, Mostly seen on materials with parallax. Some kind of view vector or matrix?
+                vfx.AppendLine("        float4 v4 = {1,1,1,1};"); //Don't really know
                 vfx.AppendLine("        float4 v5 = i.vBlendValues;"); //Seems to always be vertex color/vertex color alpha.
                 //vfx.AppendLine("        uint v6 = 1;"); //no idea, FrontFace maybe?
             }

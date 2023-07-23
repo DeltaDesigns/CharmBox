@@ -262,6 +262,16 @@ public partial class DevView : UserControl
                     Animation animation = PackageHandler.GetTag(typeof(Animation), hash);
                     animation.Load();
                     break;
+                case 0x80806c81:
+                    FbxHandler fbxHandler = new FbxHandler();
+                    string savePath = $"{ConfigHandler.GetExportSavePath()}/Test/";
+                    Terrain terrain = PackageHandler.GetTag(typeof(Terrain), hash);
+                    fbxHandler.InfoHandler.SetMeshName($"{hash}_Terrain");
+                    fbxHandler.InfoHandler.AddType("Terrain");
+                    terrain.LoadIntoFbxScene(fbxHandler, savePath, true, true);
+                    fbxHandler.ExportScene($"{savePath}/{hash}_Terrain.fbx");
+                    fbxHandler.Dispose();
+                    break;
                 default:
                     MessageBox.Show("Unknown reference: " + Endian.U32ToString(reference));
                     break;
