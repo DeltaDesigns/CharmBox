@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using Field.General;
@@ -33,6 +34,7 @@ public class Terrain : Tag
         // }
         // Uses triangle strip + only using first set of vertices and indices
         Dictionary<Part, Material> parts = new Dictionary<Part, Material>();
+        List<string> dyeMaps = new List<string>();
         var x = new List<float>();
         var y = new List<float>();
         var z = new List<float>();
@@ -76,6 +78,7 @@ public class Terrain : Tag
             if (partEntry.Dyemap != null)
             {
                 partEntry.Dyemap.SavetoFile($"{saveDirectory}/Textures/{partEntry.Dyemap.Hash}");
+                dyeMaps.Add(partEntry.Dyemap.Hash.ToString());
             }
         }
         localOffset = new Vector3((x.Max() + x.Min())/2, (y.Max() + y.Min())/2, (z.Max() + z.Min())/2);
@@ -84,6 +87,7 @@ public class Terrain : Tag
             // scale by 1.99 ish, -1 for all sides, multiply by 512?
             TransformPositions(part.Key, localOffset);
             TransformTexcoords(part.Key);
+            TransformVertexColors(part.Key);
         }
         
         fbxHandler.AddStaticToScene(parts.Keys.ToList(), Hash);
@@ -91,17 +95,20 @@ public class Terrain : Tag
         if (!exportStatic)
         {
             fbxHandler.InfoHandler.AddInstance(Hash, 1, Vector4.Zero, globalOffset);
+            //for (int i = 0; i < dyeMaps.Count; i++)
+            //{
+            //    fbxHandler.InfoHandler.AddTerrainDyemap(Hash.ToString(), i, dyeMaps[i]);
+            //}
         }
 
         // We need to add these textures after the static is initialised
-        Console.WriteLine($"Parts {parts.Count}");
-        Console.WriteLine($"MeshGroups {Header.MeshGroups.Count}");
         foreach (var part in parts)
         {
             //Console.WriteLine($"{Header.MeshGroups[part.Key.GroupIndex].Unk30}");
             if (Header.MeshGroups[part.Key.GroupIndex].Dyemap != null)
             {
-                Console.WriteLine($"GroupIndex {part.Key.GroupIndex} Mat {part.Value.Hash} Dyemap {Header.MeshGroups[part.Key.GroupIndex].Dyemap.Hash}");
+                //Console.WriteLine($"{Hash} GroupIndex {part.Key.GroupIndex} Mat {part.Value.Hash}");
+
                 if (!exportStatic)
                 {
                     fbxHandler.InfoHandler.AddCustomTexture(part.Value.Hash, terrainTextureIndex, Header.MeshGroups[part.Key.GroupIndex].Dyemap);
@@ -109,19 +116,24 @@ public class Terrain : Tag
 
                 if (FieldConfigHandler.GetS2ShaderExportEnabled())
                 { 
-                    if (File.Exists($"{saveDirectory}/Shaders/Source2/materials/{part.Value.Hash}.vmat"))
+                    if (File.Exists($"{saveDirectory}/Shaders/Source2/materials/Terrain/{part.Value.Hash}.vmat"))
                     {
-                        string[] vmat = File.ReadAllLines($"{saveDirectory}/Shaders/Source2/materials/{part.Value.Hash}.vmat");
-                        int lastBraceIndex = Array.FindLastIndex(vmat, line => line.Trim().Equals("}"));
+                        string[] vmat = File.ReadAllLines($"{saveDirectory}/Shaders/Source2/materials/Terrain/{part.Value.Hash}.vmat");
+                        int lastBraceIndex = Array.FindLastIndex(vmat, line => line.Trim().Equals("}")); //Searches for the last brace (})
                         bool textureFound = Array.Exists(vmat, line => line.Trim().StartsWith("TextureT14"));
                         if (!textureFound && lastBraceIndex != -1)
                         {
                             var newVmat = vmat.Take(lastBraceIndex).ToList();
-                            newVmat.Add($"  TextureT{terrainTextureIndex} " +
-                                         $"\"materials/Textures/{Header.MeshGroups[part.Key.GroupIndex].Dyemap.Hash}.png\"");
+
+                            for(int i = 0; i < dyeMaps.Count; i++) //Add all the dyemaps to the vmat
+                            {
+                                Console.WriteLine($"{dyeMaps[i]}");
+                                newVmat.Add($"  TextureT{terrainTextureIndex}_{i} \"materials/Textures/{dyeMaps[i]}.png\"");
+                            }
+                            
                             newVmat.AddRange(vmat.Skip(lastBraceIndex));
-                            //Console.WriteLine($"Added T14 {Header.MeshGroups[part.GroupIndex].Dyemap.Hash} to {part.Material.Hash}");
-                            File.WriteAllLines($"{saveDirectory}/Shaders/Source2/materials/{part.Value.Hash}.vmat", newVmat);
+                            File.WriteAllLines($"{saveDirectory}/Shaders/Source2/materials/Terrain/{Hash}_{part.Value.Hash}.vmat", newVmat);
+                            File.Delete($"{saveDirectory}/Shaders/Source2/materials/Terrain/{part.Value.Hash}.vmat"); //Delete the old vmat, dont need it anymore
                         }
                     }
                 }
@@ -165,6 +177,28 @@ public class Terrain : Tag
                 (part.VertexPositions[i].Z - localOffset.Z) * 4,
                 part.VertexPositions[i].W
             );
+        }
+    }
+
+    private void TransformVertexColors(Part part)
+    {
+        for (int i = 0; i < part.VertexPositions.Count; i++)
+        {
+            switch (part.GroupIndex)
+            {
+                case 0:
+                    part.VertexColours.Add(new Vector4(1.0f, 0.0f, 0.0f, 1.0f));
+                    break;
+                case 1:
+                    part.VertexColours.Add(new Vector4(0.0f, 1.0f, 0.0f, 1.0f));
+                    break;
+                case 2:
+                    part.VertexColours.Add(new Vector4(0.0f, 0.0f, 1.0f, 1.0f));
+                    break;
+                case 3:
+                    part.VertexColours.Add(new Vector4(1.0f, 1.0f, 1.0f, 1.0f));
+                    break;
+            };
         }
     }
 

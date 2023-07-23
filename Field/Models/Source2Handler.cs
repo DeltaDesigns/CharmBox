@@ -86,7 +86,7 @@ public class Source2Handler
 				{
 					mats.AppendLine("{");
 					mats.AppendLine($"    from = \"{staticpart.Material.Hash}.vmat\"");
-					mats.AppendLine($"    to = \"materials/{staticpart.Material.Hash}.vmat\"");
+					mats.AppendLine($"    to = \"materials/Terrain/{hash}_{staticpart.Material.Hash}.vmat\"");
 					mats.AppendLine("},\n");
 					i++;
 				}
@@ -101,11 +101,11 @@ public class Source2Handler
 		}
 	}
 
-	public static void SaveVMAT(string savePath, string hash, D2Class_AA6D8080 materialHeader)
+	public static void SaveVMAT(string savePath, string hash, D2Class_AA6D8080 materialHeader, bool isTerrain = false)
 	{
 		StringBuilder vmat = new StringBuilder();
 		vmat.AppendLine("Layer0 \n{");
-
+		
 		//If the shader doesnt exist, just use the default complex.shader
 		if (!File.Exists($"{savePath}/Source2/PS_{hash}.shader"))
 		{
@@ -137,11 +137,15 @@ public class Source2Handler
 		vmat.AppendLine($"Attributes\r\n\t{{\r\n\t\tDebug_Diffuse \"false\"\r\n\t\tDebug_Rough \"false\"\r\n\t\tDebug_Metal \"false\"\r\n\t\tDebug_Normal \"false\"\r\n\t\tDebug_AO \"false\"\r\n\t\tDebug_Emit \"false\"\r\n\t\tDebug_Alpha \"false\"\r\n\t}}");
 		vmat.AppendLine("}");
 
-		if (!File.Exists($"{savePath}/Source2/materials/{hash}.vmat"))
+		string terrainDir = isTerrain ? "/Terrain/" : "";
+		if(isTerrain)
+			Directory.CreateDirectory($"{savePath}/Source2/materials/{terrainDir}");
+
+        if (!File.Exists($"{savePath}/Source2/materials/{terrainDir}{hash}.vmat"))
 		{
 			try
 			{
-				File.WriteAllText($"{savePath}/Source2/materials/{hash}.vmat", vmat.ToString());
+				File.WriteAllText($"{savePath}/Source2/materials/{terrainDir}{hash}.vmat", vmat.ToString());
 			}
 			catch (IOException)
 			{

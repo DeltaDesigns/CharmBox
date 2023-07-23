@@ -341,11 +341,23 @@ PS
                 }
             }
             
-            if(isTerrain)
+            if(isTerrain) //Terrain has 4 dyemaps per shader, from what ive seen
             {
-                vfx.AppendLine($"   CreateInputTexture2D( TextureT14, Linear, 8, \"\", \"\",  \"Textures,10/14\", Default3( 1.0, 1.0, 1.0 ));");
-                vfx.AppendLine($"   CreateTexture2DWithoutSampler( g_t14 )  < Channel( RGBA,  Box( TextureT14 ), Linear ); OutputFormat( BC7 ); SrgbRead( False ); >; ");
-                vfx.AppendLine($"   TextureAttribute(g_t14, g_t14);\n");
+                vfx.AppendLine($"   CreateInputTexture2D( TextureT14_0, Linear, 8, \"\", \"\",  \"Textures,10/14\", Default3( 1.0, 1.0, 1.0 ));");
+                vfx.AppendLine($"   CreateTexture2DWithoutSampler( g_t14_0 )  < Channel( RGBA,  Box( TextureT14_0 ), Linear ); OutputFormat( BC7 ); SrgbRead( False ); >; ");
+                vfx.AppendLine($"   TextureAttribute(g_t14_0, g_t14_0);\n");
+
+                vfx.AppendLine($"   CreateInputTexture2D( TextureT14_1, Linear, 8, \"\", \"\",  \"Textures,10/15\", Default3( 1.0, 1.0, 1.0 ));");
+                vfx.AppendLine($"   CreateTexture2DWithoutSampler( g_t14_1 )  < Channel( RGBA,  Box( TextureT14_1 ), Linear ); OutputFormat( BC7 ); SrgbRead( False ); >; ");
+                vfx.AppendLine($"   TextureAttribute(g_t14_1, g_t14_1);\n");
+
+                vfx.AppendLine($"   CreateInputTexture2D( TextureT14_2, Linear, 8, \"\", \"\",  \"Textures,10/16\", Default3( 1.0, 1.0, 1.0 ));");
+                vfx.AppendLine($"   CreateTexture2DWithoutSampler( g_t14_2 )  < Channel( RGBA,  Box( TextureT14_2 ), Linear ); OutputFormat( BC7 ); SrgbRead( False ); >; ");
+                vfx.AppendLine($"   TextureAttribute(g_t14_2, g_t14_2);\n");
+
+                vfx.AppendLine($"   CreateInputTexture2D( TextureT14_3, Linear, 8, \"\", \"\",  \"Textures,10/17\", Default3( 1.0, 1.0, 1.0 ));");
+                vfx.AppendLine($"   CreateTexture2DWithoutSampler( g_t14_3 )  < Channel( RGBA,  Box( TextureT14_3 ), Linear ); OutputFormat( BC7 ); SrgbRead( False ); >; ");
+                vfx.AppendLine($"   TextureAttribute(g_t14_3, g_t14_3);\n");
             }
 
             vfx.AppendLine("    float4 MainPs( PixelInput i ) : SV_Target0");
@@ -371,16 +383,16 @@ PS
                 vfx.AppendLine("        float4 v2 = {vNormalWs,1};"); 
                 vfx.AppendLine("        float4 v3 = {vTangentUWs,1};");
                 vfx.AppendLine("        float4 v4 = {vTangentVWs,1};");
-                vfx.AppendLine("        float4 v5 = i.vBlendValues;"); //Havent seen v5 used on terrain yet
+                vfx.AppendLine("        float4 v5 = i.vBlendValues;"); //For dyemaps
             }
             else
             {
-                vfx.AppendLine("        float4 v0 = {vNormalWs,1};");
+                vfx.AppendLine("        float4 v0 = {vNormalWs,1};"); //Mesh world normals
                 vfx.AppendLine("        float4 v1 = {vTangentUWs,1};");
                 vfx.AppendLine("        float4 v2 = {vTangentVWs,1};");
-                vfx.AppendLine("        float4 v3 = {i.vTextureCoords, 1,1};"); //99.9% sure this is always UVs.
+                vfx.AppendLine("        float4 v3 = {i.vTextureCoords, 1,1};"); //UVs
                 vfx.AppendLine("        float4 v4 = {1,1,1,1};"); //Don't really know
-                vfx.AppendLine("        float4 v5 = i.vBlendValues;"); //Seems to always be vertex color/vertex color alpha.
+                vfx.AppendLine("        float4 v5 = i.vBlendValues;"); //Vertex color.
                 //vfx.AppendLine("        uint v6 = 1;"); //no idea, FrontFace maybe?
             }
 
@@ -450,7 +462,33 @@ PS
                     var sampleUv = line.Split(", ")[1].Split(")")[0];
                     var dotAfter = line.Split(").")[1];
                     // todo add dimension
-                    vfx.AppendLine($"       {equal}= Tex2DS(g_t{texIndex}, TextureFiltering, {sampleUv}).{dotAfter}");
+
+                    if(texIndex == 14) //THIS IS SO SO BAD
+                    {
+                        vfx.AppendLine($"bool red = i.vBlendValues.x > 0.5;\r\n" +
+                            $"        bool green = i.vBlendValues.y > 0.5;\r\n" +
+                            $"        bool blue = i.vBlendValues.z > 0.5;\r\n\r\n" +
+                            $"        if (red && !green && !blue)\r\n" +
+                            $"        {{\r\n" +
+                            $"            {equal} = Tex2DS(g_t14_0, TextureFiltering, {sampleUv}).{dotAfter};\r\n" +
+                            $"        }}\r\n" +
+                            $"        else if (!red && green && !blue)\r\n" +
+                            $"        {{\r\n" +
+                            $"            {equal} = Tex2DS(g_t14_1, TextureFiltering, {sampleUv}).{dotAfter};\r\n" +
+                            $"        }}\r\n" +
+                            $"        else if (!red && !green && blue)\r\n" +
+                            $"        {{\r\n" +
+                            $"            {equal} = Tex2DS(g_t14_2, TextureFiltering, {sampleUv}).{dotAfter};\r\n" +
+                            $"        }}\r\n" +
+                            $"        else if (red && green && blue)\r\n" +
+                            $"        {{\r\n" +
+                            $"            {equal} = Tex2DS(g_t14_3, TextureFiltering, {sampleUv}).{dotAfter};\r\n" +
+                            $"        }}");
+                    }
+                    else 
+                    {
+                        vfx.AppendLine($"       {equal}= Tex2DS(g_t{texIndex}, TextureFiltering, {sampleUv}).{dotAfter}");
+                    } 
                 }
                 else if (line.Contains("CalculateLevelOfDetail"))
                 {

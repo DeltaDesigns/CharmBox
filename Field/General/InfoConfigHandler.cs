@@ -20,9 +20,7 @@ public class InfoConfigHandler
         _config.TryAdd("Parts", parts);
         ConcurrentDictionary<string, ConcurrentBag<JsonInstance>> instances = new ConcurrentDictionary<string, ConcurrentBag<JsonInstance>>();
         _config.TryAdd("Instances", instances);
-        ConcurrentDictionary<string, ConcurrentBag<JsonInstance>> dynamics = new ConcurrentDictionary<string, ConcurrentBag<JsonInstance>>();
-        _config.TryAdd("Dynamics", dynamics);
-
+        
         //ConcurrentDictionary<string, ConcurrentBag<JsonSound>> sounds = new ConcurrentDictionary<string, ConcurrentBag<JsonSound>>();
         //_config.TryAdd("Sounds", sounds);
 

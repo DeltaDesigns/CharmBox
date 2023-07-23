@@ -171,7 +171,7 @@ public class Material : Tag
             
             //Need to save material after shader has be exported, to check if it exists
 			if (Source2Handler.source2Shaders)
-				Source2Handler.SaveVMAT(saveDirectory, Hash, Header);
+				Source2Handler.SaveVMAT(saveDirectory, Hash, Header, isTerrain);
 		}
     }
     
@@ -363,7 +363,7 @@ public class Material : Tag
             try
             {
                 File.WriteAllText($"{saveDirectory}/CBuffers/{(bIsVertexShader ? "CB_VS" : "CB_PS")}_{Hash}.txt", buffers.ToString());
-                Console.WriteLine($"Saved CBuffers for material {Hash}");
+                //Console.WriteLine($"Saved CBuffers for material {Hash}");
             }
             catch (IOException)  // threading error
             {
