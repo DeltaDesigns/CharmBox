@@ -169,15 +169,16 @@ public partial class ActivityMapView : UserControl
                                 {
                                     data.DataTable.Header.DataEntries.ForEach(entry =>
                                     {
-                                        if(entry.Entity.HasGeometry())
-                                        {
-                                            items.Add(new DisplayStaticMap
+                                        if (!items.Contains(new DisplayStaticMap { Hash = m.MapResource.Hash }))   
+                                            if (entry.Entity.HasGeometry())
                                             {
-                                                Hash = m.MapResource.Hash,
-                                                Name = $"{m.MapResource.Hash}: Misc Entities",
-                                                Instances = 0
-                                            });
-                                        }
+                                                items.Add(new DisplayStaticMap
+                                                {
+                                                    Hash = m.MapResource.Hash,
+                                                    Name = $"{m.MapResource.Hash}: Misc Entities",
+                                                    Instances = 0
+                                                });
+                                            }
                                     });
                                 });
                             }
@@ -193,7 +194,7 @@ public partial class ActivityMapView : UserControl
             Name = "Select all"
         });
         StaticList.ItemsSource = sortedItems;
-        dynamicPoints.ExportScene($"{ConfigHandler.GetExportSavePath()}/{bubbleMaps.Hash.GetHashString()}_Empties.fbx");
+        //dynamicPoints.ExportScene($"{ConfigHandler.GetExportSavePath()}/{bubbleMaps.Hash.GetHashString()}_Empties.fbx");
         dynamicPoints.Dispose();
     }
 

@@ -127,7 +127,7 @@ public class Terrain : Tag
 
                             for(int i = 0; i < dyeMaps.Count; i++) //Add all the dyemaps to the vmat
                             {
-                                Console.WriteLine($"{dyeMaps[i]}");
+                                //Console.WriteLine($"{dyeMaps[i]}");
                                 newVmat.Add($"  TextureT{terrainTextureIndex}_{i} \"materials/Textures/{dyeMaps[i]}.png\"");
                             }
                             
