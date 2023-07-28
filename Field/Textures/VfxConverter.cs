@@ -205,10 +205,7 @@ PS
                     input.Index = Int32.TryParse(new string(input.Variable.Skip(1).ToArray()), out int index) ? index : -1;
                     input.Semantic = line.Split(" : ")[1].Split(",")[0];
                     if(input.Semantic == "SV_isFrontFace0")
-                    {
-                        Console.WriteLine("test");
                         bUsesFrontFace = true;
-                    }
                     input.Type = line.Split(" v")[0].Trim();
                     inputs.Add(input);
                 }
