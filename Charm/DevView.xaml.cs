@@ -15,8 +15,7 @@ using Field.Models;
 using Field.Statics;
 using System.Linq;
 using System.Threading.Tasks;
-using SharpDX.Direct3D9;
-
+using System.Runtime.InteropServices;
 
 namespace Charm;
 
@@ -271,6 +270,32 @@ public partial class DevView : UserControl
                     terrain.LoadIntoFbxScene(fbxHandler, savePath, true, true);
                     fbxHandler.ExportScene($"{savePath}/{hash}_Terrain.fbx");
                     fbxHandler.Dispose();
+                    break;
+                case 0x808067a8:
+                    var tag = PackageHandler.GetTag<D2Class_A8678080>(hash);
+
+                    foreach (var a in tag.Header.Unk10)
+                    {
+                        Console.WriteLine($"{a.Unk00} : {a.Unk0C?.Hash}");
+                    }
+
+                    foreach (var a in tag.Header.Unk20)
+                    {
+                        if (a.Unk0C is null)
+                            continue;
+
+                        Material material = PackageHandler.GetTag(typeof(Material), a.Unk0C.Hash);
+                        Console.WriteLine($"{a.Unk00} : {material.Header.Unk2D0.Count}, {material.Header.Unk2E0.Count}, {material.Header.Unk2F0.Count}, {material.Header.Unk300.Count},");  
+                    }
+                    break;
+                case 0x80806daa:
+                    Material mat = PackageHandler.GetTag(typeof(Material), hash);
+                    string path = $"{ConfigHandler.GetExportSavePath()}/Test/material_out/";
+                    Directory.CreateDirectory(path);
+
+                    mat.SaveAllTextures(path);
+                    mat.SavePixelShader(path, false, true);
+                    mat.SaveVertexShader(path, true);
                     break;
                 default:
                     MessageBox.Show("Unknown reference: " + Endian.U32ToString(reference));
@@ -684,4 +709,44 @@ public partial class DevView : UserControl
         }
         return hash;
     }
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x40)]
+public struct D2Class_A8678080
+{
+    public long FileSize;
+    [DestinyField(FieldType.TagHash)]
+    public Tag Unk08;
+    [DestinyOffset(0x10), DestinyField(FieldType.TablePointer)]
+    public List<D2Class_AD678080> Unk10;
+    [DestinyField(FieldType.TablePointer)]
+    public List<D2Class_AC678080> Unk20;
+    [DestinyField(FieldType.TagHash)]
+    public Tag Unk30;
+    [DestinyField(FieldType.TagHash)]
+    public Tag Unk34;
+    [DestinyField(FieldType.TagHash)]
+    public Tag Unk38;
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x10)]
+public struct D2Class_AD678080
+{
+    [DestinyField(FieldType.RelativePointer)]
+    public string Unk00;
+    [DestinyField(FieldType.TagHash)]
+    public Tag Unk08; //Always FFFFFFFF?
+    [DestinyField(FieldType.TagHash)]
+    public Tag Unk0C; //BA6D8080
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x10)]
+public struct D2Class_AC678080
+{
+    [DestinyField(FieldType.RelativePointer)]
+    public string Unk00;
+    [DestinyField(FieldType.TagHash)]
+    public Tag Unk08; //Always FFFFFFFF?
+    [DestinyField(FieldType.TagHash)]
+    public Tag Unk0C; //Material
 }

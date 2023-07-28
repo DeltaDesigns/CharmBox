@@ -174,8 +174,7 @@ public partial class TagListView : UserControl
         return null;
     }
 
-    public async void LoadContent(ETagListType tagListType, TagHash contentValue = null, bool bFromBack = false,
-        ConcurrentBag<TagItem> overrideItems = null)
+    public async void LoadContent(ETagListType tagListType, TagHash contentValue = null, bool bFromBack = false, ConcurrentBag<TagItem> overrideItems = null)
     {
         _tagListLogger.Debug($"Loading content type {tagListType} contentValue {contentValue} from back {bFromBack}");
         if (overrideItems != null)
@@ -322,16 +321,9 @@ public partial class TagListView : UserControl
                 case ETagListType.CinematicAnimation:
                     LoadCinematicAnimation(contentValue);
                     break;
-                //case ETagListType.PatrolList:
-                //    LoadPatrolList(contentValue);
-                //    break;
-                //case ETagListType.Patrol:
-                //    LoadPatrol(contentValue);
-                //    break;
                 default:
 					MessageBox.Show("Not Implemented");
                     break;
-					//throw new NotImplementedException();
 			}
         }
 

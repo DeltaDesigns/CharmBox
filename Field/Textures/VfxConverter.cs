@@ -12,6 +12,7 @@ public class VfxConverter
     private StringReader hlsl;
     private StringBuilder vfx;
     private bool bOpacityEnabled = false;
+    private bool bUsesFrontFace = false;
     private bool bFixRoughness = false;
     private List<Texture> textures = new List<Texture>();
     private List<int> samplers = new List<int>();
@@ -55,6 +56,7 @@ FEATURES
 COMMON
 {{
     //alpha
+    //frontface
 	#include ""common/shared.hlsl""
     #define CUSTOM_MATERIAL_INPUTS
     #define USES_HIGH_QUALITY_REFLECTIONS
@@ -93,6 +95,7 @@ PS
 {{
     #include ""common/pixel.hlsl""
     #define cmp -
+    
     //#define CUSTOM_TEXTURE_FILTERING // uncomment to use custom texture filtering
     //SamplerState g_sWrap < Filter( ANISOTROPIC ); AddressU( WRAP ); AddressV( WRAP ); >;
     //SamplerState g_sClamp < Filter( ANISOTROPIC ); AddressU( CLAMP ); AddressV( CLAMP ); >;
@@ -115,11 +118,18 @@ PS
         vfx = new StringBuilder();
         isTerrain = bIsTerrain;
         bOpacityEnabled = false;
+        bUsesFrontFace = false;
         ProcessHlslData();
-        if (bOpacityEnabled)
-        {
+
+        if (bOpacityEnabled) //This way is stupid but it works
             vfxStructure = vfxStructure.Replace("//alpha", "#ifndef S_ALPHA_TEST\r\n\t#define S_ALPHA_TEST 1\r\n\t#endif\r\n\t#ifndef S_TRANSLUCENT\r\n\t#define S_TRANSLUCENT 0\r\n\t#endif");
+
+        if (bUsesFrontFace)
+        {
+            vfxStructure = vfxStructure.Replace("//frontface", "#define S_RENDER_BACKFACES 1");
+            vfxStructure += "\n    RenderState( CullMode, S_RENDER_BACKFACES ? NONE : DEFAULT );"; //ugh
         }
+           
         vfx.AppendLine(vfxStructure);
 
         WriteCbuffers(material, bIsVertexShader);
@@ -194,6 +204,11 @@ PS
                     input.Variable = "v" + line.Split("v")[1].Split(" : ")[0];
                     input.Index = Int32.TryParse(new string(input.Variable.Skip(1).ToArray()), out int index) ? index : -1;
                     input.Semantic = line.Split(" : ")[1].Split(",")[0];
+                    if(input.Semantic == "SV_isFrontFace0")
+                    {
+                        Console.WriteLine("test");
+                        bUsesFrontFace = true;
+                    }
                     input.Type = line.Split(" v")[0].Trim();
                     inputs.Add(input);
                 }
@@ -400,7 +415,10 @@ PS
             {
                 if (i.Type == "uint")
                 {
-                    vfx.AppendLine($"       {i.Variable}.x = {i.Variable}.x;");
+                    if(i.Semantic == "SV_isFrontFace0")
+                        vfx.AppendLine($"       {i.Variable}.x = i.face;");
+                    else
+                        vfx.AppendLine($"       {i.Variable}.x = {i.Variable}.x;");
                 }
             }
         }
@@ -549,7 +567,7 @@ PS
         float normal_length = length(biased_normal);
         float3 normal_in_world_space = biased_normal / normal_length;
  
-        float smoothness = saturate(8 * ({(bFixRoughness ? "0" : "normal_length")} - 0.375)); 
+        float smoothness = saturate(8 * ({(bFixRoughness ? "0" : "normal_length")} - 0.375)); //idk if should be saturated or not
         
         Material mat = Material::From(i, 
                     float4(o0.xyz, alpha), //albedo, alpha

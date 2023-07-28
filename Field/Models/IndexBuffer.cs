@@ -44,8 +44,7 @@ public class IndexBuffer : Tag
                     }
                     catch (Exception e) 
                     { 
-                    }
-                      
+                    } 
                 }
             }
             else if (indexFormat == EPrimitiveType.TriangleStrip)

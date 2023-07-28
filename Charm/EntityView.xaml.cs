@@ -33,7 +33,7 @@ public partial class EntityView : UserControl
     {
         InitializeComponent();
     }
-    
+
     private void OnControlLoaded(object sender, RoutedEventArgs routedEventArgs)
     {
         _mainWindow = Window.GetWindow(this) as MainWindow;

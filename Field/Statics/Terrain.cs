@@ -150,6 +150,18 @@ public class Terrain : Tag
         Part part = new Part();
         part.GroupIndex = entry.GroupIndex;
         part.Indices = Header.Indices1.Buffer.ParseBuffer(EPrimitiveType.TriangleStrip, entry.IndexOffset, entry.IndexCount);
+
+        //What is Indices2, Vertices3, and Vertices4 used for??
+        //HashSet<uint> uniqueVertexIndices2 = new HashSet<uint>();
+        //foreach (UIntVector3 index in Header.Indices2.Buffer.ParseBuffer(EPrimitiveType.Triangles, entry.IndexOffset, entry.IndexCount))
+        //{
+        //    uniqueVertexIndices2.Add(index.X);
+        //    uniqueVertexIndices2.Add(index.Y);
+        //    uniqueVertexIndices2.Add(index.Z);
+        //}
+        //part.VertexIndices = uniqueVertexIndices2.ToList();
+        //Console.WriteLine($"{part.GroupIndex} {uniqueVertexIndices2.Count}");
+        
         // Get unique vertex indices we need to get data for
         HashSet<uint> uniqueVertexIndices = new HashSet<uint>();
         foreach (UIntVector3 index in part.Indices)
@@ -308,8 +320,8 @@ public struct D2Class_816C8080
     [DestinyField(FieldType.TagHash)]
     public IndexHeader Indices2;
     [DestinyOffset(0x98)]
-    public int Unk98;
-    public int Unk9C;
+    public uint Unk98; //originally int
+    public ushort Unk9C; //originally int
     public int UnkA0;
 }
 
