@@ -322,25 +322,6 @@ PS
     {
         if (!bIsVertexShader)
         {
-            foreach (var i in inputs)
-            {
-                if (i.Type == "float4")
-                {
-                    vfx.AppendLine($"   static {i.Type} {i.Variable} = " + "{1, 1, 1, 1};\n");
-                }
-                else if (i.Type == "float3")
-                {
-                    vfx.AppendLine($"   static {i.Type} {i.Variable} = " + "{1, 1, 1};\n");
-                }
-                else if (i.Type == "uint")
-                {
-                    vfx.AppendLine($"   static {i.Type} {i.Variable} = " + "1;\n");
-                }
-            }
-        }
-
-        if (!bIsVertexShader)
-        {
             foreach (var e in material.Header.PSTextures)
             {
                 if (e.Texture != null)
@@ -413,9 +394,9 @@ PS
                 if (i.Type == "uint")
                 {
                     if(i.Semantic == "SV_isFrontFace0")
-                        vfx.AppendLine($"       {i.Variable}.x = i.face;");
+                        vfx.AppendLine($"       int {i.Variable} = i.face;");
                     else
-                        vfx.AppendLine($"       {i.Variable}.x = {i.Variable}.x;");
+                        vfx.AppendLine($"       int {i.Variable} = {i.Variable};");
                 }
             }
         }
