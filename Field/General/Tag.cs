@@ -176,17 +176,18 @@ public class Tag : DestinyFile
                 else if (field.FieldType.BaseType == typeof(Enum))
                 {
                     Type field0 = field.FieldType.GetFields()[0].FieldType;
-                    //Console.WriteLine(field0.ToString());
                     if (field0 == typeof(Int16))
                     {
                         field.SetValue(result, (Enum) Enum.ToObject(field.FieldType, handle.ReadInt16()));
                     }
+                    if (field0 == typeof(Int32))
+                    {
+                        field.SetValue(result, (Enum) Enum.ToObject(field.FieldType, handle.ReadInt32()));
+                    }
                     else
                     {
                         field.SetValue(result, Enum.ToObject(field.FieldType, handle.ReadByte()));
-                        //throw new NotImplementedException();
                     }
-                   
                 }
                 else
                 {

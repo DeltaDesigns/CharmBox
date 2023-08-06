@@ -28,17 +28,13 @@ public class DirectXSampler : Tag
     public struct D3D11_SAMPLER_DESC //Im probably dumb but the enum type isnt being accounted when the data is read so im just gonna manually do the offsets
     {
         public D3D11_FILTER Filter;
-        [DestinyOffset(0x04)] 
         public D3D11_TEXTURE_ADDRESS_MODE AddressU;
-        [DestinyOffset(0x08)]
         public D3D11_TEXTURE_ADDRESS_MODE AddressV;
-        [DestinyOffset(0x0C)]
         public D3D11_TEXTURE_ADDRESS_MODE AddressW;
-        [DestinyOffset(0x10)]
         public float MipLODBias;
         public uint MaxAnisotropy;
         public D3D11_COMPARISON_FUNC ComparisonFunc;
-        [DestinyOffset(0x1C), MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
         public float[] BorderColor;
         public float MinLOD;
         public float MaxLOD;
@@ -46,7 +42,7 @@ public class DirectXSampler : Tag
 
     public enum D3D11_FILTER : int
     {
-        MIN_MAG_MIP_POINT = 0,
+        MIN_MAG_MIP_POINT = 0x0,
         MIN_MAG_POINT_MIP_LINEAR = 0x1,
         MIN_POINT_MAG_LINEAR_MIP_POINT = 0x4,
         MIN_POINT_MAG_MIP_LINEAR = 0x5,
