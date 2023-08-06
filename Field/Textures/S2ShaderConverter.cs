@@ -37,7 +37,7 @@ MODES
 	ToolsWireframe( ""vr_tools_wireframe.shader"" );
 	ToolsShadingComplexity( ""tools_shading_complexity.shader"" );
 
-	Reflection( ""high_quality_reflections.shader"" );
+	Reflection( S_MODE_REFLECTIONS );
 }}
 
 FEATURES
@@ -70,9 +70,6 @@ struct PixelInput
 VS
 {{
 	#include ""common/vertex.hlsl""
-
-    BoolAttribute( UsesHighQualityReflections, ( F_HIGH_QUALITY_REFLECTIONS > 0 ) );
-
 	PixelInput MainVs( INSTANCED_SHADER_PARAMS( VS_INPUT i ) )
 	{{
 		PixelInput o = ProcessVertex( i );
