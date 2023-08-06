@@ -25,7 +25,7 @@ public class DirectXSampler : Tag
     }
 
     [StructLayout(LayoutKind.Sequential, Size = 0x34)]
-    public struct D3D11_SAMPLER_DESC //Im probably dumb but the enum type isnt being accounted when the data is read so im just gonna manually do the offsets
+    public struct D3D11_SAMPLER_DESC
     {
         public D3D11_FILTER Filter;
         public D3D11_TEXTURE_ADDRESS_MODE AddressU;

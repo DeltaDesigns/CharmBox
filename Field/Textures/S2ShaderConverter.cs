@@ -8,7 +8,7 @@ using Field.Models;
 
 namespace Field;
 
-public class VfxConverter
+public class S2ShaderConverter
 {
     private StringReader hlsl;
     private StringBuilder vfx;
@@ -123,6 +123,9 @@ PS
 
         for (int i = 0; i < material.Header.PSSamplers.Count; i++)
         {
+            if (material.Header.PSSamplers[i].Samplers is null)
+                continue;
+
             var sampler = material.Header.PSSamplers[i].Samplers.Sampler;
             texSamples.AppendLine($"SamplerState g_s{i+1} < Filter({sampler.Header.Filter}); AddressU({sampler.Header.AddressU}); AddressV({sampler.Header.AddressV}); AddressW({sampler.Header.AddressW}); ComparisonFunc({sampler.Header.ComparisonFunc}); MaxAniso({sampler.Header.MaxAnisotropy}); >;");
         }

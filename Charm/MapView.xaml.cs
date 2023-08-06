@@ -336,6 +336,7 @@ public partial class MapView : UserControl
                 }
                 if (entry.DataResource is D2Class_B5678080 light)
                 {
+                    //Console.WriteLine($"Point at X {entry.Translation.X}, Y {entry.Translation.Y}, Z {entry.Translation.Z}");
                     //Seem correct enough, no idea about radius and intensity
                     fbxHandler.InfoHandler.AddLight(
                         light.Unk10.Hash, 
@@ -350,6 +351,7 @@ public partial class MapView : UserControl
                     for (int i = 0; i < areaLight.Unk10.Header.Unk30.Count; i++)
                     {
                         //these lights are gonna kill me. I dont understand..
+                        //Console.WriteLine($"Area or Spot at X {areaLight.Unk10.Header.Unk40[i].Translation.X}, Y {areaLight.Unk10.Header.Unk40[i].Translation.Y}, Z {areaLight.Unk10.Header.Unk40[i].Translation.Z}");
                         fbxHandler.InfoHandler.AddLight(
                             areaLight.Unk10.Header.Unk30[i].UnkD0.Hash, 
                             "Area", 

@@ -147,7 +147,7 @@ public class Material : Tag
         {
             string hlsl = Decompile(Header.PixelShader.GetBytecode());
             string usf = FieldConfigHandler.GetUnrealInteropEnabled() ? new UsfConverter().HlslToUsf(this, hlsl, false) : "";
-            string vfx = Source2Handler.source2Shaders ? new VfxConverter().HlslToVfx(this, hlsl, false, isTerrain) : "";
+            string vfx = Source2Handler.source2Shaders ? new S2ShaderConverter().HlslToVfx(this, hlsl, false, isTerrain) : "";
 
             Directory.CreateDirectory($"{saveDirectory}/Unreal");
             if (Source2Handler.source2Shaders)
