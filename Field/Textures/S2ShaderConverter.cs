@@ -43,7 +43,7 @@ MODES
 FEATURES
 {{
     #include ""common/features.hlsl""
-    Feature( F_HIGH_QUALITY_REFLECTIONS, 0..1, ""Rendering"" );
+    Feature( F_DYNAMIC_REFLECTIONS, 0..1, ""Rendering"" );
 }}
 
 COMMON
@@ -52,7 +52,6 @@ COMMON
     //frontface
 	#include ""common/shared.hlsl""
     #define CUSTOM_MATERIAL_INPUTS
-    #define USES_HIGH_QUALITY_REFLECTIONS
 }}
 
 struct VertexInput
@@ -87,19 +86,26 @@ VS
 PS
 {{
     #include ""common/pixel.hlsl""
+    #include ""raytracing/reflections.hlsl""
+    #define CUSTOM_TEXTURE_FILTERING 
     #define cmp -
     
-    #define CUSTOM_TEXTURE_FILTERING 
+    #if ( S_MODE_REFLECTIONS )
+		#define FinalOutput ReflectionOutput
+	#else
+		#define FinalOutput float4
+	#endif
+
     //samplers
     
-    //Debugs
-    bool g_bDiffuse < Attribute( ""Debug_Diffuse"" ); >;
-    bool g_bRough < Attribute( ""Debug_Rough"" ); >;
-    bool g_bMetal < Attribute( ""Debug_Metal"" ); >;
-    bool g_bNorm < Attribute( ""Debug_Normal"" ); >;
-    bool g_bAO < Attribute( ""Debug_AO"" ); >;
-    bool g_bEmit < Attribute( ""Debug_Emit"" ); >;
-    bool g_bAlpha < Attribute( ""Debug_Alpha"" ); >;";
+    //Debugs, uncomment for use in shader baker
+    //bool g_bDiffuse < Attribute( ""Debug_Diffuse"" ); >;
+    //bool g_bRough < Attribute( ""Debug_Rough"" ); >;
+    //bool g_bMetal < Attribute( ""Debug_Metal"" ); >;
+    //bool g_bNorm < Attribute( ""Debug_Normal"" ); >;
+    //bool g_bAO < Attribute( ""Debug_AO"" ); >;
+    //bool g_bEmit < Attribute( ""Debug_Emit"" ); >;
+    //bool g_bAlpha < Attribute( ""Debug_Alpha"" ); >;";
 
     public string HlslToVfx(Material material, string hlslText, bool bIsVertexShader, bool bIsTerrain = false)
     {
@@ -269,7 +275,6 @@ PS
                 }
             }
 
-
             for (int i = 0; i < cbuffer.Count; i++)
             {
                 switch (cbuffer.Type)
@@ -338,10 +343,9 @@ PS
         {
             foreach (var e in material.Header.PSTextures)
             {
-                string type = "Srgb";
                 if (e.Texture != null)
-                {    
-                    type = e.Texture.IsSrgb() ? "Srgb" : "Linear";
+                {
+                    string type = e.Texture.IsSrgb() ? "Srgb" : "Linear";
 
 					vfx.AppendLine($"   CreateInputTexture2D( TextureT{e.TextureIndex}, {type}, 8, \"\", \"\",  \"Textures,10/{e.TextureIndex}\", Default3( 1.0, 1.0, 1.0 ));");
                     vfx.AppendLine($"   CreateTexture2DWithoutSampler( g_t{e.TextureIndex} )  < Channel( RGBA,  Box( TextureT{e.TextureIndex} ), {type} ); OutputFormat( BC7 ); SrgbRead( {e.Texture.IsSrgb()} ); >; ");
@@ -368,7 +372,7 @@ PS
                 vfx.AppendLine($"   TextureAttribute(g_t14_3, g_t14_3);\n");
             }
 
-            vfx.AppendLine("    float4 MainPs( PixelInput i ) : SV_Target0");
+            vfx.AppendLine("    FinalOutput MainPs( PixelInput i ) : SV_Target0");
             vfx.AppendLine("    {");
 
             vfx.AppendLine(@"       float3 vPositionWs = i.vPositionWithOffsetWs.xyz + g_vHighPrecisionLightingOffsetWs.xyz;
@@ -399,9 +403,9 @@ PS
                 vfx.AppendLine("        float4 v1 = {vTangentUWs,1};");
                 vfx.AppendLine("        float4 v2 = {vTangentVWs,1};");
                 vfx.AppendLine("        float4 v3 = {i.vTextureCoords, 1,1};"); //UVs
-                vfx.AppendLine("        float4 v4 = {1,1,1,1};"); //Don't really know
+                vfx.AppendLine("        float4 v4 = {0,0,0,0};"); //Don't really know
                 vfx.AppendLine("        float4 v5 = i.vBlendValues;"); //Vertex color.
-                //vfx.AppendLine("        uint v6 = 1;"); //no idea, FrontFace maybe?
+                //vfx.AppendLine("        uint v6 = 1;"); //Usually FrontFace but can also be v7
             }
 
             foreach (var i in inputs)
@@ -448,10 +452,9 @@ PS
             line = hlsl.ReadLine();
             if (line != null)
             {
-                if (line.Contains("cb12[7].xyz + -v4.xyz")) //cb12[7] might actually be a viewdir cbuffer or something
+                if (line.Contains("cb12[7].xyz + -v4.xyz")) //cb12 is view scope
                 {
-					vfx.AppendLine(line.Replace("-v4.xyz", "vCameraToPositionDirWs")); //I have no clue what this actually is at this point
-                    vfx.AppendLine("//Possible Parallax");
+					vfx.AppendLine(line.Replace("cb12[7].xyz", "vCameraToPositionDirWs"));
 				}
                 else if (line.Contains("v4.xy * cb")) //might be a detail uv or something when v4 is used like this, idk
                 {
@@ -516,7 +519,7 @@ PS
                     var texIndex = Int32.Parse(line.Split(".Load")[0].Split("t")[1]); 
                     var sampleUv = line.Split("(")[1].Split(")")[0];
 
-                    vfx.AppendLine($"       {equal}= g_t{(int)texIndex+1}.Load({sampleUv});"); //Usually seen in decals, the texture isnt actually valid though? Probably from gbuffer
+                    vfx.AppendLine($"       {equal}= g_t{texIndex+1}.Load({sampleUv});"); //Usually seen in decals, the texture isnt actually valid though? Probably from gbuffer
                 }
                 else if (line.Contains("o0.w = r")) //o0.w = r(?)
                 {
@@ -572,43 +575,51 @@ PS
         mat.Transmission = o2.z;
         mat.Normal = normal_in_world_space; //Normal is already in world space so no need to convert in Material::From
 
-        if(g_bDiffuse)
-        {{
-            mat.Albedo = 0;
-            mat.Emission = o0.xyz;
-        }}
-        if(g_bRough)
-        {{
-            mat.Albedo = 0;
-            mat.Emission = 1 - smoothness;
-        }}
-        if(g_bMetal)
-        {{
-            mat.Albedo = 0;
-            mat.Emission = saturate(o2.x);
-        }}
-        if(g_bNorm)
-        {{
-            mat.Albedo = 0;
-            mat.Emission = SrgbGammaToLinear(PackNormal3D(Vec3WsToTs(normal_in_world_space.xyz, i.vNormalWs.xyz, vTangentUWs.xyz, vTangentVWs.xyz)));
-        }}
-        if(g_bAO)
-        {{
-            mat.Albedo = 0;
-            mat.Emission = saturate(o2.y * 2);
-        }}
-        if(g_bEmit)
-        {{
-            mat.Albedo = 0;
-            mat.Emission = (o2.y - 0.5);
-        }}
-        if(g_bAlpha)
-        {{
-            mat.Albedo = 0;
-            mat.Emission = alpha;
-        }}
+        //if(g_bDiffuse)
+        //{{
+        //    mat.Albedo = 0;
+        //    mat.Emission = o0.xyz;
+        //}}
+        //if(g_bRough)
+        //{{
+        //    mat.Albedo = 0;
+        //    mat.Emission = 1 - smoothness;
+        //}}
+        //if(g_bMetal)
+        //{{
+        //    mat.Albedo = 0;
+        //    mat.Emission = saturate(o2.x);
+        //}}
+        //if(g_bNorm)
+        //{{
+        //    mat.Albedo = 0;
+        //    mat.Emission = SrgbGammaToLinear(PackNormal3D(Vec3WsToTs(normal_in_world_space.xyz, i.vNormalWs.xyz, vTangentUWs.xyz, vTangentVWs.xyz)));
+        //}}
+        //if(g_bAO)
+        //{{
+        //    mat.Albedo = 0;
+        //    mat.Emission = saturate(o2.y * 2);
+        //}}
+        //if(g_bEmit)
+        //{{
+        //    mat.Albedo = 0;
+        //    mat.Emission = (o2.y - 0.5);
+        //}}
+        //if(g_bAlpha)
+        //{{
+        //    mat.Albedo = 0;
+        //    mat.Emission = alpha;
+        //}}
 
-        return ShadingModelStandard::Shade(i, mat);
+        #if ( S_MODE_REFLECTIONS )
+		{{
+			return Reflections::From( i, mat, SampleCountIntersection );
+		}}
+        #else
+		{{
+            return ShadingModelStandard::Shade(i, mat);
+        }}
+        #endif
     }}
 }}";
  
