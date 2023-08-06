@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 using Field.General;
@@ -11,23 +12,15 @@ public class VfxConverter
 {
     private StringReader hlsl;
     private StringBuilder vfx;
-    private bool bOpacityEnabled = false;
-    private bool bUsesFrontFace = false;
-    private bool bFixRoughness = false;
     private List<Texture> textures = new List<Texture>();
     private List<int> samplers = new List<int>();
     private List<Cbuffer> cbuffers = new List<Cbuffer>();
     private List<Input> inputs = new List<Input>();
     private List<Output> outputs = new List<Output>();
     private static bool isTerrain = false;
-    
-    private readonly string[] sampleStates = {
-        "SamplerState g_sWrap < Filter( ANISOTROPIC ); AddressU( WRAP ); AddressV( WRAP ); >;",
-        "SamplerState g_sClamp < Filter( ANISOTROPIC ); AddressU( CLAMP ); AddressV( CLAMP ); >;",
-        "SamplerState g_sMirror < Filter( ANISOTROPIC ); AddressU( MIRROR ); AddressV( MIRROR ); >;",
-        "SamplerState g_sBorder < Filter( ANISOTROPIC ); AddressU( BORDER ); AddressV( BORDER ); >;}",
-    };
-    
+    private bool bOpacityEnabled = false;
+    private bool bUsesFrontFace = false;
+    private bool bFixRoughness = false;
 
     public string vfxStructure = $@"HEADER
 {{
@@ -96,12 +89,9 @@ PS
     #include ""common/pixel.hlsl""
     #define cmp -
     
-    //#define CUSTOM_TEXTURE_FILTERING // uncomment to use custom texture filtering
-    //SamplerState g_sWrap < Filter( ANISOTROPIC ); AddressU( WRAP ); AddressV( WRAP ); >;
-    //SamplerState g_sClamp < Filter( ANISOTROPIC ); AddressU( CLAMP ); AddressV( CLAMP ); >;
-    //SamplerState g_sMirror < Filter( ANISOTROPIC ); AddressU( MIRROR ); AddressV( MIRROR ); >;
-    //SamplerState g_sBorder < Filter( ANISOTROPIC ); AddressU( BORDER ); AddressV( BORDER ); >;
-
+    #define CUSTOM_TEXTURE_FILTERING 
+    //samplers
+    
     //Debugs
     bool g_bDiffuse < Attribute( ""Debug_Diffuse"" ); >;
     bool g_bRough < Attribute( ""Debug_Rough"" ); >;
@@ -114,6 +104,7 @@ PS
     public string HlslToVfx(Material material, string hlslText, bool bIsVertexShader, bool bIsTerrain = false)
     {
         //Console.WriteLine("Material: " + material.Hash);
+        StringBuilder texSamples = new StringBuilder();
         hlsl = new StringReader(hlslText);
         vfx = new StringBuilder();
         isTerrain = bIsTerrain;
@@ -129,7 +120,14 @@ PS
             vfxStructure = vfxStructure.Replace("//frontface", "#define S_RENDER_BACKFACES 1");
             vfxStructure += "\n    RenderState( CullMode, S_RENDER_BACKFACES ? NONE : DEFAULT );"; //ugh
         }
-           
+
+        for (int i = 0; i < material.Header.PSSamplers.Count; i++)
+        {
+            var sampler = material.Header.PSSamplers[i].Samplers.Sampler;
+            texSamples.AppendLine($"SamplerState g_s{i+1} < Filter({sampler.Header.Filter}); AddressU({sampler.Header.AddressU}); AddressV({sampler.Header.AddressV}); AddressW({sampler.Header.AddressW}); ComparisonFunc({sampler.Header.ComparisonFunc}); MaxAniso({sampler.Header.MaxAnisotropy}); >;");
+        }
+
+        vfxStructure = vfxStructure.Replace("//samplers", texSamples.ToString());
         vfx.AppendLine(vfxStructure);
 
         WriteCbuffers(material, bIsVertexShader);
@@ -241,10 +239,6 @@ PS
                 {
                     data = material.Header.Unk2E0;
                 }
-                else if (cbuffer.Count == material.Header.Unk2F0.Count)
-                {
-                    data = material.Header.Unk2F0;
-                }
                 else if (cbuffer.Count == material.Header.Unk300.Count)
                 {
                     data = material.Header.Unk300;
@@ -346,7 +340,6 @@ PS
                 {    
                     type = e.Texture.IsSrgb() ? "Srgb" : "Linear";
 
-					//vfx.AppendLine($"   {texture.Type} {texture.Variable},");
 					vfx.AppendLine($"   CreateInputTexture2D( TextureT{e.TextureIndex}, {type}, 8, \"\", \"\",  \"Textures,10/{e.TextureIndex}\", Default3( 1.0, 1.0, 1.0 ));");
                     vfx.AppendLine($"   CreateTexture2DWithoutSampler( g_t{e.TextureIndex} )  < Channel( RGBA,  Box( TextureT{e.TextureIndex} ), {type} ); OutputFormat( BC7 ); SrgbRead( {e.Texture.IsSrgb()} ); >; ");
                     vfx.AppendLine($"   TextureAttribute(g_t{e.TextureIndex}, g_t{e.TextureIndex});\n"); //Prevents some inputs not appearing for some reason
@@ -502,7 +495,7 @@ PS
                     }
                     else 
                     {
-                        vfx.AppendLine($"       {equal}= Tex2DS(g_t{texIndex}, TextureFiltering, {sampleUv}).{dotAfter}");
+                        vfx.AppendLine($"       {equal}= Tex2DS(g_t{texIndex}, g_s{sampleIndex}, {sampleUv}).{dotAfter}");
                     } 
                 }
                 else if (line.Contains("CalculateLevelOfDetail"))
@@ -512,7 +505,7 @@ PS
                     var sampleIndex = Int32.Parse(line.Split("(s")[1].Split("_s,")[0]);
                     var sampleUv = line.Split(", ")[1].Split(")")[0];
 
-                    vfx.AppendLine($"       {equal}= g_t{texIndex}.CalculateLevelOfDetail(TextureFiltering, {sampleUv});");
+                    vfx.AppendLine($"       {equal}= g_t{texIndex}.CalculateLevelOfDetail(g_s{sampleIndex}, {sampleUv});");
                 }
                 else if (line.Contains("Load"))
                 {
@@ -564,7 +557,7 @@ PS
         float normal_length = length(biased_normal);
         float3 normal_in_world_space = biased_normal / normal_length;
  
-        float smoothness = saturate(8 * ({(bFixRoughness ? "0" : "normal_length")} - 0.375)); //idk if should be saturated or not
+        float smoothness = saturate(8 * ({(bFixRoughness ? "0" : "normal_length")} - 0.375));
         
         Material mat = Material::From(i, 
                     float4(o0.xyz, alpha), //albedo, alpha

@@ -976,6 +976,12 @@ public struct D2Class_B26C8080
     public Tag Unk30; //D2Class_B46C8080
     [DestinyField(FieldType.TagHash)]
     public Tag<D2Class_B86C8080> Unk34;
+    [DestinyField(FieldType.TablePointer)]
+    public List<D2Class_0F008080> Unk38;
+    [DestinyField(FieldType.TablePointer)]
+    public List<D2Class_04008080> Unk48;
+    [DestinyField(FieldType.TablePointer)]
+    public List<D2Class_0F008080> Unk58;
 }
 
 [StructLayout(LayoutKind.Sequential, Size = 0x20)]
@@ -999,6 +1005,12 @@ public struct D2Class_B86C8080
     public long FileSize;
     [DestinyField(FieldType.TablePointer)]
     public List<D2Class_BA6C8080> Unk08;
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x1)]
+public struct D2Class_04008080
+{
+    public byte Unk00;
 }
 
 

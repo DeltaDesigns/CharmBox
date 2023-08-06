@@ -274,6 +274,12 @@ public partial class DevView : UserControl
                 case 0x808067a8:
                     var tag = PackageHandler.GetTag<D2Class_A8678080>(hash);
 
+                    //var tag2 = PackageHandler.GetTag<D2Class_2D828080>(tag.Header.Unk34.Hash);
+                    //foreach (var a in tag2.Header.Unk08)
+                    //{
+                    //    Console.WriteLine($"{a.StringHash.ToString()}");
+                    //}
+
                     foreach (var a in tag.Header.Unk10)
                     {
                         Console.WriteLine($"{a.Unk00} : {a.Unk0C?.Hash}");
@@ -285,7 +291,7 @@ public partial class DevView : UserControl
                             continue;
 
                         Material material = PackageHandler.GetTag(typeof(Material), a.Unk0C.Hash);
-                        Console.WriteLine($"{a.Unk00} : {material.Header.Unk2D0.Count}, {material.Header.Unk2E0.Count}, {material.Header.Unk2F0.Count}, {material.Header.Unk300.Count},");  
+                        Console.WriteLine($"{a.Unk00} : {material.Header.Unk2D0.Count}, {material.Header.Unk2E0.Count}, {material.Header.Unk300.Count},");
                     }
                     break;
                 case 0x80806daa:
@@ -296,6 +302,45 @@ public partial class DevView : UserControl
                     mat.SaveAllTextures(path);
                     mat.SavePixelShader(path, false, true);
                     mat.SaveVertexShader(path, true);
+
+                    Console.WriteLine($"Material: {mat.Hash}");
+                    Console.WriteLine($"PS Textures: {mat.Header.PSTextures.Count} | VS Textures: {mat.Header.VSTextures.Count}");
+                    Console.WriteLine($"PS Texture Samplers: {mat.Header.PSSamplers.Count} | VS Texture Samplers: {mat.Header.VSSamplers.Count}");
+
+                    for (int i = 0; i < mat.Header.PSSamplers.Count; i++)
+                    {
+                        var sampler = mat.Header.PSSamplers[i].Samplers.Sampler;
+                        Console.WriteLine($"-------PS {sampler.Hash}-------");
+                        Console.WriteLine($"Sample {i}");
+                        Console.WriteLine($"Filter: {sampler.Header.Filter}");
+                        Console.WriteLine($"AddressU: {sampler.Header.AddressU}");
+                        Console.WriteLine($"AddressV: {sampler.Header.AddressV}");
+                        Console.WriteLine($"AddressW: {sampler.Header.AddressW}");
+                        Console.WriteLine($"MipLODBias: {sampler.Header.MipLODBias.ToString()}");
+                        Console.WriteLine($"MaxAnisotropy: {sampler.Header.MaxAnisotropy.ToString()}");
+                        Console.WriteLine($"ComparisonFunc: {sampler.Header.ComparisonFunc.ToString()}");
+                        Console.WriteLine($"BorderColor: {string.Join(", ", sampler.Header.BorderColor)}");
+                        Console.WriteLine($"MinLOD: {sampler.Header.MinLOD.ToString()}");
+                        Console.WriteLine($"MaxLOD: {sampler.Header.MaxLOD.ToString()}");
+                    }
+
+                    for (int i = 0; i < mat.Header.VSSamplers.Count; i++)
+                    {
+                        var sampler = mat.Header.VSSamplers[i].Samplers.Sampler;
+                        Console.WriteLine($"-------VS {sampler.Hash}-------");
+                        Console.WriteLine($"Sample {i}");
+                        Console.WriteLine($"Filter: {sampler.Header.Filter}");
+                        Console.WriteLine($"AddressU: {sampler.Header.AddressU}");
+                        Console.WriteLine($"AddressV: {sampler.Header.AddressV}");
+                        Console.WriteLine($"AddressW: {sampler.Header.AddressW}");
+                        Console.WriteLine($"MipLODBias: {sampler.Header.MipLODBias.ToString()}");
+                        Console.WriteLine($"MaxAnisotropy: {sampler.Header.MaxAnisotropy.ToString()}");
+                        Console.WriteLine($"ComparisonFunc: {sampler.Header.MaxAnisotropy.ToString()}");
+                        Console.WriteLine($"BorderColor: {string.Join(", ", sampler.Header.BorderColor)}");
+                        Console.WriteLine($"MinLOD: {sampler.Header.MinLOD.ToString()}");
+                        Console.WriteLine($"MaxLOD: {sampler.Header.MaxLOD.ToString()}");
+                    }
+
                     break;
                 default:
                     MessageBox.Show("Unknown reference: " + Endian.U32ToString(reference));
@@ -749,4 +794,16 @@ public struct D2Class_AC678080
     public Tag Unk08; //Always FFFFFFFF?
     [DestinyField(FieldType.TagHash)]
     public Tag Unk0C; //Material
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x38)]
+public struct D2Class_2D828080
+{
+    public long FileSize;
+    [DestinyField(FieldType.TablePointer)]
+    public List<D2Class_70008080> Unk08;
+    [DestinyField(FieldType.TablePointer)]
+    public List<D2Class_90008080> Unk18;
+    [DestinyField(FieldType.TablePointer)]
+    public List<D2Class_0B008080> Unk28;
 }

@@ -6,38 +6,6 @@ using Field.Models;
 
 namespace Field;
 
-public struct Texture
-{
-    public string Dimension;
-    public string Type;
-    public string Variable;
-    public int Index;
-}
-
-public struct Cbuffer
-{
-    public string Variable;
-    public string Type;
-    public int Count;
-    public int Index;
-}
-
-public struct Input
-{
-    public string Variable;
-    public string Type;
-    public int Index;
-    public string Semantic;
-}
-
-public struct Output
-{
-    public string Variable;
-    public string Type;
-    public int Index;
-    public string Semantic;
-}
-
 public class UsfConverter
 {
     private StringReader hlsl;
@@ -171,10 +139,6 @@ public class UsfConverter
                 {
                     data = material.Header.UnkA0;
                 }
-                else if (cbuffer.Count == material.Header.UnkB0.Count)
-                {
-                    data = material.Header.UnkB0;
-                }
                 else if (cbuffer.Count == material.Header.UnkC0.Count)
                 {
                     data = material.Header.UnkC0;
@@ -189,10 +153,6 @@ public class UsfConverter
                 else if (cbuffer.Count == material.Header.Unk2E0.Count)
                 {
                     data = material.Header.Unk2E0;
-                }
-                else if (cbuffer.Count == material.Header.Unk2F0.Count)
-                {
-                    data = material.Header.Unk2F0;
                 }
                 else if (cbuffer.Count == material.Header.Unk300.Count)
                 {

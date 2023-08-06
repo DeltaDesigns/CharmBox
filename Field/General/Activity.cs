@@ -641,7 +641,7 @@ public struct D2Class_B73B8080
 	public Vector4 Unk10; //??
 }
 
-[StructLayout(LayoutKind.Sequential, Size = 0x20)]
+[StructLayout(LayoutKind.Sequential, Size = 0x18)]
 public struct D2Class_BA3E8080
 {
     [DestinyOffset(0x8), DestinyField(FieldType.TablePointer)]

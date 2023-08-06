@@ -125,8 +125,8 @@ public partial class ActivityMapView : UserControl
                         //dynamicPoints.AddEmptyToScene($"{a.DataTable.Hash} {b.DataResource}", b.Translation, b.Rotation);
                         if (b.DataResource is D2Class_C36C8080 a1) //Foliage
                         {
-                            continue;
-                            Console.WriteLine($"{a.DataTable.Hash}");
+                            //continue;
+                            //Console.WriteLine($"--{a.DataTable.Hash}");
                             if (a1.Unk10 is not null)
                             {
                                 //foreach (var a3 in a1.Unk10.Header.Unk4C.Header.InstanceBounds)
@@ -138,17 +138,19 @@ public partial class ActivityMapView : UserControl
                                 {
                                     EntityModel model = new(a2.Unk00.Header.Model.Hash);
 
-                                    for (int i = 0; i < a2.Unk00.Header.Model.Header.Meshes.Count; i++)
-                                    {
-                                        if (a2.Unk00.Header.Model.Header.Meshes[i].Vertices1.Header.Stride == 40)
-                                        {
-                                            model.Header.TexcoordScale = new Vector2(0.5f, 0.5f);
-                                        }
-                                    }
+                                    //for (int i = 0; i < a2.Unk00.Header.Model.Header.Meshes.Count; i++)
+                                    //{
+                                    //    if (a2.Unk00.Header.Model.Header.Meshes[i].Vertices1.Header.Stride == 40)
+                                    //    {
+                                    //        model.Header.TexcoordScale = new Vector2(0.5f, 0.5f);
+                                    //    }
+                                    //}
 
                                     var parts = model.Load(ELOD.MostDetail, b.Entity.ModelParentResource);
+                                    //Console.WriteLine($"{model.Hash} : {model.Header.Meshes.Count}");
                                     foreach (var part in parts)
                                     {
+                                        //Console.WriteLine($"Index {part.Index} GroupIndex {part.GroupIndex}: ");
                                         if (part.Material.Header.PSTextures.Count == 0)
                                         {
                                             continue;
@@ -194,7 +196,7 @@ public partial class ActivityMapView : UserControl
             Name = "Select all"
         });
         StaticList.ItemsSource = sortedItems;
-        //dynamicPoints.ExportScene($"{ConfigHandler.GetExportSavePath()}/{bubbleMaps.Hash.GetHashString()}_Empties.fbx");
+        dynamicPoints.ExportScene($"{ConfigHandler.GetExportSavePath()}/{bubbleMaps.Hash.GetHashString()}_Foliage.fbx");
         dynamicPoints.Dispose();
     }
 

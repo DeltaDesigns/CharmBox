@@ -5,16 +5,48 @@ using System.Text;
 using Field.Entities;
 using Field.General;
 using Field.Models;
+using static Field.DirectXSampler;
 using File = System.IO.File;
 
 namespace Field;
+
+public struct Texture
+{
+    public string Dimension;
+    public string Type;
+    public string Variable;
+    public int Index;
+}
+
+public struct Cbuffer
+{
+    public string Variable;
+    public string Type;
+    public int Count;
+    public int Index;
+}
+
+public struct Input
+{
+    public string Variable;
+    public string Type;
+    public int Index;
+    public string Semantic;
+}
+
+public struct Output
+{
+    public string Variable;
+    public string Type;
+    public int Index;
+    public string Semantic;
+}
 
 public class Material : Tag
 {
     public D2Class_AA6D8080 Header;
     public static object _lock = new object();
 
-    
     public Material(TagHash hash) : base(hash)
     {
     }
@@ -42,9 +74,8 @@ public class Material : Tag
         foreach (var e in Header.PSTextures)
         {
             if (e.Texture == null)
-            {
                 continue;
-            }
+
             // todo change to 64 bit hash?
             string path = $"{saveDirectory}/{e.Texture.Hash}";
             if (!File.Exists(path + ".dds") && !File.Exists(path + ".png") && !File.Exists(path + ".tga"))
@@ -53,38 +84,12 @@ public class Material : Tag
             }
         }
     }
-    
-    // [DllImport("HLSLDecompiler.dll", EntryPoint = "DecompileHLSL", CallingConvention = CallingConvention.Cdecl)]
-    // public static extern IntPtr DecompileHLSL(
-    //     IntPtr pShaderBytecode,
-    //     int BytecodeLength,
-    //     out int pHlslTextLength
-    // );
 
     public string Decompile(byte[] shaderBytecode, string? type = "ps")
     {
-        // tried doing it via dll pinvoke but seemed to cause way too many problems so doing it via exe instead
-        // string hlsl;
-        // lock (_lock)
-        // {
-        //     GCHandle gcHandle = GCHandle.Alloc(shaderBytecode, GCHandleType.Pinned);
-        //     IntPtr pShaderBytecode = gcHandle.AddrOfPinnedObject();
-        //     IntPtr pHlslText = Marshal.AllocHGlobal(5000);
-        //     int len;
-        //     pHlslText = DecompileHLSL(pShaderBytecode, shaderBytecode.Length, out int pHlslTextLength);
-        //     // len = Marshal.ReadInt32(pHlslTextLength);
-        //     len = pHlslTextLength;
-        //     hlsl = Marshal.PtrToStringUTF8(pHlslText);
-        //     gcHandle.Free();
-        // }
-        // // Marshal.FreeHGlobal(pHlslText);
-        // return hlsl;
-    
         string directory = "hlsl_temp";
         string binPath = $"{directory}/{type}{Hash}.bin";
         string hlslPath = $"{directory}/{type}{Hash}.hlsl";
-
-      
 
         if (!Directory.Exists(directory))
         {
@@ -144,8 +149,8 @@ public class Material : Tag
             string usf = FieldConfigHandler.GetUnrealInteropEnabled() ? new UsfConverter().HlslToUsf(this, hlsl, false) : "";
             string vfx = Source2Handler.source2Shaders ? new VfxConverter().HlslToVfx(this, hlsl, false, isTerrain) : "";
 
-
-			if (Source2Handler.source2Shaders)
+            Directory.CreateDirectory($"{saveDirectory}/Unreal");
+            if (Source2Handler.source2Shaders)
             {
 				Directory.CreateDirectory($"{saveDirectory}/Source2");
 				Directory.CreateDirectory($"{saveDirectory}/Source2/materials");   
@@ -156,9 +161,9 @@ public class Material : Tag
 
             try
             {
-                if(usf != String.Empty && !File.Exists($"{saveDirectory}/PS_{Hash}.usf"))
+                if(usf != String.Empty && !File.Exists($"{saveDirectory}/Unreal/PS_{Hash}.usf"))
                 {
-                    File.WriteAllText($"{saveDirectory}/PS_{Hash}.usf", usf);
+                    File.WriteAllText($"{saveDirectory}/Unreal/PS_{Hash}.usf", usf);
                 }
                 if (vfx != String.Empty && !File.Exists($"{saveDirectory}/Source2/PS_{Hash}.shader"))
                 {
@@ -183,19 +188,7 @@ public class Material : Tag
             string hlsl = Decompile(Header.VertexShader.GetBytecode(), "vs");
 
             if (saveCBuffers)
-                SaveCbuffers(this, true, hlsl, saveDirectory);
-            //string usf = new UsfConverter().HlslToUsf(this, hlsl, true);
-            //if (usf != String.Empty)
-            //{
-            //    try
-            //    {
-            //        File.WriteAllText($"{saveDirectory}/VS_{Hash}.usf", usf);
-            //        Console.WriteLine($"Saved vertex shader {Hash}");
-            //    }
-            //    catch (IOException)  // threading error
-            //    {
-            //    }
-            //}
+                SaveCbuffers(this, true, hlsl, saveDirectory); 
         }
     }
 
@@ -265,10 +258,6 @@ public class Material : Tag
                 {
                     data = material.Header.UnkA0;
                 }
-                else if (cbuffer.Count == material.Header.UnkB0.Count)
-                {
-                    data = material.Header.UnkB0;
-                }
                 else if (cbuffer.Count == material.Header.UnkC0.Count)
                 {
                     data = material.Header.UnkC0;
@@ -283,10 +272,6 @@ public class Material : Tag
                 else if (cbuffer.Count == material.Header.Unk2E0.Count)
                 {
                     data = material.Header.Unk2E0;
-                }
-                else if (cbuffer.Count == material.Header.Unk2F0.Count)
-                {
-                    data = material.Header.Unk2F0;
                 }
                 else if (cbuffer.Count == material.Header.Unk300.Count)
                 {
@@ -389,7 +374,7 @@ public struct D2Class_AA6D8080
     [DestinyField(FieldType.TablePointer)]
     public List<D2Class_90008080> UnkA0;
     [DestinyField(FieldType.TablePointer)]
-    public List<D2Class_3F018080> UnkB0;
+    public List<D2Class_3F018080> VSSamplers;
     [DestinyField(FieldType.TablePointer)]
     public List<D2Class_90008080> UnkC0;
     
@@ -402,7 +387,7 @@ public struct D2Class_AA6D8080
     [DestinyField(FieldType.TablePointer)]
     public List<D2Class_90008080> Unk2E0;
     [DestinyField(FieldType.TablePointer)]
-    public List<D2Class_3F018080> Unk2F0;
+    public List<D2Class_3F018080> PSSamplers;
     [DestinyField(FieldType.TablePointer)]
     public List<D2Class_90008080> Unk300;
     [DestinyOffset(0x324)] 
@@ -417,10 +402,9 @@ public struct D2Class_AA6D8080
     [DestinyField(FieldType.TablePointer)]
     public List<D2Class_90008080> Unk370;
     [DestinyField(FieldType.TablePointer)]
-    public List<D2Class_3F018080> Unk380;
+    public List<D2Class_3F018080> CSSamplers;
     [DestinyField(FieldType.TablePointer)]
-    public List<D2Class_90008080> Unk390;
-    
+    public List<D2Class_90008080> Unk390;  
 }
 
 [StructLayout(LayoutKind.Sequential, Size = 0x18)]
@@ -440,6 +424,6 @@ public struct D2Class_09008080
 [StructLayout(LayoutKind.Sequential, Size = 0x10)]
 public struct D2Class_3F018080
 {
-    [DestinyField(FieldType.TagHash64)]
-    public Tag Unk00;
+    [DestinyField(FieldType.TagHash)]
+    public DirectXSampler Samplers;
 }
