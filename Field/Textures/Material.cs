@@ -18,6 +18,13 @@ public struct Texture
     public int Index;
 }
 
+public struct Buffer
+{
+    public string Variable;
+    public string Type;
+    public int Index;
+}
+
 public struct Cbuffer
 {
     public string Variable;
@@ -145,9 +152,11 @@ public class Material : Tag
     {
         if (Header.PixelShader != null)
         {
-            string hlsl = Decompile(Header.PixelShader.GetBytecode());
-            string usf = FieldConfigHandler.GetUnrealInteropEnabled() ? new UsfConverter().HlslToUsf(this, hlsl, false) : "";
-            string vfx = Source2Handler.source2Shaders ? new S2ShaderConverter().HlslToVfx(this, hlsl, false, isTerrain) : "";
+            string pixel = Decompile(Header.PixelShader.GetBytecode());
+            string vertex = Decompile(Header.VertexShader.GetBytecode(), "vs");
+            Console.WriteLine(vertex);
+            string usf = FieldConfigHandler.GetUnrealInteropEnabled() ? new UsfConverter().HlslToUsf(this, pixel, false) : "";
+            string vfx = Source2Handler.source2Shaders ? new S2ShaderConverter().HlslToVfx(this, pixel, vertex, false, isTerrain) : "";
 
             Directory.CreateDirectory($"{saveDirectory}/Unreal");
             if (Source2Handler.source2Shaders)
@@ -157,7 +166,7 @@ public class Material : Tag
 			}
 
 			if (saveCBuffers)
-                SaveCbuffers(this, false, hlsl, saveDirectory);
+                SaveCbuffers(this, false, pixel, saveDirectory);
 
             try
             {
