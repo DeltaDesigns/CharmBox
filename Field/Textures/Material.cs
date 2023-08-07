@@ -154,7 +154,6 @@ public class Material : Tag
         {
             string pixel = Decompile(Header.PixelShader.GetBytecode());
             string vertex = Decompile(Header.VertexShader.GetBytecode(), "vs");
-            Console.WriteLine(vertex);
             string usf = FieldConfigHandler.GetUnrealInteropEnabled() ? new UsfConverter().HlslToUsf(this, pixel, false) : "";
             string vfx = Source2Handler.source2Shaders ? new S2ShaderConverter().HlslToVfx(this, pixel, vertex, false, isTerrain) : "";
 
