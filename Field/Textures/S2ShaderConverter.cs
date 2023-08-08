@@ -457,7 +457,7 @@ PS
             CBuffers.AppendLine("\t};");
         }
         
-        return CBuffers;
+        return CBuffers.Replace("∞", "1.#INF");
     }
     
     private StringBuilder WriteFunctionDefinition(Material material, bool bIsVertexShader)

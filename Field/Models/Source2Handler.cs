@@ -107,7 +107,7 @@ public class Source2Handler
 		vmat.AppendLine("Layer0 \n{");
 		
 		//If the shader doesnt exist, just use the default complex.shader
-		if (!File.Exists($"{savePath}/Source2/PS_{materialHeader.PixelShader.Hash}.shader"))
+		if (!File.Exists($"{savePath}/Source2/PS_{hash}.shader"))
 		{
 			vmat.AppendLine($"  shader \"complex.shader\"");
 
@@ -120,7 +120,7 @@ public class Source2Handler
 		}
 		else
 		{
-			vmat.AppendLine($"  shader \"ps_{materialHeader.PixelShader.Hash}.shader\"");
+			vmat.AppendLine($"  shader \"ps_{hash}.shader\"");
 			vmat.AppendLine("   F_ALPHA_TEST 1");
 		}
 
