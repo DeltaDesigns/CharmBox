@@ -92,11 +92,11 @@ public class Material : Tag
         }
     }
 
-    public string Decompile(byte[] shaderBytecode, string? type = "ps")
+    public string Decompile(byte[] shaderBytecode, string name)
     {
         string directory = "hlsl_temp";
-        string binPath = $"{directory}/{type}{Hash}.bin";
-        string hlslPath = $"{directory}/{type}{Hash}.hlsl";
+        string binPath = $"{directory}/{name}.bin";
+        string hlslPath = $"{directory}/{name}.hlsl";
 
         if (!Directory.Exists(directory))
         {
@@ -126,7 +126,7 @@ public class Material : Tag
 
             if (!File.Exists(hlslPath))
             {
-                throw new FileNotFoundException($"Decompilation failed for {Hash}");
+                throw new FileNotFoundException($"Decompilation failed for {name}");
             }
         }
 
@@ -152,8 +152,8 @@ public class Material : Tag
     {
         if (Header.PixelShader != null)
         {
-            string pixel = Decompile(Header.PixelShader.GetBytecode());
-            string vertex = Decompile(Header.VertexShader.GetBytecode(), "vs");
+            string pixel = Decompile(Header.PixelShader.GetBytecode(), $"ps{Header.PixelShader.Hash}");
+            string vertex = Decompile(Header.VertexShader.GetBytecode(), $"vs{Header.VertexShader.Hash}");
             string usf = FieldConfigHandler.GetUnrealInteropEnabled() ? new UsfConverter().HlslToUsf(this, pixel, false) : "";
             string vfx = Source2Handler.source2Shaders ? new S2ShaderConverter().HlslToVfx(this, pixel, vertex, false, isTerrain) : "";
 
@@ -169,13 +169,13 @@ public class Material : Tag
 
             try
             {
-                if(usf != String.Empty && !File.Exists($"{saveDirectory}/Unreal/PS_{Hash}.usf"))
+                if(usf != String.Empty && !File.Exists($"{saveDirectory}/Unreal/PS_{Header.PixelShader.Hash}.usf"))
                 {
-                    File.WriteAllText($"{saveDirectory}/Unreal/PS_{Hash}.usf", usf);
+                    File.WriteAllText($"{saveDirectory}/Unreal/PS_{Header.PixelShader.Hash}.usf", usf);
                 }
-                if (vfx != String.Empty && !File.Exists($"{saveDirectory}/Source2/PS_{Hash}.shader"))
+                if (vfx != String.Empty && !File.Exists($"{saveDirectory}/Source2/PS_{Header.PixelShader.Hash}.shader"))
                 {
-                    File.WriteAllText($"{saveDirectory}/Source2/PS_{Hash}.shader", vfx);
+                    File.WriteAllText($"{saveDirectory}/Source2/PS_{Header.PixelShader.Hash}.shader", vfx);
                 }
             }
             catch (IOException)  // threading error
@@ -193,7 +193,7 @@ public class Material : Tag
         Directory.CreateDirectory($"{saveDirectory}");
         if (Header.VertexShader != null)
         {
-            string hlsl = Decompile(Header.VertexShader.GetBytecode(), "vs");
+            string hlsl = Decompile(Header.VertexShader.GetBytecode(), $"vs{Header.VertexShader.Hash}");
 
             if (saveCBuffers)
                 SaveCbuffers(this, true, hlsl, saveDirectory); 
@@ -203,16 +203,16 @@ public class Material : Tag
     public void SaveComputeShader(string saveDirectory)
     {
         Directory.CreateDirectory($"{saveDirectory}");
-        if (Header.ComputeShader != null && !File.Exists($"{saveDirectory}/CS_{Hash}.usf"))
+        if (Header.ComputeShader != null && !File.Exists($"{saveDirectory}/CS_{Header.ComputeShader.Hash}.usf"))
         {
-            string hlsl = Decompile(Header.ComputeShader.GetBytecode(), "cs");
+            string hlsl = Decompile(Header.ComputeShader.GetBytecode(), $"cs{Header.ComputeShader.Hash}");
             string usf = new UsfConverter().HlslToUsf(this, hlsl, false);
             if (usf != String.Empty)
             {
                 try
                 {
-                    File.WriteAllText($"{saveDirectory}/CS_{Hash}.usf", usf);
-                    Console.WriteLine($"Saved compute shader {Hash}");
+                    File.WriteAllText($"{saveDirectory}/CS_{Header.ComputeShader.Hash}.usf", usf);
+                    Console.WriteLine($"Saved compute shader {Header.ComputeShader.Hash}");
                 }
                 catch (IOException)  // threading error
                 {

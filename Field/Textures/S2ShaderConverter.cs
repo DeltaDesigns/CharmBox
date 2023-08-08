@@ -58,9 +58,9 @@ COMMON
 struct VertexInput
 {{
     float4 vColorBlendValues : Color0 < Semantic( Color ); >;
-    float4 vTangentUOs : TANGENT	< Semantic( TangentU_SignV ); >;
-    uint vVertexID : SV_VERTEXID < Semantic( VertexID ); >;
-    uint vInstanceID : SV_InstanceID < Semantic( None ); >;
+    //float4 vTangentUOs : TANGENT	< Semantic( TangentU_SignV ); >;
+    //uint vVertexID : SV_VERTEXID < Semantic( VertexID ); >;
+    //uint vInstanceID : SV_InstanceID < Semantic( None ); >;
 	#include ""common/vertexinput.hlsl""
 }};
 
