@@ -18,9 +18,9 @@ public class S2ShaderConverter
     private List<Input> inputs = new List<Input>();
     private List<Output> outputs = new List<Output>();
     private static bool isTerrain = false;
-    private static bool bOpacityEnabled = false;
-    private static bool bUsesFrontFace = false;
-    private static bool bFixRoughness = false;
+    private bool bOpacityEnabled = false;
+    private bool bUsesFrontFace = false;
+    private bool bFixRoughness = false;
 
     public string vfxStructure = 
 $@"HEADER
@@ -130,7 +130,7 @@ PS
         float normal_length = length(biased_normal);
         float3 normal_in_world_space = biased_normal / normal_length;
 
-        float smoothness = saturate(8 * ({(bFixRoughness ? "0" : "normal_length")} - 0.375));
+        float smoothness = saturate(8 * (normal_length - 0.375));
         
         Material mat = Material::From(i,
                     float4(o0.xyz, alpha), //albedo, alpha
@@ -190,7 +190,7 @@ PS
     }}
 }}";
 
-    public string HlslToVfx(Material material, string pixel, string vertex, bool bIsVertexShader, bool bIsTerrain = false)
+    public string HlslToVfx(Material material, string pixel, string vertex, bool bIsTerrain = false)
     {
         //Pixel Shader
         StringBuilder texSamples = new StringBuilder();
@@ -220,8 +220,8 @@ PS
 
         vfxStructure = vfxStructure.Replace("//ps_samplers", texSamples.ToString());
 
-        vfxStructure = vfxStructure.Replace("//ps_Inputs", WriteFunctionDefinition(material, bIsVertexShader).ToString());
-        vfxStructure = vfxStructure.Replace("//ps_CBuffers", WriteCbuffers(material, bIsVertexShader).ToString());
+        vfxStructure = vfxStructure.Replace("//ps_Inputs", WriteFunctionDefinition(material, false).ToString()); ;
+        vfxStructure = vfxStructure.Replace("//ps_CBuffers", WriteCbuffers(material, false).ToString());
 
         hlsl = new StringReader(pixel);
         StringBuilder instructions = ConvertInstructions(false);
@@ -231,6 +231,9 @@ PS
         }
         vfxStructure = vfxStructure.Replace("//ps_Function", instructions.ToString());
 
+        if(bFixRoughness)
+            vfxStructure = vfxStructure.Replace("float smoothness = saturate(8 * (normal_length - 0.375));", "float smoothness = saturate(8 * (0 - 0.375));");
+            
         //------------------------------------------------------------------------------
 
         //Vertex Shader - Commented out for now
@@ -378,11 +381,11 @@ PS
             }
             else
             {
-                if (cbuffer.Count == material.Header.Unk2D0.Count)
-                {
-                    data = material.Header.Unk2D0;
-                }
-                else if (cbuffer.Count == material.Header.Unk2E0.Count)
+                //if (cbuffer.Count == material.Header.Unk2D0.Count) Unk2D0 is byte, not float, so not a cbuffer?
+                //{
+                //    data = material.Header.Unk2D0;
+                //}
+                if (cbuffer.Count == material.Header.Unk2E0.Count)
                 {
                     data = material.Header.Unk2E0;
                 }
@@ -429,6 +432,7 @@ PS
                                 else
                                 {
                                     var x = data[i].Unk00.X; // really bad but required
+                                    
                                     CBuffers.AppendLine($"\t\tfloat4({x}, {data[i].Unk00.Y}, {data[i].Unk00.Z}, {data[i].Unk00.W}), //" + i);
                                 }
                             }
@@ -627,7 +631,7 @@ PS
                 funcDef.AppendLine("\t\tfloat4 v2 = {i.vNormalWs,1};");
                 funcDef.AppendLine("\t\tfloat4 v3 = {i.vTangentUWs,1};");
                 funcDef.AppendLine("\t\tfloat4 v4 = {i.vTangentVWs,1};");
-                funcDef.AppendLine("\t\tfloat4 v5 = i.vBlendValues;"); //For dyemaps
+                funcDef.AppendLine("\t\tfloat4 v5 = {0,0,0,0}");
             }
             else
             {
@@ -681,15 +685,15 @@ PS
                 {
                     if (line.Contains("cb12[7].xyz + -v4.xyz")) //cb12 is view scope
                     {
-                        funcDef.AppendLine(line.Replace("cb12[7].xyz", "vCameraToPositionDirWs"));
+                        funcDef.AppendLine($"\t\t{line.TrimStart().Replace("cb12[7].xyz", "vCameraToPositionDirWs")}");
                     }
                     else if (line.Contains("v4.xy * cb")) //might be a detail uv or something when v4 is used like this, idk
                     {
-                        funcDef.AppendLine(line.Replace("v4", "(v3.xy*5)"));
+                        funcDef.AppendLine($"\t\t{line.TrimStart().Replace("v4", "(v3.xy*5)")}");
                     }
                     else if (line.Contains("while (true)"))
                     {
-                        funcDef.AppendLine(line.Replace("while (true)", "       [unroll(20)] while (true)"));
+                        funcDef.AppendLine($"\t\t{line.TrimStart().Replace("while (true)", "[unroll(20)] while (true)")}");
                     }
                     else if (line.Contains("return;"))
                     {

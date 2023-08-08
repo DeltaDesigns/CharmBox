@@ -155,7 +155,7 @@ public class Material : Tag
             string pixel = Decompile(Header.PixelShader.GetBytecode(), $"ps{Header.PixelShader.Hash}");
             string vertex = Decompile(Header.VertexShader.GetBytecode(), $"vs{Header.VertexShader.Hash}");
             string usf = FieldConfigHandler.GetUnrealInteropEnabled() ? new UsfConverter().HlslToUsf(this, pixel, false) : "";
-            string vfx = Source2Handler.source2Shaders ? new S2ShaderConverter().HlslToVfx(this, pixel, vertex, false, isTerrain) : "";
+            string vfx = Source2Handler.source2Shaders ? new S2ShaderConverter().HlslToVfx(this, pixel, vertex, isTerrain) : "";
 
             Directory.CreateDirectory($"{saveDirectory}/Unreal");
             if (Source2Handler.source2Shaders)
@@ -169,13 +169,13 @@ public class Material : Tag
 
             try
             {
-                if(usf != String.Empty && !File.Exists($"{saveDirectory}/Unreal/PS_{Header.PixelShader.Hash}.usf"))
+                if(usf != String.Empty && !File.Exists($"{saveDirectory}/Unreal/PS_{Hash}.usf"))
                 {
-                    File.WriteAllText($"{saveDirectory}/Unreal/PS_{Header.PixelShader.Hash}.usf", usf);
+                    File.WriteAllText($"{saveDirectory}/Unreal/PS_{Hash}.usf", usf);
                 }
-                if (vfx != String.Empty && !File.Exists($"{saveDirectory}/Source2/PS_{Header.PixelShader.Hash}.shader"))
+                if (vfx != String.Empty && !File.Exists($"{saveDirectory}/Source2/PS_{Hash}.shader"))
                 {
-                    File.WriteAllText($"{saveDirectory}/Source2/PS_{Header.PixelShader.Hash}.shader", vfx);
+                    File.WriteAllText($"{saveDirectory}/Source2/PS_{Hash}.shader", vfx);
                 }
             }
             catch (IOException)  // threading error
@@ -273,11 +273,11 @@ public class Material : Tag
             }
             else
             {
-                if (cbuffer.Count == material.Header.Unk2D0.Count)
-                {
-                    data = material.Header.Unk2D0;
-                }
-                else if (cbuffer.Count == material.Header.Unk2E0.Count)
+                //if (cbuffer.Count == material.Header.Unk2D0.Count) Unk2D0 is byte, not float, so not a cbuffer?
+                //{
+                //    data = material.Header.Unk2D0;
+                //}
+                if (cbuffer.Count == material.Header.Unk2E0.Count)
                 {
                     data = material.Header.Unk2E0;
                 }
