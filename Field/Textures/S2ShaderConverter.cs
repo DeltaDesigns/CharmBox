@@ -219,8 +219,6 @@ PS
         }
 
         vfxStructure = vfxStructure.Replace("//ps_samplers", texSamples.ToString());
-
-        vfxStructure = vfxStructure.Replace("//ps_Inputs", WriteFunctionDefinition(material, false).ToString()); ;
         vfxStructure = vfxStructure.Replace("//ps_CBuffers", WriteCbuffers(material, false).ToString());
 
         hlsl = new StringReader(pixel);
@@ -230,35 +228,40 @@ PS
             return "";
         }
         vfxStructure = vfxStructure.Replace("//ps_Function", instructions.ToString());
+        vfxStructure = vfxStructure.Replace("//ps_Inputs", WriteFunctionDefinition(material, false).ToString());
 
         if(bFixRoughness)
             vfxStructure = vfxStructure.Replace("float smoothness = saturate(8 * (normal_length - 0.375));", "float smoothness = saturate(8 * (0 - 0.375));");
-            
+
         //------------------------------------------------------------------------------
 
         //Vertex Shader - Commented out for now
-        //texSamples = new StringBuilder();
-        //hlsl = new StringReader(vertex);
-
-        //ProcessHlslData();
-
-        //for (int i = 0; i < material.Header.VSSamplers.Count; i++)
+        //if(bIsTerrain) 
         //{
-        //    if (material.Header.VSSamplers[i].Samplers is null)
-        //        continue;
+        //    texSamples = new StringBuilder();
+        //    hlsl = new StringReader(vertex);
 
-        //    var sampler = material.Header.VSSamplers[i].Samplers.Sampler;
-        //    texSamples.AppendLine($"SamplerState g_s{i + 1} < Filter({sampler.Header.Filter}); AddressU({sampler.Header.AddressU}); AddressV({sampler.Header.AddressV}); AddressW({sampler.Header.AddressW}); ComparisonFunc({sampler.Header.ComparisonFunc}); MaxAniso({sampler.Header.MaxAnisotropy}); >;");
+        //    ProcessHlslData();
+
+        //    for (int i = 0; i < material.Header.VSSamplers.Count; i++)
+        //    {
+        //        if (material.Header.VSSamplers[i].Samplers is null)
+        //            continue;
+
+        //        var sampler = material.Header.VSSamplers[i].Samplers.Sampler;
+        //        texSamples.AppendLine($"SamplerState g_s{i + 1} < Filter({sampler.Header.Filter}); AddressU({sampler.Header.AddressU}); AddressV({sampler.Header.AddressV}); AddressW({sampler.Header.AddressW}); ComparisonFunc({sampler.Header.ComparisonFunc}); MaxAniso({sampler.Header.MaxAnisotropy}); >;");
+        //    }
+
+        //    vfxStructure = vfxStructure.Replace("//vs_samplers", texSamples.ToString());
+
+        //    vfxStructure = vfxStructure.Replace("//vs_Inputs", WriteFunctionDefinition(material, true).ToString());
+        //    vfxStructure = vfxStructure.Replace("//vs_CBuffers", WriteCbuffers(material, true).ToString());
+
+        //    hlsl = new StringReader(vertex);
+        //    instructions = ConvertInstructions(true);
+        //    vfxStructure = vfxStructure.Replace("//vs_Function", instructions.ToString());
+
         //}
-
-        //vfxStructure = vfxStructure.Replace("//vs_samplers", texSamples.ToString());
-
-        //vfxStructure = vfxStructure.Replace("//vs_Inputs", WriteFunctionDefinition(material, true).ToString());
-        //vfxStructure = vfxStructure.Replace("//vs_CBuffers", WriteCbuffers(material, true).ToString());
-
-        //hlsl = new StringReader(vertex);
-        //instructions = ConvertInstructions(true);
-        //vfxStructure = vfxStructure.Replace("//vs_Function", instructions.ToString());
 
         //--------------------------
         vfx.AppendLine(vfxStructure);
@@ -300,6 +303,7 @@ PS
                     texture.Variable = line.Split("> ")[1].Split(" :")[0];
                     texture.Index = Int32.TryParse(new string(texture.Variable.Skip(1).ToArray()), out int index) ? index : -1;
                     textures.Add(texture);
+                    textures.Sort((x, y) => x.Index.CompareTo(y.Index));
                 }
                 else if (line.Contains("SamplerState"))
                 {
@@ -484,9 +488,9 @@ PS
                 if (e.Texture != null)
                 {
                     string type = e.Texture.IsSrgb() ? "Srgb" : "Linear";
-
-                    funcDef.AppendLine($"\tCreateInputTexture2D( TextureT{e.TextureIndex}, {type}, 8, \"\", \"\",  \"Textures,10/{e.TextureIndex}\", Default3( 1.0, 1.0, 1.0 ));");
-                    funcDef.AppendLine($"\tCreateTexture2DWithoutSampler( g_t{e.TextureIndex} )  < Channel( RGBA,  Box( TextureT{e.TextureIndex} ), {type} ); OutputFormat( BC7 ); SrgbRead( {e.Texture.IsSrgb()} ); >; ");
+                    //CreateInputTexture{(e.Texture.IsCubemap() ? "Cube" : "2D")}
+                    funcDef.AppendLine($"\tCreateInput{textures[(int)e.TextureIndex].Dimension}( TextureT{e.TextureIndex}, {type}, 8, \"\", \"\",  \"Textures,10/{e.TextureIndex}\", Default3( 1.0, 1.0, 1.0 ));");
+                    funcDef.AppendLine($"\t{textures[(int)e.TextureIndex].Dimension} g_t{e.TextureIndex} < Channel( RGBA,  Box( TextureT{e.TextureIndex} ), {type} ); OutputFormat( BC7 ); SrgbRead( {e.Texture.IsSrgb()} ); >; ");
                     funcDef.AppendLine($"\tTextureAttribute(g_t{e.TextureIndex}, g_t{e.TextureIndex});\n"); //Prevents some inputs not appearing for some reason
                 }
             }
@@ -616,7 +620,7 @@ PS
                 }
             } while (line != null);
         }
-        else
+        else //Pixel
         {
             funcDef.AppendLine("\t\tfloat3 vPositionWs = i.vPositionWithOffsetWs.xyz + g_vHighPrecisionLightingOffsetWs.xyz;");
             funcDef.AppendLine("\t\tfloat3 vCameraToPositionDirWs = CalculateCameraToPositionDirWs( vPositionWs.xyz );");
@@ -631,15 +635,15 @@ PS
                 funcDef.AppendLine("\t\tfloat4 v2 = {i.vNormalWs,1};");
                 funcDef.AppendLine("\t\tfloat4 v3 = {i.vTangentUWs,1};");
                 funcDef.AppendLine("\t\tfloat4 v4 = {i.vTangentVWs,1};");
-                funcDef.AppendLine("\t\tfloat4 v5 = {0,0,0,0}");
+                funcDef.AppendLine("\t\tfloat4 v5 = {0,0,0,0};");
             }
             else
             {
                 funcDef.AppendLine("\t\tfloat4 v0 = {i.vNormalWs,1};"); //Mesh world normals
                 funcDef.AppendLine("\t\tfloat4 v1 = {i.vTangentUWs,1};");
                 funcDef.AppendLine("\t\tfloat4 v2 = {i.vTangentVWs,1};");
-                funcDef.AppendLine("\t\tfloat4 v3 = {i.vTextureCoords, 1,1};"); //UVs
-                funcDef.AppendLine("\t\tfloat4 v4 = {0,0,0,0};"); //Don't really know
+                funcDef.AppendLine("\t\tfloat4 v3 = {i.vTextureCoords,0,0};"); //UVs
+                funcDef.AppendLine("\t\tfloat4 v4 = {(vPositionWs+v3.xyz)/39.37,0};"); //Don't really know, just guessing its world offset or something
                 funcDef.AppendLine("\t\tfloat4 v5 = i.vBlendValues;"); //Vertex color.
                 //funcDef.AppendLine("uint v6 = 1;"); //Usually FrontFace but can also be v7
             }
@@ -683,14 +687,14 @@ PS
                 line = hlsl.ReadLine();
                 if (line != null)
                 {
-                    if (line.Contains("cb12[7].xyz + -v4.xyz")) //cb12 is view scope
+                    if (line.Contains("cb12[7].xyz")) //cb12 is view scope
                     {
-                        funcDef.AppendLine($"\t\t{line.TrimStart().Replace("cb12[7].xyz", "vCameraToPositionDirWs")}");
+                        funcDef.AppendLine($"\t\t{line.TrimStart().Replace("cb12[7].xyz", "vCameraToPositionDirWs").Replace("v4.xyz", "float3(0,0,0)")}");
                     }
-                    else if (line.Contains("v4.xy * cb")) //might be a detail uv or something when v4 is used like this, idk
-                    {
-                        funcDef.AppendLine($"\t\t{line.TrimStart().Replace("v4", "(v3.xy*5)")}");
-                    }
+                    //else if (line.Contains("v4.xy * cb")) //might be a detail uv or something when v4 is used like this, idk
+                    //{
+                    //    funcDef.AppendLine($"\t\t{line.TrimStart().Replace("v4", "(v3.xy*5)")}");
+                    //}
                     else if (line.Contains("while (true)"))
                     {
                         funcDef.AppendLine($"\t\t{line.TrimStart().Replace("while (true)", "[unroll(20)] while (true)")}");
@@ -732,7 +736,7 @@ PS
                         }
                         else
                         {
-                            funcDef.AppendLine($"\t\t{equal.TrimStart()}= Tex2DS(g_t{texIndex}, g_s{sampleIndex}, {sampleUv}).{dotAfter}");
+                            funcDef.AppendLine($"\t\t{equal.TrimStart()}= g_t{texIndex}.Sample(g_s{sampleIndex}, {sampleUv}).{dotAfter}");
                         }
                     }
                     else if (line.Contains("CalculateLevelOfDetail"))

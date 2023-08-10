@@ -16,6 +16,7 @@ using Field.Statics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
+using DirectXTexNet;
 
 namespace Charm;
 
@@ -307,11 +308,18 @@ public partial class DevView : UserControl
                     Console.WriteLine($"PS Textures: {mat.Header.PSTextures.Count} | VS Textures: {mat.Header.VSTextures.Count}");
                     Console.WriteLine($"PS Texture Samplers: {mat.Header.PSSamplers.Count} | VS Texture Samplers: {mat.Header.VSSamplers.Count}");
 
+                    foreach(var texture in mat.Header.PSTextures)
+                    {
+                        Console.WriteLine($"Tex {texture.Texture.Hash} Index {texture.TextureIndex}: Format: {(DXGI_FORMAT)texture.Texture.Header.Format} Depth: {texture.Texture.Header.Depth} ArraySize: {texture.Texture.Header.ArraySize}");
+                    }
+
                     for (int i = 0; i < mat.Header.PSSamplers.Count; i++)
                     {
+                        if (mat.Header.PSSamplers[i].Samplers is null)
+                            continue;
                         var sampler = mat.Header.PSSamplers[i].Samplers.Sampler;
                         Console.WriteLine($"-------PS {sampler.Hash}-------");
-                        Console.WriteLine($"Sample {i}");
+                        Console.WriteLine($"Sample {i+1}");
                         Console.WriteLine($"Filter: {sampler.Header.Filter}");
                         Console.WriteLine($"AddressU: {sampler.Header.AddressU}");
                         Console.WriteLine($"AddressV: {sampler.Header.AddressV}");
@@ -326,6 +334,8 @@ public partial class DevView : UserControl
 
                     for (int i = 0; i < mat.Header.VSSamplers.Count; i++)
                     {
+                        if (mat.Header.VSSamplers[i].Samplers is null)
+                            continue;
                         var sampler = mat.Header.VSSamplers[i].Samplers.Sampler;
                         Console.WriteLine($"-------VS {sampler.Hash}-------");
                         Console.WriteLine($"Sample {i}");

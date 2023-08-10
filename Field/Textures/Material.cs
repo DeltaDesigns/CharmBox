@@ -152,8 +152,8 @@ public class Material : Tag
     {
         if (Header.PixelShader != null)
         {
-            string pixel = Decompile(Header.PixelShader.GetBytecode(), $"ps{Header.PixelShader.Hash}");
-            string vertex = Decompile(Header.VertexShader.GetBytecode(), $"vs{Header.VertexShader.Hash}");
+            string pixel = Decompile(Header.PixelShader.GetBytecode(), $"ps{Hash}");
+            string vertex = Decompile(Header.VertexShader.GetBytecode(), $"vs{Hash}");
             string usf = FieldConfigHandler.GetUnrealInteropEnabled() ? new UsfConverter().HlslToUsf(this, pixel, false) : "";
             string vfx = Source2Handler.source2Shaders ? new S2ShaderConverter().HlslToVfx(this, pixel, vertex, isTerrain) : "";
 
@@ -193,7 +193,7 @@ public class Material : Tag
         Directory.CreateDirectory($"{saveDirectory}");
         if (Header.VertexShader != null)
         {
-            string hlsl = Decompile(Header.VertexShader.GetBytecode(), $"vs{Header.VertexShader.Hash}");
+            string hlsl = Decompile(Header.VertexShader.GetBytecode(), $"vs{Hash}");
 
             if (saveCBuffers)
                 SaveCbuffers(this, true, hlsl, saveDirectory); 
