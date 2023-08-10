@@ -303,7 +303,6 @@ PS
                     texture.Variable = line.Split("> ")[1].Split(" :")[0];
                     texture.Index = Int32.TryParse(new string(texture.Variable.Skip(1).ToArray()), out int index) ? index : -1;
                     textures.Add(texture);
-                    textures.Sort((x, y) => x.Index.CompareTo(y.Index));
                 }
                 else if (line.Contains("SamplerState"))
                 {
@@ -488,9 +487,10 @@ PS
                 if (e.Texture != null)
                 {
                     string type = e.Texture.IsSrgb() ? "Srgb" : "Linear";
-                    //CreateInputTexture{(e.Texture.IsCubemap() ? "Cube" : "2D")}
-                    funcDef.AppendLine($"\tCreateInput{textures[(int)e.TextureIndex].Dimension}( TextureT{e.TextureIndex}, {type}, 8, \"\", \"\",  \"Textures,10/{e.TextureIndex}\", Default3( 1.0, 1.0, 1.0 ));");
-                    funcDef.AppendLine($"\t{textures[(int)e.TextureIndex].Dimension} g_t{e.TextureIndex} < Channel( RGBA,  Box( TextureT{e.TextureIndex} ), {type} ); OutputFormat( BC7 ); SrgbRead( {e.Texture.IsSrgb()} ); >; ");
+                    string dimension = e.Texture.GetDimension();
+
+                    funcDef.AppendLine($"\tCreateInputTexture{dimension}( TextureT{e.TextureIndex}, {type}, 8, \"\", \"\",  \"Textures,10/{e.TextureIndex}\", Default3( 1.0, 1.0, 1.0 ));");
+                    funcDef.AppendLine($"\tTexture{dimension} g_t{e.TextureIndex} < Channel( RGBA,  Box( TextureT{e.TextureIndex} ), {type} ); OutputFormat( BC7 ); SrgbRead( {e.Texture.IsSrgb()} ); >; ");
                     funcDef.AppendLine($"\tTextureAttribute(g_t{e.TextureIndex}, g_t{e.TextureIndex});\n"); //Prevents some inputs not appearing for some reason
                 }
             }

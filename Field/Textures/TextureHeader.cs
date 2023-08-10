@@ -23,7 +23,17 @@ public class TextureHeader : Tag
     {
         return Header.Depth != 1;
     }
-    
+
+    public string GetDimension()
+    {
+        if (IsCubemap())
+            return "Cube";
+        else if (IsVolume())
+            return "3D";
+        else
+            return "2D";
+    }
+
     protected override void ParseStructs()
     {
         Header = ReadHeader<D2Class_TextureHeader>();
