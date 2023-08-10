@@ -767,7 +767,7 @@ PS
                     }
                     else if (line.Contains("o1.xyzw = float4(0,0,0,0);"))
                     {
-                        funcDef.AppendLine(line.Replace("o1.xyzw = float4(0,0,0,0);", "\t\to1.xyzw = float4(1,1,1,0);")); //decals(?) have 0 normals sometimes, dont want that
+                        funcDef.AppendLine(line.Replace("o1.xyzw = float4(0,0,0,0);", "\t\to1.xyzw = float4(PackNormal3D(v0.xyz),0);")); //decals(?) have 0 normals sometimes, dont want that
                         bFixRoughness = true;
                     }
                     else
