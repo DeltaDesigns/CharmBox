@@ -121,10 +121,9 @@ public class TextureHeader : Tag
 
         for (int i = 0; i < input.GetImageCount(); i++)
         {
-            ScratchImage Original = input;
-            TexHelper.Instance.CopyRectangle(Original.GetImage(i), 0, 0, image.Width, image.Height, outputPlate.GetImage(0), TEX_FILTER_FLAGS.WRAP, image.Width * i, 0);
+            TexHelper.Instance.CopyRectangle(input.GetImage(i), 0, 0, image.Width, image.Height, outputPlate.GetImage(0), TEX_FILTER_FLAGS.WRAP, image.Width * i, 0);
         }
-        
+        input.Dispose();
         return outputPlate;
     }
 
