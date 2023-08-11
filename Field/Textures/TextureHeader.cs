@@ -74,6 +74,7 @@ public class TextureHeader : Tag
             var s2 = scratchImage.FlipRotate(0, TEX_FR_FLAGS.ROTATE90);
             var s3 = scratchImage.FlipRotate(1, TEX_FR_FLAGS.ROTATE270);
             var s4 = scratchImage.FlipRotate(4, TEX_FR_FLAGS.FLIP_VERTICAL).FlipRotate(0, TEX_FR_FLAGS.FLIP_HORIZONTAL);
+            
             scratchImage = TexHelper.Instance.InitializeTemporary(
                 new[]
                 {
@@ -105,6 +106,26 @@ public class TextureHeader : Tag
             }
         }
         return scratchImage;
+    }
+
+    public static ScratchImage FlattenCubemap(ScratchImage input)
+    {
+        var image = input.GetImage(0);
+        if (image.Width == 0)
+        {
+            return null;
+        }
+
+        bool bSrgb = TexHelper.Instance.IsSRGB(image.Format);
+        ScratchImage outputPlate = TexHelper.Instance.Initialize2D(bSrgb ? DXGI_FORMAT.B8G8R8A8_UNORM_SRGB : DXGI_FORMAT.B8G8R8A8_UNORM, image.Width * input.GetImageCount(), image.Height, 1, 0, 0);
+
+        for (int i = 0; i < input.GetImageCount(); i++)
+        {
+            ScratchImage Original = input;
+            TexHelper.Instance.CopyRectangle(Original.GetImage(i), 0, 0, image.Width, image.Height, outputPlate.GetImage(0), TEX_FILTER_FLAGS.WRAP, image.Width * i, 0);
+        }
+        
+        return outputPlate;
     }
 
     private ScratchImage DecompressScratchImage(ScratchImage scratchImage, DXGI_FORMAT format)

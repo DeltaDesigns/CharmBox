@@ -37,10 +37,16 @@ public class TextureExtractor
                 break;
             case ETextureFormat.PNG:
                 Guid guid = TexHelper.Instance.GetWICCodec(WICCodecs.PNG);
-                scratchImage.SaveToWICFile(0, WIC_FLAGS.NONE, guid, savePath + ".png");
+                if(scratchImage.GetImageCount() > 0)
+                    TextureHeader.FlattenCubemap(scratchImage).SaveToWICFile(0, WIC_FLAGS.NONE, guid, savePath + ".png");
+                else
+                    scratchImage.SaveToWICFile(0, WIC_FLAGS.NONE, guid, savePath + ".png");
                 break;
             case ETextureFormat.TGA:
-                scratchImage.SaveToTGAFile(0, savePath + ".tga");
+                if (scratchImage.GetImageCount() > 0)
+                    TextureHeader.FlattenCubemap(scratchImage).SaveToTGAFile(0, savePath + ".tga");
+                else
+                    scratchImage.SaveToTGAFile(0, savePath + ".tga");
                 break;
         }
         scratchImage.Dispose();
