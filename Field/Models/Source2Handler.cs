@@ -12,30 +12,36 @@ public class Source2Handler
 
 	public static void SaveStaticVMDL(string savePath, string staticMeshName, List<Part> staticMesh)
 	{
-		if (!File.Exists($"{savePath}/{staticMeshName}.vmdl"))
+		try
 		{
-			//Source 2 shit
-			File.Copy("template.vmdl", $"{savePath}/{staticMeshName}.vmdl", true);
-			string text = File.ReadAllText($"{savePath}/{staticMeshName}.vmdl");
+            if (!File.Exists($"{savePath}/{staticMeshName}.vmdl"))
+            {
+                //Source 2 shit
+                File.Copy("template.vmdl", $"{savePath}/{staticMeshName}.vmdl", true);
+                string text = File.ReadAllText($"{savePath}/{staticMeshName}.vmdl");
 
-			StringBuilder mats = new StringBuilder();
+                StringBuilder mats = new StringBuilder();
 
-			int i = 0;
-			foreach (Part staticpart in staticMesh)
-			{
-				mats.AppendLine("{");
-				mats.AppendLine($"    from = \"{staticpart.Material.Hash}.vmat\"");
-				mats.AppendLine($"    to = \"materials/{staticpart.Material.Hash}.vmat\"");
-				mats.AppendLine("},\n");
-				i++;
-			}
+                int i = 0;
+                foreach (Part staticpart in staticMesh)
+                {
+                    mats.AppendLine("{");
+                    mats.AppendLine($"    from = \"{staticpart.Material.Hash}.vmat\"");
+                    mats.AppendLine($"    to = \"materials/{staticpart.Material.Hash}.vmat\"");
+                    mats.AppendLine("},\n");
+                    i++;
+                }
 
-			text = text.Replace("%MATERIALS%", mats.ToString());
-			text = text.Replace("%FILENAME%", $"models/{staticMeshName}.fbx");
-			text = text.Replace("%MESHNAME%", staticMeshName);
+                text = text.Replace("%MATERIALS%", mats.ToString());
+                text = text.Replace("%FILENAME%", $"models/{staticMeshName}.fbx");
+                text = text.Replace("%MESHNAME%", staticMeshName);
 
-			File.WriteAllText($"{savePath}/{staticMeshName}.vmdl", text);
-		}
+                File.WriteAllText($"{savePath}/{staticMeshName}.vmdl", text);
+            }
+        }
+		catch(Exception ex) 
+		{ 
+		}	
 	}
 
 	public static void SaveEntityVMDL(string savePath, Entity entity)

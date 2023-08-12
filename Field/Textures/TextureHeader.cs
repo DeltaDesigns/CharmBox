@@ -121,7 +121,7 @@ public class TextureHeader : Tag
 
         for (int i = 0; i < input.GetImageCount(); i++)
         {
-            TexHelper.Instance.CopyRectangle(input.GetImage(i), 0, 0, image.Width, image.Height, outputPlate.GetImage(0), TEX_FILTER_FLAGS.WRAP, image.Width * i, 0);
+            TexHelper.Instance.CopyRectangle(input.GetImage(i), 0, 0, image.Width, image.Height, outputPlate.GetImage(0), bSrgb ? TEX_FILTER_FLAGS.SEPARATE_ALPHA : 0, image.Width * i, 0);
         }
         input.Dispose();
         return outputPlate;
@@ -163,12 +163,12 @@ public class TextureHeader : Tag
         scratchImage.Dispose();
         return ms;
     }
-    
-    public static void SavetoFile(string savePath, ScratchImage simg)
+
+    public static void SavetoFile(string savePath, ScratchImage simg, bool isCubemap = false)
     {
         try
         {
-            TextureExtractor.SaveTextureToFile(savePath, simg);
+            TextureExtractor.SaveTextureToFile(savePath, simg, isCubemap);
         }
         catch (FileLoadException)
         {
@@ -178,7 +178,7 @@ public class TextureHeader : Tag
     public void SavetoFile(string savePath)
     {
         ScratchImage simg = GetScratchImage();
-        SavetoFile(savePath, simg);
+        SavetoFile(savePath, simg, IsCubemap());
     }
 
     

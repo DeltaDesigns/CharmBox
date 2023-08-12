@@ -295,6 +295,21 @@ public partial class DevView : UserControl
                         Console.WriteLine($"{a.Unk00} : {material.Header.Unk2D0.Count}, {material.Header.Unk2E0.Count}, {material.Header.Unk300.Count},");
                     }
                     break;
+                case 0x80806f07: //Entity Model
+                    FbxHandler entModel = new FbxHandler(false);
+
+                    EntityModel model = new(hash);
+                    var parts = model.Load(ELOD.MostDetail, null);
+
+                    Console.WriteLine($"Model {model.Hash}: Mesh Count {model.Header.Meshes.Count}");
+                    foreach (var part in parts)
+                    {
+                        entModel.AddMeshPartToScene(part, part.Index, $"{model.Hash}_{part.Index}_{part.GroupIndex}");
+                        part.Material.SaveAllTextures($"{ConfigHandler.GetExportSavePath()}/test/");
+                    }
+                    entModel.ExportScene($"{ConfigHandler.GetExportSavePath()}/test/{hash}_EntModel.fbx");
+                    entModel.Dispose();
+                    break;
                 case 0x80806daa:
                     Material mat = PackageHandler.GetTag(typeof(Material), hash);
                     string path = $"{ConfigHandler.GetExportSavePath()}/Test/material_out/";
@@ -349,6 +364,21 @@ public partial class DevView : UserControl
                         Console.WriteLine($"BorderColor: {string.Join(", ", sampler.Header.BorderColor)}");
                         Console.WriteLine($"MinLOD: {sampler.Header.MinLOD.ToString()}");
                         Console.WriteLine($"MaxLOD: {sampler.Header.MaxLOD.ToString()}");
+                    }
+
+                    break;
+                case 0x80806a74: //746A8080
+                    var listTag = PackageHandler.GetTag<D2Class_746A8080>(hash);
+
+                    if(listTag.Header.Unk10.Header.Unk10 is D2Class_498B8080 list)
+                    {
+                        StringBuilder rots = new();
+                        foreach(var rot in list.Unk10)
+                        {
+                            Console.WriteLine($"{rot.Unk00.X}, {rot.Unk00.Y}, {rot.Unk00.Z}, {rot.Unk00.W}");
+                            rots.AppendLine($"{rot.Unk00.X}, {rot.Unk00.Y}, {rot.Unk00.Z}, {rot.Unk00.W}");
+                        }
+                        File.WriteAllText($"{ConfigHandler.GetExportSavePath()}/test/{hash}_Rots.txt", rots.ToString());
                     }
 
                     break;

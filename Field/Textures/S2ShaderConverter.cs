@@ -498,19 +498,19 @@ PS
             if(isTerrain) //Terrain has 4 dyemaps per shader, from what ive seen
             {
                 funcDef.AppendLine($"\tCreateInputTexture2D( TextureT14_0, Linear, 8, \"\", \"\",  \"Textures,10/14\", Default3( 1.0, 1.0, 1.0 ));");
-                funcDef.AppendLine($"\tCreateTexture2DWithoutSampler( g_t14_0 )  < Channel( RGBA,  Box( TextureT14_0 ), Linear ); OutputFormat( BC7 ); SrgbRead( False ); >; ");
+                funcDef.AppendLine($"\tTexture2D g_t14_0 < Channel( RGBA,  Box( TextureT14_0 ), Linear ); OutputFormat( RGBA8888 ); SrgbRead( False ); >; ");
                 funcDef.AppendLine($"\tTextureAttribute(g_t14_0, g_t14_0);\n");
 
                 funcDef.AppendLine($"\tCreateInputTexture2D( TextureT14_1, Linear, 8, \"\", \"\",  \"Textures,10/15\", Default3( 1.0, 1.0, 1.0 ));");
-                funcDef.AppendLine($"\tCreateTexture2DWithoutSampler( g_t14_1 )  < Channel( RGBA,  Box( TextureT14_1 ), Linear ); OutputFormat( BC7 ); SrgbRead( False ); >; ");
+                funcDef.AppendLine($"\tTexture2D g_t14_1 < Channel( RGBA,  Box( TextureT14_1 ), Linear ); OutputFormat( RGBA8888 ); SrgbRead( False ); >; ");
                 funcDef.AppendLine($"\tTextureAttribute(g_t14_1, g_t14_1);\n");
 
                 funcDef.AppendLine($"\tCreateInputTexture2D( TextureT14_2, Linear, 8, \"\", \"\",  \"Textures,10/16\", Default3( 1.0, 1.0, 1.0 ));");
-                funcDef.AppendLine($"\tCreateTexture2DWithoutSampler( g_t14_2 )  < Channel( RGBA,  Box( TextureT14_2 ), Linear ); OutputFormat( BC7 ); SrgbRead( False ); >; ");
+                funcDef.AppendLine($"\tTexture2D g_t14_2< Channel( RGBA,  Box( TextureT14_2 ), Linear ); OutputFormat( RGBA8888 ); SrgbRead( False ); >; ");
                 funcDef.AppendLine($"\tTextureAttribute(g_t14_2, g_t14_2);\n");
 
                 funcDef.AppendLine($"\tCreateInputTexture2D( TextureT14_3, Linear, 8, \"\", \"\",  \"Textures,10/17\", Default3( 1.0, 1.0, 1.0 ));");
-                funcDef.AppendLine($"\tCreateTexture2DWithoutSampler( g_t14_3 )  < Channel( RGBA,  Box( TextureT14_3 ), Linear ); OutputFormat( BC7 ); SrgbRead( False ); >; ");
+                funcDef.AppendLine($"\tTexture2D( g_t14_3 )  < Channel( RGBA,  Box( TextureT14_3 ), Linear ); OutputFormat( RGBA8888 ); SrgbRead( False ); >; ");
                 funcDef.AppendLine($"\tTextureAttribute(g_t14_3, g_t14_3);\n");
             }  
         }

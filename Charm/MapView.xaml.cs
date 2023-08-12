@@ -304,6 +304,7 @@ public partial class MapView : UserControl
                 {
                     if(decals.Unk10 is not null)
                     {
+                        Directory.CreateDirectory($"{savePath}/textures/decals/");
                         foreach (var item in decals.Unk10.Header.DecalResources)
                         {
                             // Check if the index is within the bounds of the second list
@@ -323,7 +324,7 @@ public partial class MapView : UserControl
                                     Vector4 location = secondListEntry.Location;
 
                                     //item.Material.SavePixelShader($"{ConfigHandler.GetExportSavePath()}/test/");
-                                    //item.Material.SaveAllTextures($"{ConfigHandler.GetExportSavePath()}/test/textures/");
+                                    item.Material.SaveAllTextures($"{savePath}/textures/decals/");
                                     //Source2Handler.SaveDecalVMAT($"{ConfigHandler.GetExportSavePath()}/test/", item.Material.Hash, item.Material);
 
                                     //fbxHandler.AddEmptyToScene($"{item.Material.Hash} {boxCorners.Unk24}", location, Vector4.Zero);
@@ -360,6 +361,21 @@ public partial class MapView : UserControl
                             new Vector2(areaLight.Unk10.Header.Unk30[i].UnkA0.W, areaLight.Unk10.Header.Unk30[i].UnkB0.W),
                             (areaLight.Unk10.Header.Unk30[i].UnkD0.Header.Unk40.Count > 0 ? areaLight.Unk10.Header.Unk30[i].UnkD0.Header.Unk40[0].Unk00 : areaLight.Unk10.Header.Unk30[i].UnkD0.Header.Unk60[0].Unk00));
                     }
+                }
+
+                if (entry.DataResource is D2Class_716A8080 sun) //??
+                {
+                    //Console.WriteLine($"Col: {sun.Unk18.Header.Unk10.Header.Unk40[0].Unk00.X}, " +
+                    //    $"{sun.Unk18.Header.Unk10.Header.Unk40[0].Unk00.X}, " +
+                    //    $"{sun.Unk18.Header.Unk10.Header.Unk40[0].Unk00.Z}");
+
+                    //fbxHandler.InfoHandler.AddLight(
+                    //    "Sun?",
+                    //    "Sun",
+                    //    entry.Translation,
+                    //    entry.Rotation,
+                    //    new Vector2(1, 1),
+                    //    sun.Unk18.Header.Unk10.Header.Unk40.Count == 0 ? sun.Unk18.Header.Unk10.Header.Unk60[0].Unk00 : sun.Unk18.Header.Unk10.Header.Unk40[0].Unk00);
                 }
             });
         });

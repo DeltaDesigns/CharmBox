@@ -914,6 +914,12 @@ public struct D2Class_D4688080
 {
     [DestinyOffset(0x10), DestinyField(FieldType.TagHash)]
     public Tag<D2Class_076F8080> Unk10;
+    [DestinyOffset(0x1C)]
+    public DestinyHash Unk1C;
+    public Vector4 Unk20;
+    public Vector4 Unk30;
+    [DestinyField(FieldType.TagHash)]
+    public Tag Unk40; //Havok 
 }
 
 [StructLayout(LayoutKind.Sequential, Size = 0x18)]
@@ -1020,4 +1026,81 @@ public struct D2Class_BA6C8080
     public Vector4 Unk00; //Scale?
     public Vector4 Unk10; //Rotation?
     //other vector4s
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x130)]
+public struct D2Class_C16B8080 //Related to map sun? contains lens flare textures
+{
+    [DestinyOffset(0x90), DestinyField(FieldType.TagHash64)]
+    public TextureHeader Unk90;
+    [DestinyField(FieldType.TagHash64)]
+    public TextureHeader UnkA0;
+    [DestinyField(FieldType.TagHash64)]
+    public TextureHeader UnkB0;
+    [DestinyField(FieldType.TagHash64)]
+    public TextureHeader UnkC0;
+    [DestinyField(FieldType.TagHash)]
+    public TextureHeader UnkD0;
+    [DestinyField(FieldType.TagHash)]
+    public TextureHeader UnkD4;
+    public Vector4 UnkD8;
+    public Vector4 UnkE8;
+    public Vector4 UnkF8;
+    public Vector4 Unk108;
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x28)]
+public struct D2Class_716A8080 //Map sun?
+{
+    [DestinyField(FieldType.TagHash)]
+    public Tag Unk00; //Unsure if always FFFFFFFF
+    public int Unk04; //Padding?
+    [DestinyField(FieldType.TagHash)]
+    public Tag Unk08; //746A8080
+    public float Unk0C; //Day cycle length? Tower is 3600, 3600 seconds = 1 hour
+    public float Unk10;
+    [DestinyField(FieldType.TagHash)]
+    public Tag Unk14; //7C6A8080
+    [DestinyField(FieldType.TagHash)]
+    public Tag<D2Class_786A8080> Unk18;
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x20)]
+public struct D2Class_746A8080
+{
+    public Vector4 Unk00;
+    [DestinyField(FieldType.TagHash)]
+    public Tag<D2Class_C88A8080> Unk10; //Leads to vec4 list. Sun position (rotations) during day cycle? Why is there 4 though?
+    [DestinyField(FieldType.TagHash)]
+    public Tag<D2Class_C88A8080> Unk14;
+    [DestinyField(FieldType.TagHash)]
+    public Tag<D2Class_C88A8080> Unk18;
+    [DestinyField(FieldType.TagHash)]
+    public Tag<D2Class_C88A8080> Unk1C;
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x18)]
+public struct D2Class_C88A8080
+{
+    public long FileSize;
+    public int ListSize;
+    public float Unk0C;
+    [DestinyField(FieldType.ResourcePointer)]
+    public dynamic? Unk10; //498B8080
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0x20)]
+public struct D2Class_498B8080
+{
+    [DestinyOffset(0x10), DestinyField(FieldType.TablePointer)]
+    public List<D2Class_90008080> Unk10;
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 0xC)]
+public struct D2Class_7C6A8080
+{
+    [DestinyField(FieldType.TagHash)]
+    public Material Unk00;
+    [DestinyField(FieldType.TagHash)]
+    public Material Unk04;
 }

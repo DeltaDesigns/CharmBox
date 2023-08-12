@@ -12,7 +12,7 @@ public class TextureExtractor
         _format = textureFormat;
     }
 
-    public static bool SaveTextureToFile(string savePath, ScratchImage scratchImage)
+    public static bool SaveTextureToFile(string savePath, ScratchImage scratchImage, bool isCubemap = false)
     {
         if (savePath.Contains('.'))
         {
@@ -37,13 +37,13 @@ public class TextureExtractor
                 break;
             case ETextureFormat.PNG:
                 Guid guid = TexHelper.Instance.GetWICCodec(WICCodecs.PNG);
-                if(scratchImage.GetImageCount() > 0)
+                if(isCubemap)
                     TextureHeader.FlattenCubemap(scratchImage).SaveToWICFile(0, WIC_FLAGS.NONE, guid, savePath + ".png");
                 else
                     scratchImage.SaveToWICFile(0, WIC_FLAGS.NONE, guid, savePath + ".png");
                 break;
             case ETextureFormat.TGA:
-                if (scratchImage.GetImageCount() > 0)
+                if (isCubemap)
                     TextureHeader.FlattenCubemap(scratchImage).SaveToTGAFile(0, savePath + ".tga");
                 else
                     scratchImage.SaveToTGAFile(0, savePath + ".tga");

@@ -232,7 +232,7 @@ class CharmImporter:
         # Make base material
         material = unreal.AssetToolsHelpers.get_asset_tools().create_asset("M_" + matstr, f"/Game/{self.config['UnrealInteropPath']}/Materials", unreal.Material, unreal.MaterialFactoryNew())
 
-        if os.path.exists(f"{self.folder_path}/Shaders/PS_{matstr}.usf"):
+        if os.path.exists(f"{self.folder_path}/Shaders/Unreal/PS_{matstr}.usf"):
             # Add textures
             texture_samples = self.add_textures(material, matstr)
 
@@ -277,7 +277,7 @@ class CharmImporter:
         # Definitions
 
         # Check the material shader exists
-        code = open(f"{self.folder_path}/Shaders/PS_{matstr}.usf", "r").read()
+        code = open(f"{self.folder_path}/Shaders/Unreal/PS_{matstr}.usf", "r").read()
 
         # If the material is masked, change its blend mode for alpha + make it two-sided
         if "// masked" in code:
@@ -400,7 +400,7 @@ class CharmImporter:
         return texture_samples
 
     """
-    Updates all materials used by this model to the latest .usfs found in the Shaders/ folder.
+    Updates all materials used by this model to the latest .usfs found in the Shaders/Unreal/ folder.
     Very useful for improving the material quality without much manual work.
     """
     def update_material_code(self) -> None:
@@ -413,7 +413,7 @@ class CharmImporter:
         for x in it:
             if x.get_outer() in mats:
                 if isinstance(x, unreal.MaterialExpressionCustom):
-                    code = open(f"{self.folder_path}/Shaders/PS_{mats[x.get_outer()]}.usf", "r").read()
+                    code = open(f"{self.folder_path}/Shaders/Unreal/PS_{mats[x.get_outer()]}.usf", "r").read()
                     x.set_editor_property('code', code)
                     print(f"Updated material {mats[x.get_outer()]}")
 
